@@ -1,6 +1,8 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import delete as sa_delete
 from sqlmodel import Session, select
 
 from app.core.deps import require_role
@@ -14,6 +16,19 @@ from app.schemas.intervention import InterventionRead
 from app.schemas.simulation import TranscriptMessage
 
 router = APIRouter(prefix="/history", tags=["history"])
+
+
+class _DeleteBatch(BaseModel):
+    ids: list[int] | None = None
+
+
+def _delete_incidents(ids: list[int], session: Session) -> None:
+    if not ids:
+        return
+    session.execute(sa_delete(InterventionData).where(InterventionData.incident_id.in_(ids)))
+    session.execute(sa_delete(ChatMessage).where(ChatMessage.incident_id.in_(ids)))
+    session.execute(sa_delete(Incident).where(Incident.id.in_(ids)))
+    session.commit()
 
 
 def _duration(start, end) -> int | None:
@@ -142,3 +157,31 @@ def get_debriefing(
         ],
         intervention=intervention_read,
     )
+
+
+@router.delete("/{call_id}", status_code=204)
+def delete_one_history(
+    call_id: int,
+    session: Session = Depends(get_session),
+    _: User = Depends(require_role(UserRole.ADMIN, UserRole.FORMADOR)),
+):
+    if not session.get(Incident, call_id):
+        raise HTTPException(status_code=404, detail="Trucada no trobada")
+    _delete_incidents([call_id], session)
+
+
+@router.delete("", status_code=204)
+def delete_history(
+    payload: _DeleteBatch | None = None,
+    session: Session = Depends(get_session),
+    _: User = Depends(require_role(UserRole.ADMIN, UserRole.FORMADOR)),
+):
+    if payload and payload.ids:
+        ids = payload.ids
+    else:
+        ids = [
+            inc.id for inc in session.exec(
+                select(Incident).where(Incident.call_status == CallStatus.FINALITZADA)
+            ).all()
+        ]
+    _delete_incidents(ids, session)

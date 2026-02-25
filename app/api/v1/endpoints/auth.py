@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
@@ -43,6 +45,8 @@ def login(payload: UserLogin, session: Session = Depends(get_session)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Compte desactivat",
         )
+    if user.expires_at and datetime.now(timezone.utc) > user.expires_at.replace(tzinfo=timezone.utc):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Compte caducat")
     token = create_access_token({"sub": user.id, "role": user.role, "username": user.username})
     return TokenResponse(
         access_token=token,

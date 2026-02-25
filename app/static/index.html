@@ -337,7 +337,7 @@
             <label class="fl">Tipus d'incident</label>
             <select id="incident-type" class="fc">
               <option value="Incendio">🔥 Incendi</option>
-              <option value="Incendio forestal cerca de Meritxell">🌲 Incendi forestal (Meritxell)</option>
+              <option value="Incendi forestal">🌲 Incendi forestal</option>
               <option value="Accidente">🚗 Accident de trànsit</option>
               <option value="Inundació">💧 Inundació</option>
               <option value="Emergència mèdica">🏥 Emergència mèdica</option>
@@ -383,7 +383,7 @@
           <div><label class="fl">Tipus</label>
             <select id="sc-type" class="fc">
               <option value="Incendio">🔥 Incendi</option>
-              <option value="Incendio forestal cerca de Meritxell">🌲 Incendi forestal</option>
+              <option value="Incendi forestal">🌲 Incendi forestal</option>
               <option value="Accidente">🚗 Accident de trànsit</option>
               <option value="Inundació">💧 Inundació</option>
               <option value="Emergència mèdica">🏥 Emergència mèdica</option>
@@ -414,11 +414,15 @@
           <div><label class="fl">Nom d'usuari</label><input id="usr-username" type="text" placeholder="Mínim 3 caràcters" class="fc" /></div>
           <div><label class="fl">Contrasenya</label><input id="usr-password" type="password" placeholder="Mínim 6 caràcters" class="fc" /></div>
           <div><label class="fl">Rol</label>
-            <select id="usr-role" class="fc">
+            <select id="usr-role" class="fc" onchange="toggleExpiryField()">
               <option value="operador">Professional</option>
               <option id="usr-role-formador" value="formador">Formador</option>
               <option id="usr-role-admin" value="admin">Administrador</option>
             </select>
+          </div>
+          <div id="usr-expiry-wrap">
+            <label class="fl">Data de caducitat (opcional)</label>
+            <input type="date" id="usr-expiry" class="fc" />
           </div>
           <p id="usr-error" class="text-xs text-red-500 hidden"></p>
           <button onclick="createUser()" class="w-full py-2 rounded-lg font-bold text-sm text-white transition" style="background:var(--accent)">+ Crear Usuari</button>
@@ -449,8 +453,24 @@
           <input id="hf-search" type="text" placeholder="Cerca per tipus o escenari..." oninput="renderHistoryTable()" class="fc" style="font-size:12px;padding:6px 10px" />
         </div>
       </div>
+      <div id="history-toolbar" class="hidden flex-shrink-0">
+        <div class="flex items-center justify-between gap-2">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="hf-select-all" onchange="toggleSelectAll()" style="accent-color:var(--accent);cursor:pointer">
+            <span id="hf-sel-count" class="text-xs tabular-nums" style="color:var(--text3)">0 / 0</span>
+          </label>
+          <div class="flex items-center gap-1.5">
+            <button id="hf-del-sel" onclick="deleteSelected()" disabled
+              class="text-xs px-2 py-1 rounded-lg font-medium transition"
+              style="border:1px solid #fca5a5;color:#dc2626;background:transparent">Eliminar sel.</button>
+            <button onclick="deleteAllHistory()"
+              class="text-xs px-2 py-1 rounded-lg font-medium transition"
+              style="border:1px solid var(--border);color:var(--text3);background:transparent">Tot</button>
+            <button onclick="loadHistory()" class="text-xs transition" style="color:var(--text3)" title="Actualitzar">↺</button>
+          </div>
+        </div>
+      </div>
       <div id="history-list" class="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 pr-0.5"></div>
-      <button onclick="loadHistory()" class="text-xs transition flex-shrink-0" style="color:var(--text3)">↺ Actualitzar</button>
     </div>
   </div>
 
@@ -587,6 +607,36 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     EDIT USER MODAL
+══════════════════════════════════════ -->
+<div id="edit-user-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(15,23,42,.65);backdrop-filter:blur(6px)">
+  <div class="rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm" style="background:var(--surface)">
+    <div class="px-6 pt-5 pb-4" style="border-bottom:1px solid var(--border);background:var(--surface2)">
+      <h2 class="text-sm font-bold" style="color:var(--text)">Editar usuari: <span id="edit-user-name" class="font-mono"></span></h2>
+    </div>
+    <div class="px-6 py-5 flex flex-col gap-4">
+      <div>
+        <label class="fl">Estat</label>
+        <select id="edit-user-active" class="fc">
+          <option value="true">Actiu</option>
+          <option value="false">Inactiu</option>
+        </select>
+      </div>
+      <div>
+        <label class="fl">Data de caducitat (opcional)</label>
+        <input type="date" id="edit-user-expiry" class="fc" />
+        <p class="text-xs mt-1" style="color:var(--text3)">Deixa buit per eliminar la caducitat</p>
+      </div>
+      <p id="edit-user-error" class="text-xs text-red-500 hidden"></p>
+    </div>
+    <div class="px-6 pb-5 flex gap-3 justify-end">
+      <button onclick="closeEditUser()" class="text-sm px-4 py-2 rounded-lg font-medium transition" style="border:1px solid var(--border);color:var(--text2);background:var(--surface)">Cancel·lar</button>
+      <button onclick="submitEditUser()" class="text-sm px-4 py-2 rounded-lg font-bold text-white transition" style="background:var(--accent)">Desar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
      JAVASCRIPT
 ══════════════════════════════════════ -->
 <script>
@@ -665,7 +715,7 @@ setInterval(tickClock, 1000); tickClock();
 window.addEventListener('DOMContentLoaded', () => {
   if (authToken && currentUser) onAuthReady();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDebriefing(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDebriefing(); closeEditUser(); } });
 
 function onAuthReady() {
   document.getElementById('login-modal').classList.add('hidden');
@@ -679,7 +729,7 @@ function onAuthReady() {
     document.getElementById('usr-role-formador').classList.add('hidden');
     document.getElementById('usr-role-admin').classList.add('hidden');
   }
-  setPriority(1); loadScenarios();
+  toggleExpiryField(); setPriority(1); loadScenarios();
 }
 
 // ── Login / Logout ───────────────────────────
@@ -953,24 +1003,40 @@ function filterHistory(priority) {
   renderHistoryTable();
 }
 function renderHistoryTable() {
-  const el = document.getElementById('history-list');
-  const search = (document.getElementById('hf-search')?.value||'').toLowerCase();
+  const el      = document.getElementById('history-list');
+  const toolbar = document.getElementById('history-toolbar');
+  const search  = (document.getElementById('hf-search')?.value||'').toLowerCase();
   const filtered = historyData.filter(inc => {
     if (activeHistoryPriority!==null && inc.priority!==activeHistoryPriority) return false;
     if (search && !`${inc.type} ${inc.location} ${inc.scenario_title||''}`.toLowerCase().includes(search)) return false;
     return true;
   });
-  if (!filtered.length) { el.innerHTML=`<p class="text-xs" style="color:var(--text3)">Cap intervenció trobada</p>`; return; }
+  if (!filtered.length) {
+    el.innerHTML=`<p class="text-xs" style="color:var(--text3)">Cap intervenció trobada</p>`;
+    toolbar.classList.add('hidden');
+    return;
+  }
+  toolbar.classList.remove('hidden');
   el.innerHTML = filtered.map(inc => {
     const st=pStyle(inc.priority);
     return `
-      <div class="history-card rounded-xl overflow-hidden cursor-pointer transition" style="background:var(--surface);border:1px solid var(--border)" onclick="openDebriefing(${inc.id})"
-           onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+      <div class="history-card rounded-xl overflow-hidden transition" style="background:var(--surface);border:1px solid var(--border)">
         <div class="history-card-hd flex items-center justify-between px-3 py-2" style="background:var(--surface2);border-bottom:1px solid var(--border2)">
-          <span class="text-xs font-mono" style="color:var(--text3)">#${inc.id}</span>
-          <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="${st.pill}">P${inc.priority}</span>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" class="h-cb" data-id="${inc.id}" onchange="updateHistorySelection()" style="accent-color:var(--accent);cursor:pointer">
+            <span class="text-xs font-mono" style="color:var(--text3)">#${inc.id}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="${st.pill}">P${inc.priority}</span>
+            <button onclick="deleteHistoryItem(${inc.id})"
+              class="text-xs w-5 h-5 flex items-center justify-center rounded-md transition"
+              style="color:var(--text3);border:1px solid var(--border)" title="Eliminar">✕</button>
+          </div>
         </div>
-        <div class="px-3 py-2.5">
+        <div class="px-3 py-2.5 cursor-pointer"
+             onclick="openDebriefing(${inc.id})"
+             onmouseenter="this.closest('.history-card').style.borderColor='var(--accent)'"
+             onmouseleave="this.closest('.history-card').style.borderColor=this.closest('.history-card').querySelector('.h-cb').checked?'var(--accent)':'var(--border)'">
           <p class="text-xs font-bold truncate" style="color:var(--text)">${escapeHtml(inc.type)}</p>
           <p class="text-xs truncate mt-0.5" style="color:var(--text3)">📍 ${escapeHtml(inc.location)}</p>
           <div class="flex justify-between items-center mt-2">
@@ -980,7 +1046,7 @@ function renderHistoryTable() {
           ${inc.scenario_title?`<p class="text-xs text-amber-500 truncate mt-1">🎓 ${escapeHtml(inc.scenario_title)}</p>`:''}
         </div>
         <div class="px-3 pb-3">
-          <button onclick="event.stopPropagation();openDebriefing(${inc.id})"
+          <button onclick="openDebriefing(${inc.id})"
             class="w-full text-xs font-semibold py-1.5 rounded-lg transition"
             style="background:var(--accent-bg);border:1px solid var(--accent-br);color:var(--accent)">
             📊 Obrir debriefing
@@ -988,6 +1054,59 @@ function renderHistoryTable() {
         </div>
       </div>`;
   }).join('');
+  updateHistorySelection();
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('hf-select-all').checked;
+  document.querySelectorAll('.h-cb').forEach(cb => {
+    cb.checked = checked;
+    const card = cb.closest('.history-card');
+    if (card) card.style.borderColor = checked ? 'var(--accent)' : 'var(--border)';
+  });
+  updateHistorySelection();
+}
+function updateHistorySelection() {
+  const cbs = [...document.querySelectorAll('.h-cb')];
+  const sel = cbs.filter(c => c.checked);
+  const saEl = document.getElementById('hf-select-all');
+  if (saEl) {
+    saEl.checked       = sel.length === cbs.length && cbs.length > 0;
+    saEl.indeterminate = sel.length > 0 && sel.length < cbs.length;
+  }
+  const countEl = document.getElementById('hf-sel-count');
+  if (countEl) countEl.textContent = `${sel.length} / ${cbs.length}`;
+  const delBtn = document.getElementById('hf-del-sel');
+  if (delBtn) {
+    delBtn.disabled    = sel.length === 0;
+    delBtn.textContent = sel.length > 0 ? `Eliminar sel. (${sel.length})` : 'Eliminar sel.';
+  }
+  cbs.forEach(cb => {
+    const card = cb.closest('.history-card');
+    if (card) card.style.borderColor = cb.checked ? 'var(--accent)' : 'var(--border)';
+  });
+}
+async function deleteHistoryItem(id) {
+  if (!confirm(`Eliminar l'historial #${id}?`)) return;
+  const res = await apiFetch(`/api/v1/history/${id}`, { method: 'DELETE' });
+  if (!res || !res.ok) { alert('Error eliminant l\'historial'); return; }
+  await loadHistory();
+}
+async function deleteSelected() {
+  const ids = [...document.querySelectorAll('.h-cb:checked')].map(c => +c.dataset.id);
+  if (!ids.length) return;
+  if (!confirm(`Eliminar ${ids.length} historial${ids.length > 1 ? 's' : ''}?`)) return;
+  const res = await apiFetch('/api/v1/history', { method: 'DELETE', body: JSON.stringify({ ids }) });
+  if (!res || !res.ok) { alert('Error eliminant els historials'); return; }
+  await loadHistory();
+}
+async function deleteAllHistory() {
+  const total = document.querySelectorAll('.h-cb').length;
+  if (!total) return;
+  if (!confirm(`Eliminar tot l'historial (${total} entrada${total > 1 ? 's' : ''})?\nAquesta acció no es pot desfer.`)) return;
+  const res = await apiFetch('/api/v1/history', { method: 'DELETE', body: JSON.stringify({}) });
+  if (!res || !res.ok) { alert('Error eliminant l\'historial'); return; }
+  await loadHistory();
 }
 
 // ── Debriefing ───────────────────────────────
@@ -1073,41 +1192,99 @@ const ROLE_STYLES={
   formador:'background:#fef9c3;color:#92400e;border:1px solid #fef08a',
   operador:'background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe',
 };
+let usersCache = [];
 async function loadUsers() {
   const res=await apiFetch('/api/v1/users'); if(!res||!res.ok) return;
   renderUsersTable(await res.json());
 }
 function renderUsersTable(users) {
+  usersCache = users;
   const el=document.getElementById('users-table');
   if (!users.length) { el.innerHTML=`<p class="text-xs px-4 py-3" style="color:var(--text3)">Cap usuari</p>`; return; }
-  el.innerHTML=users.map(u=>`
-    <div class="users-row flex items-center justify-between px-4 py-2.5 hover:bg-blue-50 transition" style="border-bottom:1px solid var(--border2)">
-      <div class="flex items-center gap-2 min-w-0">
+  const now = new Date();
+  el.innerHTML=users.map(u=>{
+    const hasExpiry = u.role==='operador' && u.expires_at;
+    const expDate   = hasExpiry ? new Date(u.expires_at.endsWith('Z')||u.expires_at.includes('+')?u.expires_at:u.expires_at+'Z') : null;
+    const isExpired = hasExpiry && expDate < now;
+    const canEdit   = ['admin','formador'].includes(currentUser?.role) && u.role==='operador';
+    let expiryDisplay = '';
+    if (hasExpiry) {
+      const dateStr = expDate.toLocaleDateString('ca-AD',{day:'2-digit',month:'2-digit',year:'2-digit'});
+      expiryDisplay = `<span class="text-xs" style="color:${isExpired?'#dc2626':'var(--text3)'}">${dateStr}</span>`;
+    }
+    return `
+    <div class="users-row flex items-center justify-between px-4 py-2.5 hover:bg-blue-50 transition" style="border-bottom:1px solid var(--border2)${isExpired?';background:#fff5f5':''}">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
         <span class="text-xs font-mono w-5 text-right flex-shrink-0" style="color:var(--text3)">${u.id}</span>
         <span class="text-sm font-medium truncate" style="color:var(--text)">${escapeHtml(u.username)}</span>
+        ${isExpired?'<span class="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0" style="background:#fee2e2;color:#dc2626">Caducat</span>':''}
       </div>
       <div class="flex items-center gap-2 flex-shrink-0">
+        ${expiryDisplay}
         <span class="text-xs px-2 py-0.5 rounded-full font-semibold" style="${ROLE_STYLES[u.role]||''}">${ROLE_LABELS[u.role]||u.role}</span>
         <span class="w-2 h-2 rounded-full ${u.is_active?'bg-emerald-400':'bg-red-400'} inline-block"></span>
+        ${canEdit?`<button onclick="openEditUser(${u.id})" class="text-xs px-2 py-0.5 rounded transition" style="color:var(--accent);border:1px solid var(--accent-br)">✎</button>`:''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+function toggleExpiryField() {
+  const role = document.getElementById('usr-role').value;
+  document.getElementById('usr-expiry-wrap').classList.toggle('hidden', role !== 'operador');
 }
 async function createUser() {
   const username=document.getElementById('usr-username').value.trim();
   const password=document.getElementById('usr-password').value;
   const role=document.getElementById('usr-role').value;
+  const expiryVal=document.getElementById('usr-expiry').value;
   const errEl=document.getElementById('usr-error'); errEl.classList.add('hidden');
   if(username.length<3){errEl.textContent='Mínim 3 caràcters';errEl.classList.remove('hidden');return;}
   if(password.length<6){errEl.textContent='Mínim 6 caràcters';errEl.classList.remove('hidden');return;}
-  const res=await apiFetch('/api/v1/users',{method:'POST',body:JSON.stringify({username,password,role})});
+  const body={username,password,role};
+  if(role==='operador' && expiryVal) body.expires_at=expiryVal+'T00:00:00';
+  const res=await apiFetch('/api/v1/users',{method:'POST',body:JSON.stringify(body)});
   if(!res) return;
   if(res.status===409){errEl.textContent='El nom d\'usuari ja existeix';errEl.classList.remove('hidden');return;}
   if(res.status===403){errEl.textContent='No tens permís';errEl.classList.remove('hidden');return;}
   if(!res.ok){errEl.textContent='Error creant l\'usuari';errEl.classList.remove('hidden');return;}
   document.getElementById('usr-username').value='';
   document.getElementById('usr-password').value='';
+  document.getElementById('usr-expiry').value='';
   document.getElementById('usr-role').value='operador';
   await loadUsers();
+}
+
+// ── Edit User ────────────────────────────────
+let editUserId=null;
+function openEditUser(id) {
+  const u=usersCache.find(x=>x.id===id); if(!u) return;
+  editUserId=id;
+  document.getElementById('edit-user-name').textContent=u.username;
+  document.getElementById('edit-user-active').value=u.is_active?'true':'false';
+  document.getElementById('edit-user-expiry').value=u.expires_at?u.expires_at.substring(0,10):'';
+  document.getElementById('edit-user-error').classList.add('hidden');
+  const modal=document.getElementById('edit-user-modal');
+  modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+function closeEditUser() {
+  const modal=document.getElementById('edit-user-modal');
+  modal.classList.add('hidden'); modal.classList.remove('flex');
+  editUserId=null;
+}
+async function submitEditUser() {
+  if(!editUserId) return;
+  const isActive=document.getElementById('edit-user-active').value==='true';
+  const expiryVal=document.getElementById('edit-user-expiry').value;
+  const payload={is_active:isActive, expires_at:expiryVal?expiryVal+'T00:00:00':null};
+  const errEl=document.getElementById('edit-user-error'); errEl.classList.add('hidden');
+  const res=await apiFetch(`/api/v1/users/${editUserId}`,{method:'PATCH',body:JSON.stringify(payload)});
+  if(!res) return;
+  if(!res.ok){
+    const data=await res.json();
+    errEl.textContent=data.detail||'Error actualitzant l\'usuari';
+    errEl.classList.remove('hidden'); return;
+  }
+  closeEditUser(); await loadUsers();
 }
 
 // ── Fitxa ────────────────────────────────────

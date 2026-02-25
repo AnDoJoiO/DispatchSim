@@ -5,6 +5,7 @@ from sqlalchemy import update as sa_update
 from sqlmodel import Session, select
 
 from app.core.deps import get_current_user
+from app.core.rate_limit import chat_limiter
 from app.db.session import get_session
 from app.models.incident import CallStatus, ChatMessage, Incident
 from app.models.scenario import Scenario
@@ -19,8 +20,9 @@ router = APIRouter()
 def chat(
     request: ChatRequest,
     session: Session = Depends(get_session),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    chat_limiter.check(str(current_user.id))
     incident = session.get(Incident, request.incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="Incidència no trobada")
@@ -47,7 +49,10 @@ def chat(
         if scenario:
             instructions_ia = scenario.instructions_ia
 
-    reply = generate_alertant_response(history, incident.type, instructions_ia)
+    try:
+        reply = generate_alertant_response(history, incident.type, instructions_ia)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Error de la IA: {exc}")
 
     # Primer missatge → registrar type_decided_at (UPDATE directe)
     if not db_messages and incident.type_decided_at is None:
