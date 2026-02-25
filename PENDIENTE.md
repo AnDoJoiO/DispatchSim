@@ -100,8 +100,8 @@
 - [x] **Headers de seguridad HTTP ausentes** — No hay `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`.
   _Arreglado con `SecurityHeadersMiddleware` en `app/main.py`: añade `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy` y `Content-Security-Policy` en todas las respuestas._
 
-- [ ] **Sin configuración CORS explícita** — No hay `CORSMiddleware` en `main.py`.
-  Añadir aunque sea restrictivo por defecto.
+- [x] **Sin configuración CORS explícita** — No hay `CORSMiddleware` en `main.py`.
+  _Arreglado: `CORSMiddleware` añadido en `app/main.py` con `ALLOWED_ORIGINS` configurable vía `.env`._
 
 - [ ] **`additional_risks` como CSV en BD** — Campo de texto plano `"Gas,Electricitat,Químics"`.
   Considerar tabla de relación o campo JSON para mayor integridad.
@@ -109,6 +109,31 @@
 
 - [ ] **Abreviaciones inconsistentes en el código** — `inc`/`incident`, `sc`/`scenario`, `msg`/`message` mezclados.
   Unificar en los nuevos desarrollos.
+
+---
+
+## 🔜 PRÓXIMA SESIÓN — Por dónde continuar
+
+**Objetivo: app impecable antes de añadir voz.**
+
+### Paso 1 — Corregir los 2 urgentes pendientes (backend)
+- [ ] Validación `username`: añadir `pattern=r'^[a-zA-Z0-9_]{3,50}$'` en `UserCreate` → `app/schemas/user.py`
+- [ ] Límite `instructions_ia`: añadir `max_length=2000` → `app/schemas/scenario.py`
+
+### Paso 2 — Unificar idioma en errores HTTP
+- [ ] Revisar `app/api/v1/endpoints/incidents.py` y demás endpoints: cambiar todos los `detail=` en español a catalán
+
+### Paso 3 — Revisión de flujos de uso reales (QA manual)
+Probar los 3 flujos completos de cabo a rabo en local:
+- [ ] **Operador**: login → seleccionar escenari → iniciar incident → chat IA → finalitzar trucada → omplir fitxa → guardar → debriefing
+- [ ] **Formador**: crear escenari → crear operador amb caducitat → historial → borrar historial
+- [ ] **Admin**: crear formador → editar usuari → caducitat en login
+
+### Paso 4 — Voz (siguiente fase)
+Una vez los 3 flujos funcionen sin ningún fallo:
+- Text-to-speech para la respuesta del alertant (voz sintética)
+- Speech-to-text para el operador (dictado en lugar de escribir)
+- API candidata: Web Speech API (nativa del navegador, sin coste) o ElevenLabs para voz más realista
 
 ---
 
@@ -125,7 +150,9 @@
 - [x] Fix `verify_password`: UTF-8 explícito + guard `isinstance`
 - [x] Fix cliente Anthropic: instanciación por llamada en vez de al importar módulo
 - [x] Prompt de la IA: reglas estrictas para evitar respuestas anticipadas y acotaciones
+- [x] Migració frontend a Vue 3 + Vite + Pinia + Tailwind CSS (npm)
+- [x] 9 bugs Vue post-migració corregits (reactivity, fmtDuration, isExpired, IDs, etc.)
 
 ---
 
-_Última actualización: 2026-02-25 — Migració Vue 3 completada_
+_Última actualización: 2026-02-26 — Bugs Vue corregits. Pendent: QA flujos + voz_
