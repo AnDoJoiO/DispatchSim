@@ -34,11 +34,10 @@ async function createUser() {
 
 function openEdit(id) { ui.openEditUser(id) }
 
-const now = new Date()
 function isExpired(u) {
   if (!u.expires_at) return false
   const d = new Date(u.expires_at.endsWith('Z') || u.expires_at.includes('+') ? u.expires_at : u.expires_at + 'Z')
-  return d < now
+  return d < new Date()
 }
 function fmtExpiry(iso) {
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')

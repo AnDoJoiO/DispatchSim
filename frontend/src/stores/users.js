@@ -26,7 +26,7 @@ export const useUsersStore = defineStore('users', () => {
       method: 'PATCH', body: JSON.stringify(payload),
     })
     if (!res || !res.ok) {
-      const data = await res?.json().catch(() => ({}))
+      const data = res ? await res.json().catch(() => ({})) : {}
       throw new Error(data?.detail || "Error actualitzant l'usuari")
     }
     await load()

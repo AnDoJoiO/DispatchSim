@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
-import { INCIDENT_TYPES, escapeHtml } from '@/utils'
+import { INCIDENT_TYPES } from '@/utils'
 
 const emergency = useEmergencyStore()
 

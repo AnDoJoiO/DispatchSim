@@ -23,6 +23,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
 
   // Chronometer (non-reactive interval handle)
   let _timer = null
+  let _msgId  = 0
 
   // ── Computed ──────────────────────────────────────────────
   const inputEnabled = computed(() =>
@@ -35,7 +36,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
 
   // ── Internal helpers ──────────────────────────────────────
   function _addMsg(role, content) {
-    messages.value.push({ id: Date.now() + Math.random(), role, content })
+    messages.value.push({ id: ++_msgId, role, content })
   }
 
   function _startTimer() {

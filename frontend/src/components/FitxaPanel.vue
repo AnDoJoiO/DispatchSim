@@ -29,7 +29,7 @@ async function save() {
     incident_id:      emergency.currentIncidentId,
     exact_address:    address.value.trim(),
     contact_phone:    phone.value.trim(),
-    num_injured:      parseInt(injured.value) || 0,
+    num_injured:      Math.max(0, parseInt(injured.value) || 0),
     additional_risks: risks.value.join(','),
     operator_notes:   notes.value.trim(),
   })

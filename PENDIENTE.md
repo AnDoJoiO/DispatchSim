@@ -83,6 +83,17 @@
 - [x] **Estado global sin estructura en JS** — 13+ variables globales sueltas.
   _Resolt amb la migració a Vue 3 + Pinia. Cada store (auth, app, emergency, history, users, ui) gestiona el seu propi estat de forma reactiva._
 
+- [x] **Bugs Vue post-migració** — 9 bugs detectats i corregits:
+  - `HistoryPanel`: mutació directa de `Set` (no reactiva) → nou Set en `deleteOne`
+  - `HistoryPanel`: `watch` de `selected.size` no s'actualitzava amb canvi de filtre → observa `[size, filtered.length]`
+  - `HistoryPanel`: seleccions obsoletes en filtrar → `watch(filtered)` neteja IDs invàlids
+  - `utils.js`: `fmtDuration`/`fmtElapsed` mostraven "61:23" per a sessions >1h → suport hores
+  - `UsersPanel`: `const now = new Date()` avaluada una sola vegada → compute dins `isExpired()`
+  - `stores/users.js`: `await res?.json()` llança `TypeError` si `res` és `null` → guard explícit
+  - `stores/emergency.js`: IDs de missatge amb `Date.now() + Math.random()` → comptador enter
+  - `FitxaPanel`: `parseInt(injured)` permetia negatius → `Math.max(0, ...)`
+  - `ScenariosPanel`: import `escapeHtml` no usat → eliminat
+
 - [ ] **Sin tests** — Cero cobertura de tests unitarios o de integración.
   Prioridad mínima: tests para `security.py`, `deps.py`, endpoints de auth y borrado en cascada.
 

@@ -34,13 +34,22 @@ const filtered = computed(() => {
 
 const hasItems = computed(() => filtered.value.length > 0)
 
-// Sync select-all checkbox indeterminate state
-watch(() => selected.value.size, async () => {
+// Auto-clean stale selections when the filtered list changes
+// (e.g. user types in search after selecting items)
+watch(filtered, (newFiltered) => {
+  const filteredIds = new Set(newFiltered.map(i => i.id))
+  const cleaned = new Set([...selected.value].filter(id => filteredIds.has(id)))
+  if (cleaned.size !== selected.value.size) selected.value = cleaned
+})
+
+// Sync select-all checkbox checked/indeterminate state
+watch([() => selected.value.size, () => filtered.value.length], async () => {
   await nextTick()
   if (!selectAllEl.value) return
   const total = filtered.value.length
-  selectAllEl.value.indeterminate = selected.value.size > 0 && selected.value.size < total
-  selectAllEl.value.checked = selected.value.size === total && total > 0
+  const sel   = selected.value.size
+  selectAllEl.value.indeterminate = sel > 0 && sel < total
+  selectAllEl.value.checked       = sel === total && total > 0
 })
 
 function setFilter(p) {
@@ -61,8 +70,11 @@ function toggleAll(checked) {
 async function deleteOne(id) {
   if (!confirm(`Eliminar l'historial #${id}?`)) return
   try { await history.deleteOne(id) }
-  catch { alert("Error eliminant l'historial") }
-  selected.value.delete(id)
+  catch { alert("Error eliminant l'historial"); return }
+  // Create new Set so Vue detects the change
+  const s = new Set(selected.value)
+  s.delete(id)
+  selected.value = s
 }
 
 async function deleteSelected() {
