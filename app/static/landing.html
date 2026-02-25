@@ -75,6 +75,10 @@
     .nav-link { padding: 6px 14px; font-size: 13.5px; font-weight: 500; color: var(--nav-c); border-radius: 6px; cursor: pointer; border: none; background: none; transition: color .15s, background .15s; }
     .nav-link:hover { color: var(--nav-hover); background: var(--accent-bg); }
     .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .lang-switcher { display: flex; gap: 2px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+    .lang-btn { background: none; border: none; padding: 3px 7px; font-size: 11px; font-weight: 700; color: var(--text3); cursor: pointer; border-radius: 5px; transition: all .15s; letter-spacing: .3px; }
+    .lang-btn.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .lang-btn:hover:not(.active) { color: var(--text); }
     .btn-theme { width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
     .btn-theme:hover { border-color: var(--accent); color: var(--accent); }
     .btn-nav-cta { padding: 8px 20px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: opacity .15s, transform .1s; }
@@ -140,7 +144,6 @@
     .mock-bar.accent { background: var(--accent); opacity: .5; }
     .mock-bar.w90 { width: 90%; }
     .mock-bar.w70 { width: 70%; }
-    .mock-bar.w50 { width: 50%; }
     .mock-chat { display: flex; flex-direction: column; gap: 8px; }
     .mock-bubble-out { background: var(--accent); color: #fff; border-radius: 10px 10px 2px 10px; padding: 8px 12px; font-size: 12px; align-self: flex-end; max-width: 85%; }
     .mock-bubble-in  { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px 10px 10px 2px; padding: 8px 12px; font-size: 12px; align-self: flex-start; max-width: 85%; }
@@ -200,7 +203,7 @@
     /* ══ FOOTER ══ */
     footer { background: var(--footer-bg); padding: 56px 48px 28px; }
     .footer-inner { max-width: 1100px; margin: 0 auto; }
-    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,.06); margin-bottom: 24px; }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,.06); margin-bottom: 24px; }
     @media (max-width: 860px) { .footer-top { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: 1/-1; } }
     .footer-logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #60a5fa; margin-bottom: 12px; letter-spacing: -.01em; }
     .footer-desc { font-size: 13px; color: var(--footer-c); max-width: 280px; line-height: 1.65; }
@@ -238,6 +241,8 @@
       .nav { padding: 0 20px; }
       .hero, .section, .cta-band, footer { padding-left: 20px; padding-right: 20px; }
       .steps-row { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .lang-switcher { gap: 1px; }
+      .lang-btn { padding: 3px 5px; font-size: 10px; }
     }
   </style>
 </head>
@@ -255,15 +260,21 @@
       DispatchSim
     </div>
     <div class="nav-links">
-      <button class="nav-link" onclick="goTo('what')">Què és</button>
-      <button class="nav-link" onclick="goTo('features')">Característiques</button>
-      <button class="nav-link" onclick="goTo('how')">Com funciona</button>
-      <button class="nav-link" onclick="goTo('objectives')">Objectius</button>
+      <button class="nav-link" onclick="goTo('what')"        data-i18n="nav.what"></button>
+      <button class="nav-link" onclick="goTo('features')"    data-i18n="nav.features"></button>
+      <button class="nav-link" onclick="goTo('how')"         data-i18n="nav.how"></button>
+      <button class="nav-link" onclick="goTo('objectives')"  data-i18n="nav.objectives"></button>
     </div>
     <div class="nav-right">
-      <button class="btn-theme" onclick="toggleTheme()" aria-label="Canviar tema">
+      <div class="lang-switcher">
+        <button class="lang-btn" onclick="setLang('ca')" data-lang-btn="ca">CA</button>
+        <button class="lang-btn" onclick="setLang('es')" data-lang-btn="es">ES</button>
+        <button class="lang-btn" onclick="setLang('fr')" data-lang-btn="fr">FR</button>
+        <button class="lang-btn" onclick="setLang('en')" data-lang-btn="en">EN</button>
+      </div>
+      <button class="btn-theme" onclick="toggleTheme()" aria-label="Theme">
         <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+        <svg id="icon-sun"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
           <circle cx="12" cy="12" r="5"/>
           <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -275,7 +286,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M3 12h12"/>
         </svg>
-        Accedir
+        <span data-i18n="nav.cta"></span>
       </button>
     </div>
   </nav>
@@ -283,17 +294,17 @@
   <!-- ══ HERO ══ -->
   <section class="hero">
     <div class="hero-inner">
-      <div class="hero-badge"><div class="badge-dot"></div>Plataforma activa · Andorra</div>
-      <h1>La plataforma de simulació<br>d'<em>emergències per a professionals</em></h1>
-      <p>DispatchSim replica l'entorn operatiu d'una central de coordinació d'emergències. Orientada a la formació inicial i al reciclatge del personal en actiu, amb escenaris de dificultat progressiva adaptats al nivell de competència de cada operador.</p>
+      <div class="hero-badge"><div class="badge-dot"></div><span data-i18n="hero.badge"></span></div>
+      <h1 data-i18n-html="hero.h1"></h1>
+      <p data-i18n="hero.p"></p>
       <div class="hero-actions">
         <button class="btn-hero-primary" onclick="window.location.href='/app'">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Accedir a la plataforma
+          <span data-i18n="hero.btn_primary"></span>
         </button>
         <button class="btn-hero-ghost" onclick="goTo('what')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          Més informació
+          <span data-i18n="hero.btn_ghost"></span>
         </button>
       </div>
     </div>
@@ -306,26 +317,20 @@
         <div class="what-text">
           <div class="label-tag">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            Sobre la plataforma
+            <span data-i18n="what.tag"></span>
           </div>
-          <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.2;margin-bottom:16px;">Què és DispatchSim?</h2>
-          <p>
-            <strong>DispatchSim</strong> és una plataforma web de simulació d'emergències dissenyada per a la <strong>formació i avaluació d'operadors</strong> de centrals de coordinació. Cobreix dos perfils: el personal de nova incorporació i el que ja es troba en actiu i requereix mantenir o actualitzar les seves competències.
-          </p>
-          <p>
-            A diferència d'un manual o d'una formació teòrica, DispatchSim situa l'operador davant d'una <strong>trucada simulada en temps real</strong>: una víctima generada per intel·ligència artificial que respon, evoluciona i reacciona en funció de les decisions preses. Cada simulació és única i requereix l'aplicació estricta del protocol operatiu.
-          </p>
-          <p>
-            Els escenaris s'estructuren en <strong>diferents nivells de dificultat</strong> — des de situacions bàsiques fins a incidents complexos amb múltiples variables simultànies — de manera que la formació progressa gradualment i s'adapta al nivell de cada operador. En finalitzar la sessió, la plataforma genera automàticament un <strong>informe de debriefing</strong> amb tots els indicadors de rendiment.
-          </p>
+          <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.2;margin-bottom:16px;" data-i18n="what.h2"></h2>
+          <p data-i18n-html="what.p1"></p>
+          <p data-i18n-html="what.p2"></p>
+          <p data-i18n-html="what.p3"></p>
           <div class="what-points">
             <div class="what-point">
               <div class="what-point-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               </div>
               <div class="what-point-text">
-                <h4>Adaptat al context local</h4>
-                <p>Dissenyat per a Andorra, amb escenaris que reflecteixen la realitat geogràfica, operativa i lingüística del territori.</p>
+                <h4 data-i18n="what.pt1_title"></h4>
+                <p data-i18n="what.pt1_p"></p>
               </div>
             </div>
             <div class="what-point">
@@ -333,8 +338,8 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
               </div>
               <div class="what-point-text">
-                <h4>Dissenyada per a estació de treball</h4>
-                <p>Aplicació web optimitzada per a ordinador d'escriptori o portàtil. No requereix instal·lació. L'ús en dispositius mòbils no està contemplat, ja que la plataforma replica un entorn de treball real.</p>
+                <h4 data-i18n="what.pt2_title"></h4>
+                <p data-i18n="what.pt2_p"></p>
               </div>
             </div>
             <div class="what-point">
@@ -342,8 +347,8 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               </div>
               <div class="what-point-text">
-                <h4>Entorn segur i controlat</h4>
-                <p>Totes les dades es processen localment. Cap informació surt del sistema. L'accés és restringit per rols i autenticació.</p>
+                <h4 data-i18n="what.pt3_title"></h4>
+                <p data-i18n="what.pt3_p"></p>
               </div>
             </div>
           </div>
@@ -356,39 +361,39 @@
               <div class="mock-dot" style="background:#ef4444"></div>
               <div class="mock-dot" style="background:#f59e0b"></div>
               <div class="mock-dot" style="background:#22c55e"></div>
-              <span class="mock-titlebar-label">DispatchSim · Simulació activa</span>
+              <span class="mock-titlebar-label">DispatchSim</span>
             </div>
             <div class="mock-body">
               <div class="mock-card">
-                <div class="mock-card-label">Incident #0312 · En curs</div>
+                <div class="mock-card-label" data-i18n="mock.label1"></div>
                 <div class="mock-bar accent w90"></div>
                 <div class="mock-bar w70"></div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
                   <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
-                  <span style="font-size:12px;color:var(--text2)">Operador assignat · Temps actiu: 02:47</span>
+                  <span style="font-size:12px;color:var(--text2)" data-i18n="mock.status"></span>
                 </div>
               </div>
               <div class="mock-card">
-                <div class="mock-card-label">Conversació en temps real</div>
+                <div class="mock-card-label" data-i18n="mock.chat_label"></div>
                 <div class="mock-chat">
-                  <div class="mock-bubble-out">Servei d'emergències, digui'm.</div>
-                  <div class="mock-bubble-in">Necessito ajuda! Hi ha hagut un accident a la carretera...</div>
-                  <div class="mock-bubble-out">Digui'm, on és exactament? Hi ha ferits?</div>
-                  <div class="mock-bubble-in">Sí, un conductor inconscient. Som a la CG-2 km 14...</div>
+                  <div class="mock-bubble-out" data-i18n="mock.chat1"></div>
+                  <div class="mock-bubble-in"  data-i18n="mock.chat2"></div>
+                  <div class="mock-bubble-out" data-i18n="mock.chat3"></div>
+                  <div class="mock-bubble-in"  data-i18n="mock.chat4"></div>
                 </div>
               </div>
               <div class="mock-status-row">
                 <div class="mock-stat">
                   <div class="mock-stat-val">02:47</div>
-                  <div class="mock-stat-label">Temps d'atenció</div>
+                  <div class="mock-stat-label" data-i18n="mock.stat1_label"></div>
                 </div>
                 <div class="mock-stat">
-                  <div class="mock-stat-val" style="color:#22c55e">Actiu</div>
-                  <div class="mock-stat-label">Estat incident</div>
+                  <div class="mock-stat-val" style="color:#22c55e" data-i18n="mock.stat2_val"></div>
+                  <div class="mock-stat-label" data-i18n="mock.stat2_label"></div>
                 </div>
                 <div class="mock-stat">
                   <div class="mock-stat-val">4/6</div>
-                  <div class="mock-stat-label">Dades recollides</div>
+                  <div class="mock-stat-label" data-i18n="mock.stat3_label"></div>
                 </div>
               </div>
             </div>
@@ -404,74 +409,42 @@
       <div class="section-header center">
         <div class="label-tag">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          Característiques
+          <span data-i18n="feat.tag"></span>
         </div>
-        <h2>Funcionalitats de la plataforma</h2>
-        <p>DispatchSim cobreix el cicle complet de formació: des del disseny de l'escenari fins a l'avaluació final de l'operador.</p>
+        <h2 data-i18n="feat.h2"></h2>
+        <p data-i18n="feat.p"></p>
       </div>
       <div class="features-grid">
-
         <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/>
-            </svg>
-          </div>
-          <h3>Escenaris amb nivells de dificultat</h3>
-          <p>El formador configura escenaris d'entrenament adaptats a cada etapa formativa: des d'incidents simples per al personal de nova incorporació fins a situacions complexes amb múltiples variables per al personal amb experiència. Cada escenari és configurable, independent i reutilitzable.</p>
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg></div>
+          <h3 data-i18n="feat.1_title"></h3>
+          <p  data-i18n="feat.1_p"></p>
         </div>
-
         <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <h3>Víctima simulada per IA</h3>
-          <p>La intel·ligència artificial actua com a víctima durant la trucada: respon de forma coherent, evoluciona l'estat clínic i adapta les respostes en temps real en funció de les preguntes i decisions de l'operador.</p>
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <h3 data-i18n="feat.2_title"></h3>
+          <p  data-i18n="feat.2_p"></p>
         </div>
-
         <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11 19.79 19.79 0 0 1 1.58 2.45 2 2 0 0 1 3.55.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 14.92z"/>
-            </svg>
-          </div>
-          <h3>Gestió d'incidents en temps real</h3>
-          <p>Mentre la trucada és activa, l'operador omple el formulari d'intervenció: dades de la víctima, localització, tipus d'incident, recursos assignats i notes addicionals. Tot queda registrat automàticament.</p>
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11 19.79 19.79 0 0 1 1.58 2.45 2 2 0 0 1 3.55.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 14.92z"/></svg></div>
+          <h3 data-i18n="feat.3_title"></h3>
+          <p  data-i18n="feat.3_p"></p>
         </div>
-
         <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <h3>Avaluació i debriefing automàtic</h3>
-          <p>En finalitzar cada simulació, la plataforma genera un informe de debriefing complet: temps de resposta, informació recollida, decisions preses, encerts, errors i recomanacions de millora personalitzades.</p>
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3 data-i18n="feat.4_title"></h3>
+          <p  data-i18n="feat.4_p"></p>
         </div>
-
         <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <h3>Control d'accés per rols</h3>
-          <p>Tres rols diferenciats: administradors que gestionen la plataforma i els usuaris, formadors que creen i assignen escenaris, i operadors que executen les simulacions. Cada rol té el seu espai de treball.</p>
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3 data-i18n="feat.5_title"></h3>
+          <p  data-i18n="feat.5_p"></p>
         </div>
-
         <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <h3>Historial complet d'intervencions</h3>
-          <p>Totes les simulacions queden enregistrades i consultables: conversa completa, formulari d'intervenció, temps de resposta i informe de debriefing associat. Base de dades per a l'anàlisi de rendiment a llarg termini.</p>
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <h3 data-i18n="feat.6_title"></h3>
+          <p  data-i18n="feat.6_p"></p>
         </div>
-
       </div>
     </div>
   </section>
@@ -482,32 +455,16 @@
       <div class="section-header center">
         <div class="label-tag">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          Com funciona
+          <span data-i18n="how.tag"></span>
         </div>
-        <h2>Del disseny a l'avaluació en 4 passos</h2>
-        <p>DispatchSim replica el cicle complet de formació: planificació, execució, documentació i revisió.</p>
+        <h2 data-i18n="how.h2"></h2>
+        <p  data-i18n="how.p"></p>
       </div>
       <div class="steps-row">
-        <div class="step">
-          <div class="step-num">1</div>
-          <h3>Dissenya l'escenari</h3>
-          <p>El formador configura el tipus d'emergència, la dificultat, els recursos disponibles i les instruccions específiques que guiaran la sessió.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <h3>Inicia la simulació</h3>
-          <p>L'operador activa la trucada. La IA assumeix el rol de la víctima i inicia la interacció amb respostes realistes i adaptades a l'escenari configurat.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <h3>Gestiona la intervenció</h3>
-          <p>Mentre conversa, l'operador omple el formulari d'intervenció: dades de la víctima, localització, recursos assignats i totes les accions documentades.</p>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <h3>Revisa el debriefing</h3>
-          <p>La plataforma genera l'informe automàtic amb els indicadors de rendiment, les decisions preses i les recomanacions de millora per a cada operador.</p>
-        </div>
+        <div class="step"><div class="step-num">1</div><h3 data-i18n="how.1_title"></h3><p data-i18n="how.1_p"></p></div>
+        <div class="step"><div class="step-num">2</div><h3 data-i18n="how.2_title"></h3><p data-i18n="how.2_p"></p></div>
+        <div class="step"><div class="step-num">3</div><h3 data-i18n="how.3_title"></h3><p data-i18n="how.3_p"></p></div>
+        <div class="step"><div class="step-num">4</div><h3 data-i18n="how.4_title"></h3><p data-i18n="how.4_p"></p></div>
       </div>
     </div>
   </section>
@@ -518,72 +475,54 @@
       <div class="section-header center">
         <div class="label-tag">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
-          Objectius
+          <span data-i18n="obj.tag"></span>
         </div>
-        <h2>Àmbit d'aplicació</h2>
-        <p>Plataforma dissenyada per cobrir les necessitats de formació dels serveis d'emergències, des de la incorporació de nou personal fins al reciclatge de l'equip en actiu.</p>
+        <h2 data-i18n="obj.h2"></h2>
+        <p  data-i18n="obj.p"></p>
       </div>
       <div class="obj-grid">
-
         <div class="obj-card blue">
-          <div class="obj-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-          </div>
-          <h3>Formació inicial i reciclatge continu</h3>
-          <p>La plataforma s'adapta a qualsevol etapa formativa: des de la incorporació inicial d'un nou operador fins al reciclatge del personal amb experiència que requereix actualització de protocols o exposició a situacions inèdites.</p>
+          <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <h3 data-i18n="obj.1_title"></h3>
+          <p  data-i18n="obj.1_p"></p>
           <ul class="obj-list">
-            <li>Incorporació i formació del personal de nova entrada</li>
-            <li>Reciclatge i actualització del personal en actiu</li>
-            <li>Nivells de dificultat progressius: bàsic, intermedi i avançat</li>
-            <li>Escenaris reutilitzables i ampliables per l'equip formatiu</li>
+            <li data-i18n="obj.1_li1"></li>
+            <li data-i18n="obj.1_li2"></li>
+            <li data-i18n="obj.1_li3"></li>
+            <li data-i18n="obj.1_li4"></li>
           </ul>
         </div>
-
         <div class="obj-card teal">
-          <div class="obj-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <h3>Avaluació de competències</h3>
-          <p>La plataforma permet avaluar objectivament les competències de cada operador: temps de resposta, qualitat de la informació recollida, encert en les decisions i gestió de la pressió en situacions crítiques.</p>
+          <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3 data-i18n="obj.2_title"></h3>
+          <p  data-i18n="obj.2_p"></p>
           <ul class="obj-list">
-            <li>Indicadors de rendiment per operador</li>
-            <li>Informes de debriefing automatitzats</li>
-            <li>Seguiment de la progressió al llarg del temps</li>
+            <li data-i18n="obj.2_li1"></li>
+            <li data-i18n="obj.2_li2"></li>
+            <li data-i18n="obj.2_li3"></li>
           </ul>
         </div>
-
         <div class="obj-card green">
-          <div class="obj-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
-          </div>
-          <h3>Millora contínua del servei</h3>
-          <p>Identificar patrons de resposta, analitzar les intervencions registrades i ajustar els protocols operatius per maximitzar l'eficàcia col·lectiva de l'equip.</p>
+          <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <h3 data-i18n="obj.3_title"></h3>
+          <p  data-i18n="obj.3_p"></p>
           <ul class="obj-list">
-            <li>Anàlisi agregada de les intervencions</li>
-            <li>Detecció de punts febles recurrents</li>
-            <li>Base d'escenaris ampliable i reutilitzable</li>
+            <li data-i18n="obj.3_li1"></li>
+            <li data-i18n="obj.3_li2"></li>
+            <li data-i18n="obj.3_li3"></li>
           </ul>
         </div>
-
       </div>
     </div>
   </section>
 
   <!-- ══ CTA ══ -->
   <div class="cta-band">
-    <h2>Formació, reciclatge i avaluació del personal</h2>
-    <p>DispatchSim ofereix l'entorn de simulació necessari per a la incorporació de nou personal i l'actualització del que ja està en actiu, amb escenaris adaptats a cada nivell de competència.</p>
+    <h2 data-i18n="cta.h2"></h2>
+    <p  data-i18n="cta.p"></p>
     <button class="btn-cta-band" onclick="window.location.href='/app'">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M3 12h12"/>
-      </svg>
-      Accedir a l'aplicació
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M3 12h12"/></svg>
+      <span data-i18n="cta.btn"></span>
     </button>
   </div>
 
@@ -601,148 +540,399 @@
             </svg>
             DispatchSim
           </div>
-          <p class="footer-desc">Plataforma professional de simulació i formació per a professionals d'emergències del Principat d'Andorra.</p>
+          <p class="footer-desc" data-i18n="footer.desc"></p>
         </div>
-
         <div class="footer-col">
-          <h4>Plataforma</h4>
+          <h4 data-i18n="footer.col1_h"></h4>
           <ul>
-            <li><a href="/app">Accedir a l'aplicació</a></li>
-            <li><a href="#what">Què és DispatchSim</a></li>
-            <li><a href="#features">Característiques</a></li>
-            <li><a href="#how">Com funciona</a></li>
-            <li><a href="#objectives">Objectius</a></li>
+            <li><a href="/app"          data-i18n="footer.col1_link1"></a></li>
+            <li><a href="#what"         data-i18n="footer.col1_link2"></a></li>
+            <li><a href="#features"     data-i18n="footer.col1_link3"></a></li>
+            <li><a href="#how"          data-i18n="footer.col1_link4"></a></li>
+            <li><a href="#objectives"   data-i18n="footer.col1_link5"></a></li>
           </ul>
         </div>
-
-<div class="footer-col">
-          <h4>Legal</h4>
+        <div class="footer-col">
+          <h4 data-i18n="footer.col2_h"></h4>
           <ul>
-            <li><button onclick="openModal('modal-privacy')">Política de privacitat</button></li>
-            <li><button onclick="openModal('modal-terms')">Termes d'ús</button></li>
+            <li><button onclick="openModal('modal-privacy')" data-i18n="footer.col2_link1"></button></li>
+            <li><button onclick="openModal('modal-terms')"   data-i18n="footer.col2_link2"></button></li>
           </ul>
         </div>
       </div>
-
       <div class="footer-bottom">
-        <span class="footer-copy">© 2025 DispatchSim · Principat d'Andorra · Tots els drets reservats</span>
+        <span class="footer-copy" data-i18n="footer.copy"></span>
         <div class="footer-links">
-          <button onclick="openModal('modal-privacy')">Privacitat</button>
-          <button onclick="openModal('modal-terms')">Termes d'ús</button>
+          <button onclick="openModal('modal-privacy')" data-i18n="footer.privacy"></button>
+          <button onclick="openModal('modal-terms')"   data-i18n="footer.terms"></button>
         </div>
       </div>
     </div>
   </footer>
 
-  <!-- ══ MODAL: Política de privacitat ══ -->
+  <!-- ══ MODAL: Privacy ══ -->
   <div class="modal-overlay" id="modal-privacy" onclick="closeOnOverlay(event,'modal-privacy')">
     <div class="modal">
       <div class="modal-header">
-        <h3>Política de privacitat</h3>
+        <h3 data-i18n="priv.title"></h3>
         <button class="modal-close" onclick="closeModal('modal-privacy')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="modal-body">
-        <h4>1. Responsable del tractament</h4>
-        <p>La plataforma DispatchSim és operada pel Principat d'Andorra com a eina interna de formació i simulació per a professionals dels serveis d'emergències.</p>
-        <h4>2. Dades que es recullen</h4>
-        <p>Es processen exclusivament les dades mínimes necessàries per al funcionament de la plataforma:</p>
+        <h4 data-i18n="priv.h1"></h4><p data-i18n="priv.p1"></p>
+        <h4 data-i18n="priv.h2"></h4><p data-i18n="priv.p2"></p>
         <ul>
-          <li>Credencials d'accés (nom d'usuari i contrasenya xifrada)</li>
-          <li>Registres de les sessions de simulació realitzades</li>
-          <li>Informació introduïda durant les intervencions simulades</li>
+          <li data-i18n="priv.li1"></li>
+          <li data-i18n="priv.li2"></li>
+          <li data-i18n="priv.li3"></li>
         </ul>
-        <h4>3. Finalitat del tractament</h4>
-        <p>Les dades es tracten exclusivament per a les finalitats formatives de la plataforma: gestió d'usuaris, registre d'activitat, avaluació del rendiment i millora dels protocols de formació. No es fan servir per a cap altra finalitat ni es cedeixen a tercers.</p>
-        <h4>4. Conservació de les dades</h4>
-        <p>Les dades es conserven durant el període en què l'usuari tingui el compte actiu. Un cop es procedeixi a la baixa, les dades seran eliminades en un termini màxim de 30 dies.</p>
-        <h4>5. Seguretat</h4>
-        <p>La plataforma opera en un entorn local i controlat. Les contrasenyes s'emmagatzemen xifrades. L'accés a la informació és restringit per rols i requereix autenticació en cada sessió.</p>
-        <h4>6. Drets dels usuaris</h4>
-        <p>Els usuaris poden sol·licitar l'accés, la rectificació o l'eliminació de les seves dades posant-se en contacte amb l'administrador de la plataforma.</p>
-        <p class="modal-meta">Última actualització: gener de 2025</p>
+        <h4 data-i18n="priv.h3"></h4><p data-i18n="priv.p3"></p>
+        <h4 data-i18n="priv.h4"></h4><p data-i18n="priv.p4"></p>
+        <h4 data-i18n="priv.h5"></h4><p data-i18n="priv.p5"></p>
+        <h4 data-i18n="priv.h6"></h4><p data-i18n="priv.p6"></p>
+        <p class="modal-meta" data-i18n="priv.meta"></p>
       </div>
     </div>
   </div>
 
-  <!-- ══ MODAL: Termes d'ús ══ -->
+  <!-- ══ MODAL: Terms ══ -->
   <div class="modal-overlay" id="modal-terms" onclick="closeOnOverlay(event,'modal-terms')">
     <div class="modal">
       <div class="modal-header">
-        <h3>Termes d'ús</h3>
+        <h3 data-i18n="terms.title"></h3>
         <button class="modal-close" onclick="closeModal('modal-terms')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="modal-body">
-        <h4>1. Objecte i àmbit d'aplicació</h4>
-        <p>DispatchSim és una plataforma d'ús intern per a la formació i simulació de situacions d'emergència. L'accés és restringit al personal autoritzat pels serveis d'emergències del Principat d'Andorra.</p>
-        <h4>2. Condicions d'accés</h4>
-        <p>Cal disposar de credencials vàlides proporcionades per l'administrador del sistema. Queda prohibit:</p>
+        <h4 data-i18n="terms.h1"></h4><p data-i18n="terms.p1"></p>
+        <h4 data-i18n="terms.h2"></h4><p data-i18n="terms.p2"></p>
         <ul>
-          <li>Compartir les credencials d'accés amb terceres persones</li>
-          <li>Intentar accedir a funcions o dades per sobre del rol assignat</li>
-          <li>Fer un ús de la plataforma aliè a les finalitats formatives</li>
+          <li data-i18n="terms.li1"></li>
+          <li data-i18n="terms.li2"></li>
+          <li data-i18n="terms.li3"></li>
         </ul>
-        <h4>3. Ús correcte de la plataforma</h4>
-        <p>DispatchSim ha de ser utilitzada exclusivament com a eina de formació. Els escenaris i les dades introduïdes durant les sessions són de caràcter fictici i no han de contenir informació personal real de víctimes ni de tercers.</p>
-        <h4>4. Responsabilitats</h4>
-        <p>Cada usuari és responsable de les accions realitzades amb les seves credencials. L'administrador pot suspendre o eliminar comptes que incompleixin les presents condicions d'ús.</p>
-        <h4>5. Propietat intel·lectual</h4>
-        <p>El codi, el disseny i els continguts de la plataforma DispatchSim són propietat del Principat d'Andorra. Queda prohibida la seva reproducció, distribució o modificació sense autorització expressa.</p>
-        <h4>6. Disponibilitat del servei</h4>
-        <p>La plataforma es facilita per a ús intern. L'equip tècnic no garanteix una disponibilitat ininterrompuda i es reserva el dret de realitzar manteniments o actualitzacions sense previ avís.</p>
-        <p class="modal-meta">Última actualització: gener de 2025</p>
+        <h4 data-i18n="terms.h3"></h4><p data-i18n="terms.p3"></p>
+        <h4 data-i18n="terms.h4"></h4><p data-i18n="terms.p4"></p>
+        <h4 data-i18n="terms.h5"></h4><p data-i18n="terms.p5"></p>
+        <h4 data-i18n="terms.h6"></h4><p data-i18n="terms.p6"></p>
+        <p class="modal-meta" data-i18n="terms.meta"></p>
       </div>
     </div>
   </div>
 
   <script>
-    /* ── Theme ── */
-    function applyTheme(t) {
-      document.documentElement.setAttribute('data-theme', t);
-      document.getElementById('icon-moon').style.display = t === 'light' ? '' : 'none';
-      document.getElementById('icon-sun').style.display  = t === 'dark'  ? '' : 'none';
-      localStorage.setItem('dispatch_theme', t);
+  /* ════════════════════════════════════════════
+     TRANSLATIONS
+  ════════════════════════════════════════════ */
+  const T = {
+    ca: {
+      'nav.what':'Què és','nav.features':'Característiques','nav.how':'Com funciona','nav.objectives':'Objectius','nav.cta':'Accedir',
+      'hero.badge':'Plataforma activa · Andorra',
+      'hero.h1':'La plataforma de simulació<br>d\'<em>emergències per a professionals</em>',
+      'hero.p':'DispatchSim replica l\'entorn operatiu d\'una central de coordinació d\'emergències. Orientada a la formació inicial i al reciclatge del personal en actiu, amb escenaris de dificultat progressiva adaptats al nivell de competència de cada operador.',
+      'hero.btn_primary':'Accedir a la plataforma','hero.btn_ghost':'Més informació',
+      'what.tag':'Sobre la plataforma','what.h2':'Què és DispatchSim?',
+      'what.p1':'<strong>DispatchSim</strong> és una plataforma web de simulació d\'emergències dissenyada per a la <strong>formació i avaluació d\'operadors</strong> de centrals de coordinació. Cobreix dos perfils: el personal de nova incorporació i el que ja es troba en actiu i requereix mantenir o actualitzar les seves competències.',
+      'what.p2':'A diferència d\'un manual o d\'una formació teòrica, DispatchSim situa l\'operador davant d\'una <strong>trucada simulada en temps real</strong>: una víctima generada per intel·ligència artificial que respon, evoluciona i reacciona en funció de les decisions preses. Cada simulació és única i requereix l\'aplicació estricta del protocol operatiu.',
+      'what.p3':'Els escenaris s\'estructuren en <strong>diferents nivells de dificultat</strong> — des de situacions bàsiques fins a incidents complexos amb múltiples variables simultànies — de manera que la formació progressa gradualment i s\'adapta al nivell de cada operador. En finalitzar la sessió, la plataforma genera automàticament un <strong>informe de debriefing</strong> amb tots els indicadors de rendiment.',
+      'what.pt1_title':'Adaptat al context local','what.pt1_p':'Dissenyat per a Andorra, amb escenaris que reflecteixen la realitat geogràfica, operativa i lingüística del territori.',
+      'what.pt2_title':'Dissenyada per a estació de treball','what.pt2_p':'Aplicació web optimitzada per a ordinador d\'escriptori o portàtil. No requereix instal·lació. L\'ús en dispositius mòbils no està contemplat, ja que la plataforma replica un entorn de treball real.',
+      'what.pt3_title':'Entorn segur i controlat','what.pt3_p':'Totes les dades es processen localment. Cap informació surt del sistema. L\'accés és restringit per rols i autenticació.',
+      'mock.label1':'Incident #0312 · En curs','mock.status':'Operador assignat · Temps actiu: 02:47','mock.chat_label':'Conversació en temps real',
+      'mock.chat1':'Servei d\'emergències, digui\'m.','mock.chat2':'Necessito ajuda! Hi ha hagut un accident a la carretera...','mock.chat3':'Digui\'m, on és exactament? Hi ha ferits?','mock.chat4':'Sí, un conductor inconscient. Som a la CG-2 km 14...',
+      'mock.stat1_label':'Temps d\'atenció','mock.stat2_val':'Actiu','mock.stat2_label':'Estat incident','mock.stat3_label':'Dades recollides',
+      'feat.tag':'Característiques','feat.h2':'Funcionalitats de la plataforma','feat.p':'DispatchSim cobreix el cicle complet de formació: des del disseny de l\'escenari fins a l\'avaluació final de l\'operador.',
+      'feat.1_title':'Escenaris amb nivells de dificultat','feat.1_p':'El formador configura escenaris d\'entrenament adaptats a cada etapa formativa: des d\'incidents simples per al personal de nova incorporació fins a situacions complexes amb múltiples variables per al personal amb experiència. Cada escenari és configurable, independent i reutilitzable.',
+      'feat.2_title':'Víctima simulada per IA','feat.2_p':'La intel·ligència artificial actua com a víctima durant la trucada: respon de forma coherent, evoluciona l\'estat clínic i adapta les respostes en temps real en funció de les preguntes i decisions de l\'operador.',
+      'feat.3_title':'Gestió d\'incidents en temps real','feat.3_p':'Mentre la trucada és activa, l\'operador omple el formulari d\'intervenció: dades de la víctima, localització, tipus d\'incident, recursos assignats i notes addicionals. Tot queda registrat automàticament.',
+      'feat.4_title':'Avaluació i debriefing automàtic','feat.4_p':'En finalitzar cada simulació, la plataforma genera un informe de debriefing complet: temps de resposta, informació recollida, decisions preses, encerts, errors i recomanacions de millora personalitzades.',
+      'feat.5_title':'Control d\'accés per rols','feat.5_p':'Tres rols diferenciats: administradors que gestionen la plataforma i els usuaris, formadors que creen i assignen escenaris, i operadors que executen les simulacions. Cada rol té el seu espai de treball.',
+      'feat.6_title':'Historial complet d\'intervencions','feat.6_p':'Totes les simulacions queden enregistrades i consultables: conversa completa, formulari d\'intervenció, temps de resposta i informe de debriefing associat. Base de dades per a l\'anàlisi de rendiment a llarg termini.',
+      'how.tag':'Com funciona','how.h2':'Del disseny a l\'avaluació en 4 passos','how.p':'DispatchSim replica el cicle complet de formació: planificació, execució, documentació i revisió.',
+      'how.1_title':'Dissenya l\'escenari','how.1_p':'El formador configura el tipus d\'emergència, la dificultat, els recursos disponibles i les instruccions específiques que guiaran la sessió.',
+      'how.2_title':'Inicia la simulació','how.2_p':'L\'operador activa la trucada. La IA assumeix el rol de la víctima i inicia la interacció amb respostes realistes i adaptades a l\'escenari configurat.',
+      'how.3_title':'Gestiona la intervenció','how.3_p':'Mentre conversa, l\'operador omple el formulari d\'intervenció: dades de la víctima, localització, recursos assignats i totes les accions documentades.',
+      'how.4_title':'Revisa el debriefing','how.4_p':'La plataforma genera l\'informe automàtic amb els indicadors de rendiment, les decisions preses i les recomanacions de millora per a cada operador.',
+      'obj.tag':'Objectius','obj.h2':'Àmbit d\'aplicació','obj.p':'Plataforma dissenyada per cobrir les necessitats de formació dels serveis d\'emergències, des de la incorporació de nou personal fins al reciclatge de l\'equip en actiu.',
+      'obj.1_title':'Formació inicial i reciclatge continu','obj.1_p':'La plataforma s\'adapta a qualsevol etapa formativa: des de la incorporació inicial d\'un nou operador fins al reciclatge del personal amb experiència que requereix actualització de protocols o exposició a situacions inèdites.',
+      'obj.1_li1':'Incorporació i formació del personal de nova entrada','obj.1_li2':'Reciclatge i actualització del personal en actiu','obj.1_li3':'Nivells de dificultat progressius: bàsic, intermedi i avançat','obj.1_li4':'Escenaris reutilitzables i ampliables per l\'equip formatiu',
+      'obj.2_title':'Avaluació de competències','obj.2_p':'La plataforma permet avaluar objectivament les competències de cada operador: temps de resposta, qualitat de la informació recollida, encert en les decisions i gestió de la pressió en situacions crítiques.',
+      'obj.2_li1':'Indicadors de rendiment per operador','obj.2_li2':'Informes de debriefing automatitzats','obj.2_li3':'Seguiment de la progressió al llarg del temps',
+      'obj.3_title':'Millora contínua del servei','obj.3_p':'Identificar patrons de resposta, analitzar les intervencions registrades i ajustar els protocols operatius per maximitzar l\'eficàcia col·lectiva de l\'equip.',
+      'obj.3_li1':'Anàlisi agregada de les intervencions','obj.3_li2':'Detecció de punts febles recurrents','obj.3_li3':'Base d\'escenaris ampliable i reutilitzable',
+      'cta.h2':'Formació, reciclatge i avaluació del personal','cta.p':'DispatchSim ofereix l\'entorn de simulació necessari per a la incorporació de nou personal i l\'actualització del que ja està en actiu, amb escenaris adaptats a cada nivell de competència.','cta.btn':'Accedir a l\'aplicació',
+      'footer.desc':'Plataforma professional de simulació i formació per a professionals d\'emergències del Principat d\'Andorra.',
+      'footer.col1_h':'Plataforma','footer.col1_link1':'Accedir a l\'aplicació','footer.col1_link2':'Què és DispatchSim','footer.col1_link3':'Característiques','footer.col1_link4':'Com funciona','footer.col1_link5':'Objectius',
+      'footer.col2_h':'Legal','footer.col2_link1':'Política de privacitat','footer.col2_link2':'Termes d\'ús',
+      'footer.copy':'© 2025 DispatchSim · Principat d\'Andorra · Tots els drets reservats','footer.privacy':'Privacitat','footer.terms':'Termes d\'ús',
+      'priv.title':'Política de privacitat','priv.h1':'1. Responsable del tractament','priv.p1':'La plataforma DispatchSim és operada pel Principat d\'Andorra com a eina interna de formació i simulació per a professionals dels serveis d\'emergències.',
+      'priv.h2':'2. Dades que es recullen','priv.p2':'Es processen exclusivament les dades mínimes necessàries per al funcionament de la plataforma:',
+      'priv.li1':'Credencials d\'accés (nom d\'usuari i contrasenya xifrada)','priv.li2':'Registres de les sessions de simulació realitzades','priv.li3':'Informació introduïda durant les intervencions simulades',
+      'priv.h3':'3. Finalitat del tractament','priv.p3':'Les dades es tracten exclusivament per a les finalitats formatives de la plataforma: gestió d\'usuaris, registre d\'activitat, avaluació del rendiment i millora dels protocols de formació. No es fan servir per a cap altra finalitat ni es cedeixen a tercers.',
+      'priv.h4':'4. Conservació de les dades','priv.p4':'Les dades es conserven durant el període en què l\'usuari tingui el compte actiu. Un cop es procedeixi a la baixa, les dades seran eliminades en un termini màxim de 30 dies.',
+      'priv.h5':'5. Seguretat','priv.p5':'La plataforma opera en un entorn local i controlat. Les contrasenyes s\'emmagatzemen xifrades. L\'accés a la informació és restringit per rols i requereix autenticació en cada sessió.',
+      'priv.h6':'6. Drets dels usuaris','priv.p6':'Els usuaris poden sol·licitar l\'accés, la rectificació o l\'eliminació de les seves dades posant-se en contacte amb l\'administrador de la plataforma.',
+      'priv.meta':'Última actualització: gener de 2025',
+      'terms.title':'Termes d\'ús','terms.h1':'1. Objecte i àmbit d\'aplicació','terms.p1':'DispatchSim és una plataforma d\'ús intern per a la formació i simulació de situacions d\'emergència. L\'accés és restringit al personal autoritzat pels serveis d\'emergències del Principat d\'Andorra.',
+      'terms.h2':'2. Condicions d\'accés','terms.p2':'Cal disposar de credencials vàlides proporcionades per l\'administrador del sistema. Queda prohibit:',
+      'terms.li1':'Compartir les credencials d\'accés amb terceres persones','terms.li2':'Intentar accedir a funcions o dades per sobre del rol assignat','terms.li3':'Fer un ús de la plataforma aliè a les finalitats formatives',
+      'terms.h3':'3. Ús correcte de la plataforma','terms.p3':'DispatchSim ha de ser utilitzada exclusivament com a eina de formació. Els escenaris i les dades introduïdes durant les sessions són de caràcter fictici i no han de contenir informació personal real de víctimes ni de tercers.',
+      'terms.h4':'4. Responsabilitats','terms.p4':'Cada usuari és responsable de les accions realitzades amb les seves credencials. L\'administrador pot suspendre o eliminar comptes que incompleixin les presents condicions d\'ús.',
+      'terms.h5':'5. Propietat intel·lectual','terms.p5':'El codi, el disseny i els continguts de la plataforma DispatchSim són propietat del Principat d\'Andorra. Queda prohibida la seva reproducció, distribució o modificació sense autorització expressa.',
+      'terms.h6':'6. Disponibilitat del servei','terms.p6':'La plataforma es facilita per a ús intern. L\'equip tècnic no garanteix una disponibilitat ininterrompuda i es reserva el dret de realitzar manteniments o actualitzacions sense previ avís.',
+      'terms.meta':'Última actualització: gener de 2025',
+    },
+    es: {
+      'nav.what':'Qué es','nav.features':'Características','nav.how':'Cómo funciona','nav.objectives':'Objetivos','nav.cta':'Acceder',
+      'hero.badge':'Plataforma activa · Andorra',
+      'hero.h1':'La plataforma de simulación<br>de <em>emergencias para profesionales</em>',
+      'hero.p':'DispatchSim replica el entorno operativo de una central de coordinación de emergencias. Orientada a la formación inicial y al reciclaje del personal en activo, con escenarios de dificultad progresiva adaptados al nivel de competencia de cada operador.',
+      'hero.btn_primary':'Acceder a la plataforma','hero.btn_ghost':'Más información',
+      'what.tag':'Sobre la plataforma','what.h2':'¿Qué es DispatchSim?',
+      'what.p1':'<strong>DispatchSim</strong> es una plataforma web de simulación de emergencias diseñada para la <strong>formación y evaluación de operadores</strong> de centrales de coordinación. Cubre dos perfiles: el personal de nueva incorporación y el que ya se encuentra en activo y requiere mantener o actualizar sus competencias.',
+      'what.p2':'A diferencia de un manual o de una formación teórica, DispatchSim sitúa al operador ante una <strong>llamada simulada en tiempo real</strong>: una víctima generada por inteligencia artificial que responde, evoluciona y reacciona en función de las decisiones tomadas. Cada simulación es única y requiere la aplicación estricta del protocolo operativo.',
+      'what.p3':'Los escenarios se estructuran en <strong>diferentes niveles de dificultad</strong> — desde situaciones básicas hasta incidentes complejos con múltiples variables simultáneas — de manera que la formación progresa gradualmente y se adapta al nivel de cada operador. Al finalizar la sesión, la plataforma genera automáticamente un <strong>informe de debriefing</strong> con todos los indicadores de rendimiento.',
+      'what.pt1_title':'Adaptado al contexto local','what.pt1_p':'Diseñado para Andorra, con escenarios que reflejan la realidad geográfica, operativa y lingüística del territorio.',
+      'what.pt2_title':'Diseñado para estación de trabajo','what.pt2_p':'Aplicación web optimizada para ordenador de sobremesa o portátil. No requiere instalación. El uso en dispositivos móviles no está contemplado, ya que la plataforma replica un entorno de trabajo real.',
+      'what.pt3_title':'Entorno seguro y controlado','what.pt3_p':'Todos los datos se procesan localmente. Ninguna información sale del sistema. El acceso es restringido por roles y autenticación.',
+      'mock.label1':'Incidente #0312 · En curso','mock.status':'Operador asignado · Tiempo activo: 02:47','mock.chat_label':'Conversación en tiempo real',
+      'mock.chat1':'Servicio de emergencias, dígame.','mock.chat2':'¡Necesito ayuda! Ha habido un accidente en la carretera...','mock.chat3':'Dígame, ¿dónde está exactamente? ¿Hay heridos?','mock.chat4':'Sí, un conductor inconsciente. Estamos en la CG-2 km 14...',
+      'mock.stat1_label':'Tiempo de atención','mock.stat2_val':'Activo','mock.stat2_label':'Estado incidente','mock.stat3_label':'Datos recogidos',
+      'feat.tag':'Características','feat.h2':'Funcionalidades de la plataforma','feat.p':'DispatchSim cubre el ciclo completo de formación: desde el diseño del escenario hasta la evaluación final del operador.',
+      'feat.1_title':'Escenarios con niveles de dificultad','feat.1_p':'El formador configura escenarios de entrenamiento adaptados a cada etapa formativa: desde incidentes simples para el personal de nueva incorporación hasta situaciones complejas con múltiples variables para el personal con experiencia. Cada escenario es configurable, independiente y reutilizable.',
+      'feat.2_title':'Víctima simulada por IA','feat.2_p':'La inteligencia artificial actúa como víctima durante la llamada: responde de forma coherente, evoluciona el estado clínico y adapta las respuestas en tiempo real en función de las preguntas y decisiones del operador.',
+      'feat.3_title':'Gestión de incidentes en tiempo real','feat.3_p':'Mientras la llamada está activa, el operador rellena el formulario de intervención: datos de la víctima, localización, tipo de incidente, recursos asignados y notas adicionales. Todo queda registrado automáticamente.',
+      'feat.4_title':'Evaluación y debriefing automático','feat.4_p':'Al finalizar cada simulación, la plataforma genera un informe de debriefing completo: tiempo de respuesta, información recogida, decisiones tomadas, aciertos, errores y recomendaciones de mejora personalizadas.',
+      'feat.5_title':'Control de acceso por roles','feat.5_p':'Tres roles diferenciados: administradores que gestionan la plataforma y los usuarios, formadores que crean y asignan escenarios, y operadores que ejecutan las simulaciones. Cada rol tiene su espacio de trabajo.',
+      'feat.6_title':'Historial completo de intervenciones','feat.6_p':'Todas las simulaciones quedan registradas y consultables: conversación completa, formulario de intervención, tiempo de respuesta e informe de debriefing asociado. Base de datos para el análisis de rendimiento a largo plazo.',
+      'how.tag':'Cómo funciona','how.h2':'Del diseño a la evaluación en 4 pasos','how.p':'DispatchSim replica el ciclo completo de formación: planificación, ejecución, documentación y revisión.',
+      'how.1_title':'Diseña el escenario','how.1_p':'El formador configura el tipo de emergencia, la dificultad, los recursos disponibles y las instrucciones específicas que guiarán la sesión.',
+      'how.2_title':'Inicia la simulación','how.2_p':'El operador activa la llamada. La IA asume el rol de la víctima e inicia la interacción con respuestas realistas y adaptadas al escenario configurado.',
+      'how.3_title':'Gestiona la intervención','how.3_p':'Mientras conversa, el operador rellena el formulario de intervención: datos de la víctima, localización, recursos asignados y todas las acciones documentadas.',
+      'how.4_title':'Revisa el debriefing','how.4_p':'La plataforma genera el informe automático con los indicadores de rendimiento, las decisiones tomadas y las recomendaciones de mejora para cada operador.',
+      'obj.tag':'Objetivos','obj.h2':'Ámbito de aplicación','obj.p':'Plataforma diseñada para cubrir las necesidades de formación de los servicios de emergencias, desde la incorporación de nuevo personal hasta el reciclaje del equipo en activo.',
+      'obj.1_title':'Formación inicial y reciclaje continuo','obj.1_p':'La plataforma se adapta a cualquier etapa formativa: desde la incorporación inicial de un nuevo operador hasta el reciclaje del personal con experiencia que requiere actualización de protocolos o exposición a situaciones inéditas.',
+      'obj.1_li1':'Incorporación y formación del personal de nueva entrada','obj.1_li2':'Reciclaje y actualización del personal en activo','obj.1_li3':'Niveles de dificultad progresivos: básico, intermedio y avanzado','obj.1_li4':'Escenarios reutilizables y ampliables por el equipo formativo',
+      'obj.2_title':'Evaluación de competencias','obj.2_p':'La plataforma permite evaluar objetivamente las competencias de cada operador: tiempo de respuesta, calidad de la información recogida, acierto en las decisiones y gestión de la presión en situaciones críticas.',
+      'obj.2_li1':'Indicadores de rendimiento por operador','obj.2_li2':'Informes de debriefing automatizados','obj.2_li3':'Seguimiento de la progresión a lo largo del tiempo',
+      'obj.3_title':'Mejora continua del servicio','obj.3_p':'Identificar patrones de respuesta, analizar las intervenciones registradas y ajustar los protocolos operativos para maximizar la eficacia colectiva del equipo.',
+      'obj.3_li1':'Análisis agregado de las intervenciones','obj.3_li2':'Detección de puntos débiles recurrentes','obj.3_li3':'Base de escenarios ampliable y reutilizable',
+      'cta.h2':'Formación, reciclaje y evaluación del personal','cta.p':'DispatchSim ofrece el entorno de simulación necesario para la incorporación de nuevo personal y la actualización del que ya está en activo, con escenarios adaptados a cada nivel de competencia.','cta.btn':'Acceder a la aplicación',
+      'footer.desc':'Plataforma profesional de simulación y formación para profesionales de emergencias del Principado de Andorra.',
+      'footer.col1_h':'Plataforma','footer.col1_link1':'Acceder a la aplicación','footer.col1_link2':'Qué es DispatchSim','footer.col1_link3':'Características','footer.col1_link4':'Cómo funciona','footer.col1_link5':'Objetivos',
+      'footer.col2_h':'Legal','footer.col2_link1':'Política de privacidad','footer.col2_link2':'Términos de uso',
+      'footer.copy':'© 2025 DispatchSim · Principado de Andorra · Todos los derechos reservados','footer.privacy':'Privacidad','footer.terms':'Términos de uso',
+      'priv.title':'Política de privacidad','priv.h1':'1. Responsable del tratamiento','priv.p1':'La plataforma DispatchSim es operada por el Principado de Andorra como herramienta interna de formación y simulación para profesionales de los servicios de emergencias.',
+      'priv.h2':'2. Datos que se recogen','priv.p2':'Se procesan exclusivamente los datos mínimos necesarios para el funcionamiento de la plataforma:',
+      'priv.li1':'Credenciales de acceso (nombre de usuario y contraseña cifrada)','priv.li2':'Registros de las sesiones de simulación realizadas','priv.li3':'Información introducida durante las intervenciones simuladas',
+      'priv.h3':'3. Finalidad del tratamiento','priv.p3':'Los datos se tratan exclusivamente para las finalidades formativas de la plataforma: gestión de usuarios, registro de actividad, evaluación del rendimiento y mejora de los protocolos de formación. No se utilizan para ninguna otra finalidad ni se ceden a terceros.',
+      'priv.h4':'4. Conservación de los datos','priv.p4':'Los datos se conservan durante el período en que el usuario tenga la cuenta activa. Una vez se proceda a la baja, los datos serán eliminados en un plazo máximo de 30 días.',
+      'priv.h5':'5. Seguridad','priv.p5':'La plataforma opera en un entorno local y controlado. Las contraseñas se almacenan cifradas. El acceso a la información es restringido por roles y requiere autenticación en cada sesión.',
+      'priv.h6':'6. Derechos de los usuarios','priv.p6':'Los usuarios pueden solicitar el acceso, la rectificación o la eliminación de sus datos poniéndose en contacto con el administrador de la plataforma.',
+      'priv.meta':'Última actualización: enero de 2025',
+      'terms.title':'Términos de uso','terms.h1':'1. Objeto y ámbito de aplicación','terms.p1':'DispatchSim es una plataforma de uso interno para la formación y simulación de situaciones de emergencia. El acceso es restringido al personal autorizado por los servicios de emergencias del Principado de Andorra.',
+      'terms.h2':'2. Condiciones de acceso','terms.p2':'Es necesario disponer de credenciales válidas proporcionadas por el administrador del sistema. Queda prohibido:',
+      'terms.li1':'Compartir las credenciales de acceso con terceras personas','terms.li2':'Intentar acceder a funciones o datos por encima del rol asignado','terms.li3':'Hacer un uso de la plataforma ajeno a las finalidades formativas',
+      'terms.h3':'3. Uso correcto de la plataforma','terms.p3':'DispatchSim debe utilizarse exclusivamente como herramienta de formación. Los escenarios y los datos introducidos durante las sesiones son de carácter ficticio y no deben contener información personal real de víctimas ni de terceros.',
+      'terms.h4':'4. Responsabilidades','terms.p4':'Cada usuario es responsable de las acciones realizadas con sus credenciales. El administrador puede suspender o eliminar cuentas que incumplan las presentes condiciones de uso.',
+      'terms.h5':'5. Propiedad intelectual','terms.p5':'El código, el diseño y los contenidos de la plataforma DispatchSim son propiedad del Principado de Andorra. Queda prohibida su reproducción, distribución o modificación sin autorización expresa.',
+      'terms.h6':'6. Disponibilidad del servicio','terms.p6':'La plataforma se facilita para uso interno. El equipo técnico no garantiza una disponibilidad ininterrumpida y se reserva el derecho de realizar mantenimientos o actualizaciones sin previo aviso.',
+      'terms.meta':'Última actualización: enero de 2025',
+    },
+    fr: {
+      'nav.what':'Qu\'est-ce que','nav.features':'Fonctionnalités','nav.how':'Comment ça marche','nav.objectives':'Objectifs','nav.cta':'Accéder',
+      'hero.badge':'Plateforme active · Andorre',
+      'hero.h1':'La plateforme de simulation<br>d\'<em>urgences pour professionnels</em>',
+      'hero.p':'DispatchSim reproduit l\'environnement opérationnel d\'un centre de coordination des secours. Destinée à la formation initiale et au recyclage du personnel en activité, avec des scénarios de difficulté progressive adaptés au niveau de compétence de chaque opérateur.',
+      'hero.btn_primary':'Accéder à la plateforme','hero.btn_ghost':'En savoir plus',
+      'what.tag':'À propos de la plateforme','what.h2':'Qu\'est-ce que DispatchSim ?',
+      'what.p1':'<strong>DispatchSim</strong> est une plateforme web de simulation d\'urgences conçue pour la <strong>formation et l\'évaluation des opérateurs</strong> de centres de coordination. Elle couvre deux profils : le nouveau personnel et celui déjà en activité qui doit maintenir ou mettre à jour ses compétences.',
+      'what.p2':'Contrairement à un manuel ou une formation théorique, DispatchSim place l\'opérateur face à un <strong>appel simulé en temps réel</strong> : une victime générée par intelligence artificielle qui répond, évolue et réagit selon les décisions prises. Chaque simulation est unique et nécessite l\'application stricte du protocole opérationnel.',
+      'what.p3':'Les scénarios sont structurés en <strong>différents niveaux de difficulté</strong> — des situations de base aux incidents complexes avec de multiples variables simultanées — de sorte que la formation progresse graduellement et s\'adapte au niveau de chaque opérateur. À la fin de la session, la plateforme génère automatiquement un <strong>rapport de debriefing</strong> avec tous les indicateurs de performance.',
+      'what.pt1_title':'Adapté au contexte local','what.pt1_p':'Conçu pour Andorre, avec des scénarios reflétant la réalité géographique, opérationnelle et linguistique du territoire.',
+      'what.pt2_title':'Conçu pour poste de travail','what.pt2_p':'Application web optimisée pour ordinateur de bureau ou portable. Aucune installation requise. L\'utilisation sur appareils mobiles n\'est pas prévue, car la plateforme reproduit un environnement de travail réel.',
+      'what.pt3_title':'Environnement sécurisé et contrôlé','what.pt3_p':'Toutes les données sont traitées localement. Aucune information ne sort du système. L\'accès est limité par rôles et authentification.',
+      'mock.label1':'Incident #0312 · En cours','mock.status':'Opérateur assigné · Temps actif : 02:47','mock.chat_label':'Conversation en temps réel',
+      'mock.chat1':'Services d\'urgence, j\'écoute.','mock.chat2':'Au secours ! Il y a eu un accident sur la route...','mock.chat3':'Dites-moi, où êtes-vous exactement ? Y a-t-il des blessés ?','mock.chat4':'Oui, un conducteur inconscient. Nous sommes sur la CG-2 km 14...',
+      'mock.stat1_label':'Temps d\'intervention','mock.stat2_val':'Actif','mock.stat2_label':'État incident','mock.stat3_label':'Données collectées',
+      'feat.tag':'Fonctionnalités','feat.h2':'Fonctionnalités de la plateforme','feat.p':'DispatchSim couvre le cycle complet de formation : de la conception du scénario à l\'évaluation finale de l\'opérateur.',
+      'feat.1_title':'Scénarios avec niveaux de difficulté','feat.1_p':'Le formateur configure des scénarios d\'entraînement adaptés à chaque étape de formation : des incidents simples pour le nouveau personnel aux situations complexes avec de multiples variables pour le personnel expérimenté.',
+      'feat.2_title':'Victime simulée par IA','feat.2_p':'L\'intelligence artificielle joue le rôle de la victime lors de l\'appel : elle répond de façon cohérente, fait évoluer l\'état clinique et adapte ses réponses en temps réel selon les questions et décisions de l\'opérateur.',
+      'feat.3_title':'Gestion des incidents en temps réel','feat.3_p':'Pendant que l\'appel est actif, l\'opérateur remplit le formulaire d\'intervention : données de la victime, localisation, type d\'incident, ressources assignées et notes complémentaires. Tout est enregistré automatiquement.',
+      'feat.4_title':'Évaluation et debriefing automatique','feat.4_p':'À la fin de chaque simulation, la plateforme génère un rapport de debriefing complet : temps de réponse, informations collectées, décisions prises, points forts, erreurs et recommandations d\'amélioration personnalisées.',
+      'feat.5_title':'Contrôle d\'accès par rôles','feat.5_p':'Trois rôles distincts : administrateurs qui gèrent la plateforme et les utilisateurs, formateurs qui créent et assignent les scénarios, et opérateurs qui exécutent les simulations.',
+      'feat.6_title':'Historique complet des interventions','feat.6_p':'Toutes les simulations sont enregistrées et consultables : conversation complète, formulaire d\'intervention, temps de réponse et rapport de debriefing associé.',
+      'how.tag':'Comment ça marche','how.h2':'De la conception à l\'évaluation en 4 étapes','how.p':'DispatchSim reproduit le cycle complet de formation : planification, exécution, documentation et révision.',
+      'how.1_title':'Concevoir le scénario','how.1_p':'Le formateur configure le type d\'urgence, la difficulté, les ressources disponibles et les instructions spécifiques qui guideront la session.',
+      'how.2_title':'Lancer la simulation','how.2_p':'L\'opérateur active l\'appel. L\'IA assume le rôle de la victime et engage l\'interaction avec des réponses réalistes adaptées au scénario configuré.',
+      'how.3_title':'Gérer l\'intervention','how.3_p':'Pendant la conversation, l\'opérateur remplit le formulaire d\'intervention : données de la victime, localisation, ressources assignées et toutes les actions documentées.',
+      'how.4_title':'Réviser le debriefing','how.4_p':'La plateforme génère le rapport automatique avec les indicateurs de performance, les décisions prises et les recommandations d\'amélioration pour chaque opérateur.',
+      'obj.tag':'Objectifs','obj.h2':'Champ d\'application','obj.p':'Plateforme conçue pour couvrir les besoins de formation des services d\'urgences, de l\'intégration de nouveau personnel au recyclage des équipes en activité.',
+      'obj.1_title':'Formation initiale et recyclage continu','obj.1_p':'La plateforme s\'adapte à toute étape de formation : de l\'intégration initiale d\'un nouvel opérateur au recyclage du personnel expérimenté nécessitant une mise à jour des protocoles.',
+      'obj.1_li1':'Intégration et formation du nouveau personnel','obj.1_li2':'Recyclage et mise à jour du personnel en activité','obj.1_li3':'Niveaux de difficulté progressifs : basique, intermédiaire et avancé','obj.1_li4':'Scénarios réutilisables et extensibles par l\'équipe pédagogique',
+      'obj.2_title':'Évaluation des compétences','obj.2_p':'La plateforme permet d\'évaluer objectivement les compétences de chaque opérateur : temps de réponse, qualité de l\'information collectée, pertinence des décisions et gestion de la pression en situations critiques.',
+      'obj.2_li1':'Indicateurs de performance par opérateur','obj.2_li2':'Rapports de debriefing automatisés','obj.2_li3':'Suivi de la progression dans le temps',
+      'obj.3_title':'Amélioration continue du service','obj.3_p':'Identifier les schémas de réponse, analyser les interventions enregistrées et ajuster les protocoles opérationnels pour maximiser l\'efficacité collective de l\'équipe.',
+      'obj.3_li1':'Analyse agrégée des interventions','obj.3_li2':'Détection des points faibles récurrents','obj.3_li3':'Base de scénarios extensible et réutilisable',
+      'cta.h2':'Formation, recyclage et évaluation du personnel','cta.p':'DispatchSim offre l\'environnement de simulation nécessaire pour l\'intégration de nouveau personnel et la mise à jour de celui déjà en activité, avec des scénarios adaptés à chaque niveau de compétence.','cta.btn':'Accéder à l\'application',
+      'footer.desc':'Plateforme professionnelle de simulation et de formation pour les professionnels des services d\'urgences de la Principauté d\'Andorre.',
+      'footer.col1_h':'Plateforme','footer.col1_link1':'Accéder à l\'application','footer.col1_link2':'Qu\'est-ce que DispatchSim','footer.col1_link3':'Fonctionnalités','footer.col1_link4':'Comment ça marche','footer.col1_link5':'Objectifs',
+      'footer.col2_h':'Légal','footer.col2_link1':'Politique de confidentialité','footer.col2_link2':'Conditions d\'utilisation',
+      'footer.copy':'© 2025 DispatchSim · Principauté d\'Andorre · Tous droits réservés','footer.privacy':'Confidentialité','footer.terms':'Conditions d\'utilisation',
+      'priv.title':'Politique de confidentialité','priv.h1':'1. Responsable du traitement','priv.p1':'La plateforme DispatchSim est opérée par la Principauté d\'Andorre en tant qu\'outil interne de formation et de simulation pour les professionnels des services d\'urgences.',
+      'priv.h2':'2. Données collectées','priv.p2':'Seules les données minimales nécessaires au fonctionnement de la plateforme sont traitées :',
+      'priv.li1':'Identifiants d\'accès (nom d\'utilisateur et mot de passe chiffré)','priv.li2':'Enregistrements des sessions de simulation réalisées','priv.li3':'Informations saisies lors des interventions simulées',
+      'priv.h3':'3. Finalité du traitement','priv.p3':'Les données sont traitées exclusivement à des fins de formation : gestion des utilisateurs, enregistrement des activités, évaluation des performances et amélioration des protocoles de formation. Elles ne sont pas utilisées à d\'autres fins ni cédées à des tiers.',
+      'priv.h4':'4. Conservation des données','priv.p4':'Les données sont conservées pendant la période durant laquelle l\'utilisateur dispose d\'un compte actif. Une fois la désinscription effectuée, les données seront supprimées dans un délai maximum de 30 jours.',
+      'priv.h5':'5. Sécurité','priv.p5':'La plateforme fonctionne dans un environnement local et contrôlé. Les mots de passe sont stockés de manière chiffrée. L\'accès aux informations est limité par rôles et nécessite une authentification à chaque session.',
+      'priv.h6':'6. Droits des utilisateurs','priv.p6':'Les utilisateurs peuvent demander l\'accès, la rectification ou la suppression de leurs données en contactant l\'administrateur de la plateforme.',
+      'priv.meta':'Dernière mise à jour : janvier 2025',
+      'terms.title':'Conditions d\'utilisation','terms.h1':'1. Objet et champ d\'application','terms.p1':'DispatchSim est une plateforme à usage interne pour la formation et la simulation de situations d\'urgence. L\'accès est réservé au personnel autorisé par les services d\'urgences de la Principauté d\'Andorre.',
+      'terms.h2':'2. Conditions d\'accès','terms.p2':'Des identifiants valides fournis par l\'administrateur système sont nécessaires. Il est interdit de :',
+      'terms.li1':'Partager les identifiants d\'accès avec des tiers','terms.li2':'Tenter d\'accéder à des fonctions ou données au-delà du rôle attribué','terms.li3':'Utiliser la plateforme à des fins autres que la formation',
+      'terms.h3':'3. Utilisation correcte de la plateforme','terms.p3':'DispatchSim doit être utilisée exclusivement comme outil de formation. Les scénarios et les données saisies lors des sessions sont fictifs et ne doivent pas contenir d\'informations personnelles réelles de victimes ou de tiers.',
+      'terms.h4':'4. Responsabilités','terms.p4':'Chaque utilisateur est responsable des actions effectuées avec ses identifiants. L\'administrateur peut suspendre ou supprimer des comptes qui ne respectent pas les présentes conditions d\'utilisation.',
+      'terms.h5':'5. Propriété intellectuelle','terms.p5':'Le code, le design et les contenus de la plateforme DispatchSim sont la propriété de la Principauté d\'Andorre. Leur reproduction, distribution ou modification sans autorisation expresse est interdite.',
+      'terms.h6':'6. Disponibilité du service','terms.p6':'La plateforme est fournie pour usage interne. L\'équipe technique ne garantit pas une disponibilité ininterrompue et se réserve le droit d\'effectuer des maintenances ou mises à jour sans préavis.',
+      'terms.meta':'Dernière mise à jour : janvier 2025',
+    },
+    en: {
+      'nav.what':'About','nav.features':'Features','nav.how':'How it works','nav.objectives':'Objectives','nav.cta':'Log in',
+      'hero.badge':'Active platform · Andorra',
+      'hero.h1':'The simulation platform<br>for <em>emergency professionals</em>',
+      'hero.p':'DispatchSim replicates the operational environment of an emergency coordination centre. Designed for initial training and refresher courses for active staff, with progressively challenging scenarios tailored to each operator\'s skill level.',
+      'hero.btn_primary':'Access the platform','hero.btn_ghost':'Learn more',
+      'what.tag':'About the platform','what.h2':'What is DispatchSim?',
+      'what.p1':'<strong>DispatchSim</strong> is a web-based emergency simulation platform designed for the <strong>training and assessment of operators</strong> at emergency coordination centres. It covers two profiles: newly recruited staff and experienced personnel who need to maintain or update their skills.',
+      'what.p2':'Unlike a manual or theoretical training, DispatchSim places the operator in front of a <strong>real-time simulated call</strong>: an AI-generated victim who responds, evolves and reacts according to the decisions made. Each simulation is unique and requires strict application of the operational protocol.',
+      'what.p3':'Scenarios are structured at <strong>different difficulty levels</strong> — from basic situations to complex incidents with multiple simultaneous variables — so training progresses gradually and adapts to each operator\'s level. At the end of the session, the platform automatically generates a <strong>debriefing report</strong> with all performance indicators.',
+      'what.pt1_title':'Adapted to the local context','what.pt1_p':'Designed for Andorra, with scenarios reflecting the geographical, operational and linguistic reality of the territory.',
+      'what.pt2_title':'Designed for workstation use','what.pt2_p':'Web application optimised for desktop or laptop computer. No installation required. Mobile device use is not intended, as the platform replicates a real work environment.',
+      'what.pt3_title':'Secure and controlled environment','what.pt3_p':'All data is processed locally. No information leaves the system. Access is restricted by roles and authentication.',
+      'mock.label1':'Incident #0312 · Active','mock.status':'Operator assigned · Active time: 02:47','mock.chat_label':'Real-time conversation',
+      'mock.chat1':'Emergency services, how can I help?','mock.chat2':'I need help! There\'s been an accident on the road...','mock.chat3':'Tell me, where exactly are you? Are there any casualties?','mock.chat4':'Yes, an unconscious driver. We\'re on the CG-2 km 14...',
+      'mock.stat1_label':'Response time','mock.stat2_val':'Active','mock.stat2_label':'Incident status','mock.stat3_label':'Data collected',
+      'feat.tag':'Features','feat.h2':'Platform features','feat.p':'DispatchSim covers the complete training cycle: from scenario design to final operator assessment.',
+      'feat.1_title':'Scenarios with difficulty levels','feat.1_p':'The trainer configures training scenarios adapted to each training stage: from simple incidents for new recruits to complex situations with multiple variables for experienced staff. Each scenario is configurable, standalone and reusable.',
+      'feat.2_title':'AI-simulated victim','feat.2_p':'Artificial intelligence acts as the victim during the call: responding coherently, evolving the clinical state and adapting responses in real time based on the operator\'s questions and decisions.',
+      'feat.3_title':'Real-time incident management','feat.3_p':'While the call is active, the operator fills in the intervention form: victim data, location, incident type, assigned resources and additional notes. Everything is recorded automatically.',
+      'feat.4_title':'Automatic assessment and debriefing','feat.4_p':'At the end of each simulation, the platform generates a complete debriefing report: response time, information gathered, decisions taken, correct actions, mistakes and personalised improvement recommendations.',
+      'feat.5_title':'Role-based access control','feat.5_p':'Three distinct roles: administrators who manage the platform and users, trainers who create and assign scenarios, and operators who run the simulations. Each role has its own workspace.',
+      'feat.6_title':'Complete intervention history','feat.6_p':'All simulations are recorded and accessible: full conversation, intervention form, response time and associated debriefing report. Database for long-term performance analysis.',
+      'how.tag':'How it works','how.h2':'From design to assessment in 4 steps','how.p':'DispatchSim replicates the complete training cycle: planning, execution, documentation and review.',
+      'how.1_title':'Design the scenario','how.1_p':'The trainer configures the type of emergency, the difficulty, the available resources and the specific instructions that will guide the session.',
+      'how.2_title':'Start the simulation','how.2_p':'The operator activates the call. The AI assumes the role of the victim and starts the interaction with realistic responses adapted to the configured scenario.',
+      'how.3_title':'Manage the intervention','how.3_p':'While conversing, the operator fills in the intervention form: victim data, location, assigned resources and all documented actions.',
+      'how.4_title':'Review the debriefing','how.4_p':'The platform generates the automatic report with performance indicators, decisions taken and improvement recommendations for each operator.',
+      'obj.tag':'Objectives','obj.h2':'Scope of application','obj.p':'Platform designed to meet the training needs of emergency services, from onboarding new staff to refresher training for active teams.',
+      'obj.1_title':'Initial training and continuous refresher','obj.1_p':'The platform adapts to any training stage: from the initial onboarding of a new operator to the refresher training of experienced staff who need protocol updates or exposure to new situations.',
+      'obj.1_li1':'Onboarding and training of new staff','obj.1_li2':'Refresher training and updates for active staff','obj.1_li3':'Progressive difficulty levels: basic, intermediate and advanced','obj.1_li4':'Reusable and expandable scenarios for the training team',
+      'obj.2_title':'Skills assessment','obj.2_p':'The platform enables objective assessment of each operator\'s skills: response time, quality of information gathered, decision-making accuracy and stress management in critical situations.',
+      'obj.2_li1':'Performance indicators per operator','obj.2_li2':'Automated debriefing reports','obj.2_li3':'Progress tracking over time',
+      'obj.3_title':'Continuous service improvement','obj.3_p':'Identify response patterns, analyse recorded interventions and adjust operational protocols to maximise the team\'s collective effectiveness.',
+      'obj.3_li1':'Aggregated analysis of interventions','obj.3_li2':'Detection of recurring weak points','obj.3_li3':'Expandable and reusable scenario library',
+      'cta.h2':'Training, refresher courses and staff assessment','cta.p':'DispatchSim provides the simulation environment needed for onboarding new staff and updating those already active, with scenarios adapted to each skill level.','cta.btn':'Access the application',
+      'footer.desc':'Professional simulation and training platform for emergency services professionals in the Principality of Andorra.',
+      'footer.col1_h':'Platform','footer.col1_link1':'Access the application','footer.col1_link2':'What is DispatchSim','footer.col1_link3':'Features','footer.col1_link4':'How it works','footer.col1_link5':'Objectives',
+      'footer.col2_h':'Legal','footer.col2_link1':'Privacy policy','footer.col2_link2':'Terms of use',
+      'footer.copy':'© 2025 DispatchSim · Principality of Andorra · All rights reserved','footer.privacy':'Privacy','footer.terms':'Terms of use',
+      'priv.title':'Privacy policy','priv.h1':'1. Data controller','priv.p1':'The DispatchSim platform is operated by the Principality of Andorra as an internal training and simulation tool for emergency services professionals.',
+      'priv.h2':'2. Data collected','priv.p2':'Only the minimum data necessary for the platform to function is processed:',
+      'priv.li1':'Access credentials (username and encrypted password)','priv.li2':'Records of completed simulation sessions','priv.li3':'Information entered during simulated interventions',
+      'priv.h3':'3. Purpose of processing','priv.p3':'Data is processed exclusively for the platform\'s training purposes: user management, activity logging, performance assessment and improvement of training protocols. It is not used for any other purpose nor shared with third parties.',
+      'priv.h4':'4. Data retention','priv.p4':'Data is retained for the period during which the user has an active account. Once the account is closed, data will be deleted within a maximum of 30 days.',
+      'priv.h5':'5. Security','priv.p5':'The platform operates in a local and controlled environment. Passwords are stored encrypted. Access to information is restricted by roles and requires authentication at each session.',
+      'priv.h6':'6. User rights','priv.p6':'Users may request access to, rectification of, or deletion of their data by contacting the platform administrator.',
+      'priv.meta':'Last updated: January 2025',
+      'terms.title':'Terms of use','terms.h1':'1. Purpose and scope','terms.p1':'DispatchSim is an internal-use platform for training and simulation of emergency situations. Access is restricted to staff authorised by the emergency services of the Principality of Andorra.',
+      'terms.h2':'2. Access conditions','terms.p2':'Valid credentials provided by the system administrator are required. The following are prohibited:',
+      'terms.li1':'Sharing access credentials with third parties','terms.li2':'Attempting to access functions or data beyond the assigned role','terms.li3':'Using the platform for purposes other than training',
+      'terms.h3':'3. Correct use of the platform','terms.p3':'DispatchSim must be used exclusively as a training tool. Scenarios and data entered during sessions are fictional and must not contain real personal information about victims or third parties.',
+      'terms.h4':'4. Responsibilities','terms.p4':'Each user is responsible for actions performed with their credentials. The administrator may suspend or delete accounts that do not comply with these terms of use.',
+      'terms.h5':'5. Intellectual property','terms.p5':'The code, design and content of the DispatchSim platform are the property of the Principality of Andorra. Reproduction, distribution or modification without express authorisation is prohibited.',
+      'terms.h6':'6. Service availability','terms.p6':'The platform is provided for internal use. The technical team does not guarantee uninterrupted availability and reserves the right to carry out maintenance or updates without prior notice.',
+      'terms.meta':'Last updated: January 2025',
     }
-    function toggleTheme() {
-      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    }
-    applyTheme(localStorage.getItem('dispatch_theme') || 'light');
+  };
 
-    /* ── Scroll ── */
-    function goTo(id) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  /* ════════════════════════════════════════════
+     I18N ENGINE
+  ════════════════════════════════════════════ */
+  let _lang = localStorage.getItem('dispatch_lang') || 'ca';
 
-    /* ── Nav shadow ── */
-    const nav = document.querySelector('.nav');
-    window.addEventListener('scroll', () => {
-      nav.style.boxShadow = window.scrollY > 20 ? '0 2px 16px rgba(0,0,0,.08)' : 'none';
+  function setLang(lang) {
+    _lang = lang;
+    localStorage.setItem('dispatch_lang', lang);
+    document.documentElement.lang = lang;
+    const dict = T[lang] || T['ca'];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      if (dict[k] !== undefined) el.textContent = dict[k];
     });
-
-    /* ── Modals ── */
-    function openModal(id) {
-      document.getElementById(id).classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('open');
-      document.body.style.overflow = '';
-    }
-    function closeOnOverlay(e, id) {
-      if (e.target === e.currentTarget) closeModal(id);
-    }
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.open').forEach(m => {
-          m.classList.remove('open');
-          document.body.style.overflow = '';
-        });
-      }
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const k = el.getAttribute('data-i18n-html');
+      if (dict[k] !== undefined) el.innerHTML = dict[k];
     });
+    document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang-btn') === lang);
+    });
+  }
+
+  /* ════════════════════════════════════════════
+     THEME
+  ════════════════════════════════════════════ */
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('icon-moon').style.display = t === 'light' ? '' : 'none';
+    document.getElementById('icon-sun').style.display  = t === 'dark'  ? '' : 'none';
+    localStorage.setItem('dispatch_theme', t);
+  }
+  function toggleTheme() {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  }
+
+  /* ════════════════════════════════════════════
+     SCROLL / NAV
+  ════════════════════════════════════════════ */
+  function goTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  const nav = document.querySelector('.nav');
+  window.addEventListener('scroll', () => {
+    nav.style.boxShadow = window.scrollY > 20 ? '0 2px 16px rgba(0,0,0,.08)' : 'none';
+  });
+
+  /* ════════════════════════════════════════════
+     MODALS
+  ════════════════════════════════════════════ */
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function closeOnOverlay(e, id) {
+    if (e.target === e.currentTarget) closeModal(id);
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    }
+  });
+
+  /* ════════════════════════════════════════════
+     INIT
+  ════════════════════════════════════════════ */
+  applyTheme(localStorage.getItem('dispatch_theme') || 'light');
+  setLang(_lang);
   </script>
 </body>
 </html>
