@@ -25,9 +25,8 @@
 - [x] **Sin rate limiting** — El endpoint `/simulate/chat` llama a la API de Anthropic sin límite de frecuencia.
   _Arreglado con `SlidingWindowLimiter` en `app/core/rate_limit.py` (sin dependencias externas). Límite: 10 mensajes/minuto por usuario autenticado. Devuelve HTTP 429 si se supera._
 
-- [ ] **Errores de IA exponen detalle interno** — `detail=f"Error de la IA: {exc}"` envía el mensaje raw al cliente.
-  Loguear con traceback en servidor, devolver mensaje genérico al cliente.
-  _Archivo: `app/api/v1/endpoints/simulation.py:52`_
+- [x] **Errores de IA exponen detalle interno** — `detail=f"Error de la IA: {exc}"` envía el mensaje raw al cliente.
+  _Arreglado: `logger.exception(...)` en servidor, mensaje genérico al cliente. Además el missatge de l'operador es persisteix abans de cridar la IA._
 
 - [ ] **Sin logging de eventos de seguridad** — No se registran logins fallidos, accesos denegados ni borrados masivos.
   Añadir `logger.warning(...)` en `auth.py` (login fallido) y `deps.py` (acceso denegado).
@@ -41,9 +40,7 @@
   Añadir `max_length=2000` en el schema.
   _Archivo: `app/schemas/scenario.py`_
 
-- [ ] **Mensaje del operador no se persiste si la IA falla** — Si `generate_alertant_response` lanza excepción, el mensaje del usuario se pierde del historial.
-  Persistir el mensaje del operador *antes* de llamar a la IA.
-  _Archivo: `app/api/v1/endpoints/simulation.py:50-65`_
+- [x] **Mensaje del operador no se persiste si la IA falla** — resolt conjuntament amb el punt anterior.
 
 ---
 

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +15,7 @@ from app.schemas.simulation import ChatRequest, ChatResponse
 from app.services.ai_service import generate_alertant_response
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/simulate/chat", response_model=ChatResponse)
@@ -49,10 +51,17 @@ def chat(
         if scenario:
             instructions_ia = scenario.instructions_ia
 
+    # Persistir el missatge de l'operador abans de cridar la IA
+    user_msg = ChatMessage(incident_id=incident.id, role="user", content=request.operator_message)
+    session.add(user_msg)
+    session.flush()
+
     try:
         reply = generate_alertant_response(history, incident.type, instructions_ia)
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Error de la IA: {exc}")
+        logger.exception("Error en generate_alertant_response (incident_id=%s): %s", request.incident_id, exc)
+        session.commit()  # guardar el missatge de l'operador tot i l'error
+        raise HTTPException(status_code=502, detail="El servei de simulació no està disponible en aquest moment.")
 
     # Primer missatge → registrar type_decided_at (UPDATE directe)
     if not db_messages and incident.type_decided_at is None:
@@ -62,8 +71,6 @@ def chat(
             .values(type_decided_at=datetime.now(timezone.utc))
         )
 
-    # Persistir mensaje del operador y respuesta de la IA
-    session.add(ChatMessage(incident_id=incident.id, role="user",      content=request.operator_message))
     session.add(ChatMessage(incident_id=incident.id, role="assistant", content=reply))
     session.commit()
 
