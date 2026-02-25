@@ -28,9 +28,8 @@
 - [x] **Errores de IA exponen detalle interno** — `detail=f"Error de la IA: {exc}"` envía el mensaje raw al cliente.
   _Arreglado: `logger.exception(...)` en servidor, mensaje genérico al cliente. Además el missatge de l'operador es persisteix abans de cridar la IA._
 
-- [ ] **Sin logging de eventos de seguridad** — No se registran logins fallidos, accesos denegados ni borrados masivos.
-  Añadir `logger.warning(...)` en `auth.py` (login fallido) y `deps.py` (acceso denegado).
-  _Archivos: `app/api/v1/endpoints/auth.py`, `app/core/deps.py`_
+- [x] **Sin logging de eventos de seguridad** — No se registran logins fallidos, accesos denegados ni borrados masivos.
+  _Arreglado: `logger.warning(...)` en `auth.py` (LOGIN_FAILED, LOGIN_DENIED_INACTIVE, LOGIN_DENIED_EXPIRED) i `deps.py` (AUTH_INVALID_TOKEN, AUTH_DENIED_INACTIVE, AUTH_DENIED_EXPIRED, ACCESS_DENIED)._
 
 - [ ] **Sin validación de formato en `username`** — Permite caracteres especiales y unicode.
   Añadir `pattern=r'^[a-zA-Z0-9_]{3,50}$'` en `UserCreate`.

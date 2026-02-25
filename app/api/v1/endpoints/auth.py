@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,6 +11,7 @@ from app.models.user import User
 from app.schemas.user import TokenResponse, UserCreate, UserLogin, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserRead, status_code=201)
@@ -35,17 +37,20 @@ def register(payload: UserCreate, session: Session = Depends(get_session)):
 def login(payload: UserLogin, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.username == payload.username)).first()
     if not user or not verify_password(payload.password, user.hashed_password):
+        logger.warning("LOGIN_FAILED username=%r", payload.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credencials incorrectes",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
+        logger.warning("LOGIN_DENIED_INACTIVE user_id=%s username=%r", user.id, user.username)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Compte desactivat",
         )
     if user.expires_at and datetime.now(timezone.utc) > user.expires_at.replace(tzinfo=timezone.utc):
+        logger.warning("LOGIN_DENIED_EXPIRED user_id=%s username=%r", user.id, user.username)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Compte caducat")
     token = create_access_token({"sub": user.id, "role": user.role, "username": user.username})
     return TokenResponse(
