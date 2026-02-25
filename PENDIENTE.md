@@ -78,10 +78,10 @@
 ## 🟢 MEJORA (calidad de código)
 
 - [x] **Frontend monolítico** — `index.html` tiene 1.300+ líneas mezclando HTML, CSS y JS.
-  _Arreglado: CSS → `static/css/dispatch.css`, JS → `static/js/dispatch.js`. index.html reduït de 1.330 a 437 línies._
+  _Migrat a Vue 3 + Vite + Pinia + Tailwind CSS (npm). 11 components, 6 stores, capa API separada. Build genera `app/static/index.html` + `app/static/assets/`. `landing.html` preservada._
 
-- [ ] **Estado global sin estructura en JS** — 13+ variables globales sueltas.
-  Agrupar en un objeto de estado: `const State = { authToken, currentUser, ... }`.
+- [x] **Estado global sin estructura en JS** — 13+ variables globales sueltas.
+  _Resolt amb la migració a Vue 3 + Pinia. Cada store (auth, app, emergency, history, users, ui) gestiona el seu propi estat de forma reactiva._
 
 - [ ] **Sin tests** — Cero cobertura de tests unitarios o de integración.
   Prioridad mínima: tests para `security.py`, `deps.py`, endpoints de auth y borrado en cascada.
@@ -117,4 +117,4 @@
 
 ---
 
-_Última actualización: 2026-02-25_
+_Última actualización: 2026-02-25 — Migració Vue 3 completada_
