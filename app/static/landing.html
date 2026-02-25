@@ -274,15 +274,15 @@
     <div class="nav-right">
       <div class="lang-dropdown" id="langDropdown">
         <button class="lang-trigger" onclick="toggleLangMenu()" id="langTrigger">
-          <span id="langFlag">🇦🇩</span>
+          <img id="langFlag" src="https://flagcdn.com/20x15/ad.png" width="20" height="15" alt="" style="border-radius:2px;display:block">
           <span id="langCode">CA</span>
           <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="lang-menu" id="langMenu">
-          <button onclick="setLang('ca')" data-lang-btn="ca">🇦🇩 Català</button>
-          <button onclick="setLang('es')" data-lang-btn="es">🇪🇸 Español</button>
-          <button onclick="setLang('fr')" data-lang-btn="fr">🇫🇷 Français</button>
-          <button onclick="setLang('en')" data-lang-btn="en">🇬🇧 English</button>
+          <button onclick="setLang('ca')" data-lang-btn="ca"><img src="https://flagcdn.com/20x15/ad.png" width="20" height="15" alt="" style="border-radius:2px"> Català</button>
+          <button onclick="setLang('es')" data-lang-btn="es"><img src="https://flagcdn.com/20x15/es.png" width="20" height="15" alt="" style="border-radius:2px"> Español</button>
+          <button onclick="setLang('fr')" data-lang-btn="fr"><img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt="" style="border-radius:2px"> Français</button>
+          <button onclick="setLang('en')" data-lang-btn="en"><img src="https://flagcdn.com/20x15/gb.png"  width="20" height="15" alt="" style="border-radius:2px"> English</button>
         </div>
       </div>
       <button class="btn-theme" onclick="toggleTheme()" aria-label="Theme">
@@ -874,10 +874,10 @@
      I18N ENGINE
   ════════════════════════════════════════════ */
   const LANG_META = {
-    ca: { flag: '🇦🇩', code: 'CA' },
-    es: { flag: '🇪🇸', code: 'ES' },
-    fr: { flag: '🇫🇷', code: 'FR' },
-    en: { flag: '🇬🇧', code: 'EN' },
+    ca: { flagSrc: 'https://flagcdn.com/20x15/ad.png', code: 'CA' },
+    es: { flagSrc: 'https://flagcdn.com/20x15/es.png', code: 'ES' },
+    fr: { flagSrc: 'https://flagcdn.com/20x15/fr.png', code: 'FR' },
+    en: { flagSrc: 'https://flagcdn.com/20x15/gb.png', code: 'EN' },
   };
 
   let _lang = localStorage.getItem('dispatch_lang') || 'ca';
@@ -905,7 +905,7 @@
     // Update trigger button
     const meta = LANG_META[lang];
     if (meta) {
-      document.getElementById('langFlag').textContent = meta.flag;
+      document.getElementById('langFlag').src = meta.flagSrc;
       document.getElementById('langCode').textContent = meta.code;
     }
     // Close dropdown
