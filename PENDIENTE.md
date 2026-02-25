@@ -77,8 +77,8 @@
 
 ## 🟢 MEJORA (calidad de código)
 
-- [ ] **Frontend monolítico** — `index.html` tiene 1.300+ líneas mezclando HTML, CSS y JS.
-  Separar en `static/app.css`, `static/app.js` (o módulos por feature).
+- [x] **Frontend monolítico** — `index.html` tiene 1.300+ líneas mezclando HTML, CSS y JS.
+  _Arreglado: CSS → `static/css/dispatch.css`, JS → `static/js/dispatch.js`. index.html reduït de 1.330 a 437 línies._
 
 - [ ] **Estado global sin estructura en JS** — 13+ variables globales sueltas.
   Agrupar en un objeto de estado: `const State = { authToken, currentUser, ... }`.
