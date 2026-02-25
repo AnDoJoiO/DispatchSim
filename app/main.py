@@ -11,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import app.models  # noqa: F401 — registra todos los modelos antes de create_all
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.db.seed import seed_admin
 from app.db.session import create_db_and_tables
 from app.services.cleanup import expired_user_cleanup_loop
 
@@ -39,6 +40,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
+    if settings.ADMIN_USERNAME and settings.ADMIN_PASSWORD:
+        seed_admin(settings.ADMIN_USERNAME, settings.ADMIN_PASSWORD)
     task = asyncio.create_task(expired_user_cleanup_loop())
     yield
     task.cancel()

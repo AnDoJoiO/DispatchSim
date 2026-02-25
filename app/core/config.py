@@ -1,4 +1,4 @@
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 _INSECURE_DEFAULT = "change-me-in-production"
@@ -14,6 +14,17 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     # Orígens permesos per CORS, separats per comes
     ALLOWED_ORIGINS: str = "http://localhost:8000,http://127.0.0.1:8000"
+    # Admin inicial — si estan definits es crea automàticament al primer arrencada
+    ADMIN_USERNAME: str = ""
+    ADMIN_PASSWORD: str = ""
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def _fix_postgres_url(cls, v: str) -> str:
+        # Railway i Heroku retornen 'postgres://' però SQLAlchemy 2.x necessita 'postgresql://'
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
 
     @model_validator(mode="after")
     def _check_secret_key(self) -> "Settings":

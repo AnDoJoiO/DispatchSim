@@ -2,10 +2,24 @@ from sqlalchemy import text
 from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
 
-engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG)
+_is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+
+_engine_kwargs: dict = {"echo": settings.DEBUG}
+if _is_sqlite:
+    _engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    # PostgreSQL: pool amb reconexió automàtica
+    _engine_kwargs.update({
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_pre_ping": True,
+    })
+
+engine = create_engine(settings.DATABASE_URL, **_engine_kwargs)
 
 
-def add_missing_columns(engine):
+def _sqlite_add_missing_columns() -> None:
+    """Migració manual per SQLite: afegeix columnes noves sense perdre dades existents."""
     with engine.connect() as conn:
         result = conn.execute(text("PRAGMA table_info(app_user)"))
         columns = [row[1] for row in result]
@@ -14,9 +28,10 @@ def add_missing_columns(engine):
             conn.commit()
 
 
-def create_db_and_tables():
+def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
-    add_missing_columns(engine)
+    if _is_sqlite:
+        _sqlite_add_missing_columns()
 
 
 def get_session():
