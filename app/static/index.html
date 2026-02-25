@@ -374,7 +374,7 @@
     <!-- SCENARIOS -->
     <div id="panel-scenarios" class="hidden flex-col gap-3 overflow-y-auto flex-1 pb-1 pr-0.5">
       <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium" style="background:#fefce8;border:1px solid #fef08a;color:#854d0e">
-        🔒 Zona del formador · Les instruccions IA no les veu el professional
+        🔒 Zona del formador · Les instruccions IA no les veu l'operador
       </div>
       <div class="panel">
         <div class="panel-hd">Nou escenari</div>
@@ -391,7 +391,7 @@
             </select>
           </div>
           <div><label class="fl">Localització base</label><input id="sc-location" type="text" placeholder="Localització base" class="fc" /></div>
-          <div><label class="fl">Descripció inicial (visible al professional)</label><textarea id="sc-desc" rows="2" placeholder="Descripció que veurà el professional..." class="fc"></textarea></div>
+          <div><label class="fl">Descripció inicial (visible al professional)</label><textarea id="sc-desc" rows="2" placeholder="Descripció que veurà l'operador..." class="fc"></textarea></div>
           <div>
             <label class="fl" style="color:#b45309">🔒 Instruccions secretes per a la IA</label>
             <textarea id="sc-instructions" rows="3" placeholder="Ex: La víctima és un home de 65 anys..."
@@ -415,7 +415,7 @@
           <div><label class="fl">Contrasenya</label><input id="usr-password" type="password" placeholder="Mínim 6 caràcters" class="fc" /></div>
           <div><label class="fl">Rol</label>
             <select id="usr-role" class="fc" onchange="toggleExpiryField()">
-              <option value="operador">Professional</option>
+              <option value="operador">Operador</option>
               <option id="usr-role-formador" value="formador">Formador</option>
               <option id="usr-role-admin" value="admin">Administrador</option>
             </select>
@@ -495,7 +495,7 @@
       </div>
     </div>
     <div class="chat-input-area px-4 py-3 flex gap-3 items-end flex-shrink-0" style="background:var(--surface);border-top:1px solid var(--border)">
-      <textarea id="msg-input" rows="1" disabled placeholder="Escriu el missatge del professional..."
+      <textarea id="msg-input" rows="1" disabled placeholder="Escriu el missatge de l'operador..."
         onkeydown="handleKey(event)"
         class="flex-1 rounded-xl px-4 py-2.5 text-sm max-h-28 outline-none transition"
         style="background:var(--in-bg2);border:1px solid var(--border);color:var(--text)"></textarea>
@@ -528,7 +528,7 @@
           <label class="flex items-center gap-2 cursor-pointer py-1"><input type="checkbox" class="risk-cb accent-red-600" value="Biohazard" /><span class="text-xs" style="color:var(--text2)">🦠 Biohazard</span></label>
         </div>
       </div>
-      <div><label class="fl">📝 Notes del professional</label><textarea id="fi-notes" rows="4" placeholder="Observacions, detalls rellevants..." class="fc"></textarea></div>
+      <div><label class="fl">📝 Notes de l'operador</label><textarea id="fi-notes" rows="4" placeholder="Observacions, detalls rellevants..." class="fc"></textarea></div>
       <div id="fi-status" class="hidden text-xs text-center py-2 rounded-lg"></div>
     </div>
     <div class="fitxa-foot p-4 flex-shrink-0" style="background:var(--surface2);border-top:1px solid var(--border)">
@@ -905,7 +905,7 @@ function appendBubble(who, text) {
   const label = document.createElement('p');
   label.className = `text-xs mt-1 ${isOp ? 'text-right' : ''}`;
   label.style.color = 'var(--text3)';
-  label.textContent = isOp ? `👮 ${currentUser?.username||'Professional'}` : '📞 Alertant';
+  label.textContent = isOp ? `👮 ${currentUser?.username||'Operador'}` : '📞 Alertant';
   const inner = document.createElement('div');
   inner.className = isOp ? 'flex flex-col items-end' : 'flex flex-col items-start';
   inner.appendChild(bubble); inner.appendChild(label); wrap.appendChild(inner);
@@ -1141,7 +1141,7 @@ async function openDebriefing(callId) {
           <div class="px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${isOp?'bop':'bal'}">
             ${escapeHtml(msg.content).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}
           </div>
-          <p class="text-xs mt-0.5" style="color:var(--text3)">${isOp?'👮 Professional':'📞 Alertant'} · ${fmtTime(msg.timestamp)}</p>
+          <p class="text-xs mt-0.5" style="color:var(--text3)">${isOp?'👮 Operador':'📞 Alertant'} · ${fmtTime(msg.timestamp)}</p>
         </div>`;
       tc.appendChild(wrap);
     });
@@ -1186,7 +1186,7 @@ function closeDebriefing() {
 }
 
 // ── Users ────────────────────────────────────
-const ROLE_LABELS={admin:'🔑 Admin',formador:'🎓 Formador',operador:'👮 Professional'};
+const ROLE_LABELS={admin:'🔑 Admin',formador:'🎓 Formador',operador:'👮 Operador'};
 const ROLE_STYLES={
   admin:   'background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff',
   formador:'background:#fef9c3;color:#92400e;border:1px solid #fef08a',
