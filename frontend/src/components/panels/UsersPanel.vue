@@ -3,11 +3,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore }  from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { useUiStore }    from '@/stores/ui'
-import { ROLE_LABELS, ROLE_STYLES } from '@/utils'
+import { ROLE_STYLES } from '@/utils'
+import { useI18n } from '@/i18n'
 
 const auth  = useAuthStore()
 const users = useUsersStore()
 const ui    = useUiStore()
+const { t: tr } = useI18n()
 
 const username  = ref('')
 const password  = ref('')
@@ -21,8 +23,8 @@ const showExpiry = computed(() => role.value === 'operador')
 
 async function createUser() {
   error.value = ''
-  if (username.value.trim().length < 3) { error.value = 'Mínim 3 caràcters'; return }
-  if (password.value.length < 6)         { error.value = 'Mínim 6 caràcters'; return }
+  if (username.value.trim().length < 3) { error.value = tr('up.error_username'); return }
+  if (password.value.length < 6)         { error.value = tr('up.error_password'); return }
   const body = { username: username.value.trim(), password: password.value, role: role.value }
   if (role.value === 'operador' && expiryVal.value)
     body.expires_at = expiryVal.value + 'T00:00:00'
@@ -51,26 +53,26 @@ function fmtExpiry(iso) {
     <!-- Columna esquerra: formulari -->
     <div class="w-80 flex-shrink-0 flex flex-col gap-3 overflow-y-auto pb-1">
       <div class="panel">
-        <div class="panel-hd">Nou usuari</div>
+        <div class="panel-hd">{{ tr('up.new_user') }}</div>
         <div class="panel-body flex flex-col gap-3">
           <div>
-            <label class="fl">Nom d'usuari</label>
-            <input v-model="username" type="text" placeholder="Mínim 3 caràcters" class="fc" />
+            <label class="fl">{{ tr('up.username') }}</label>
+            <input v-model="username" type="text" :placeholder="tr('up.username_ph')" class="fc" />
           </div>
           <div>
-            <label class="fl">Contrasenya</label>
-            <input v-model="password" type="password" placeholder="Mínim 6 caràcters" class="fc" />
+            <label class="fl">{{ tr('up.password') }}</label>
+            <input v-model="password" type="password" :placeholder="tr('up.password_ph')" class="fc" />
           </div>
           <div>
-            <label class="fl">Rol</label>
+            <label class="fl">{{ tr('up.role') }}</label>
             <select v-model="role" class="fc">
-              <option value="operador">Operador</option>
-              <option v-if="auth.canManage" value="formador">Formador</option>
-              <option v-if="auth.isAdmin"   value="admin">Administrador</option>
+              <option value="operador">{{ tr('up.role_operator') }}</option>
+              <option v-if="auth.canManage" value="formador">{{ tr('up.role_trainer') }}</option>
+              <option v-if="auth.isAdmin"   value="admin">{{ tr('up.role_admin') }}</option>
             </select>
           </div>
           <div v-if="showExpiry">
-            <label class="fl">Data de caducitat (opcional)</label>
+            <label class="fl">{{ tr('up.expiry') }}</label>
             <input v-model="expiryVal" type="date" class="fc" />
           </div>
           <p v-if="error" class="text-xs text-red-500 -mt-1">{{ error }}</p>
@@ -78,7 +80,7 @@ function fmtExpiry(iso) {
             @click="createUser"
             class="w-full py-2 rounded-lg font-bold text-sm text-white transition"
             style="background:var(--accent)"
-          >+ Crear Usuari</button>
+          >{{ tr('up.create_btn') }}</button>
         </div>
       </div>
     </div>
@@ -87,15 +89,15 @@ function fmtExpiry(iso) {
     <div class="flex-1 flex flex-col gap-3 overflow-y-auto pb-1">
       <div class="panel flex-1 flex flex-col">
         <div class="panel-hd flex items-center justify-between">
-          <span>Usuaris del sistema ({{ users.items.length }})</span>
+          <span>{{ tr('up.users_header', { n: users.items.length }) }}</span>
           <button
             @click="users.load()"
             class="text-xs normal-case font-normal tracking-normal transition"
             style="color:var(--text3);letter-spacing:normal"
-          >↺ Actualitzar</button>
+          >{{ tr('up.refresh') }}</button>
         </div>
         <div class="overflow-y-auto flex-1">
-          <p v-if="!users.items.length" class="text-xs px-4 py-3" style="color:var(--text3)">Cap usuari</p>
+          <p v-if="!users.items.length" class="text-xs px-4 py-3" style="color:var(--text3)">{{ tr('up.empty') }}</p>
           <div
             v-for="u in users.items"
             :key="u.id"
@@ -109,7 +111,7 @@ function fmtExpiry(iso) {
                 v-if="isExpired(u)"
                 class="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
                 style="background:#fee2e2;color:#dc2626"
-              >Caducat</span>
+              >{{ tr('up.expired') }}</span>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
               <span
@@ -120,7 +122,7 @@ function fmtExpiry(iso) {
               <span
                 class="text-xs px-2 py-0.5 rounded-full font-semibold"
                 :style="ROLE_STYLES[u.role] || ''"
-              >{{ ROLE_LABELS[u.role] || u.role }}</span>
+              >{{ tr('role.' + u.role) || u.role }}</span>
               <span
                 class="w-2 h-2 rounded-full inline-block"
                 :class="u.is_active ? 'bg-emerald-400' : 'bg-red-400'"

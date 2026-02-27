@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
-import { INCIDENT_TYPES } from '@/utils'
+import { useI18n } from '@/i18n'
 
 const emit = defineEmits(['created'])
 
 const emergency = useEmergencyStore()
+const { t: tr, incidentTypes } = useI18n()
 
 const title          = ref('')
 const incidentType   = ref('Incendio')
@@ -33,7 +34,7 @@ async function submit() {
   error.value   = ''
   success.value = false
   if (!title.value.trim() || !baseLocation.value.trim() || !locationExact.value.trim() || !instructions.value.trim()) {
-    error.value = 'Omple tots els camps obligatoris'
+    error.value = tr('se.error_required')
     return
   }
   creating.value = true
@@ -65,10 +66,8 @@ async function submit() {
 
       <!-- Capçalera -->
       <div class="mb-5">
-        <h2 class="text-base font-bold" style="color:var(--text)">Nou escenari de simulació</h2>
-        <p class="text-xs mt-1" style="color:var(--text3)">
-          Defineix el context visible per a l'operador i les instruccions secretes que guiaran la IA
-        </p>
+        <h2 class="text-base font-bold" style="color:var(--text)">{{ tr('se.title') }}</h2>
+        <p class="text-xs mt-1" style="color:var(--text3)">{{ tr('se.subtitle') }}</p>
       </div>
 
       <!-- Banner zona formador -->
@@ -76,7 +75,7 @@ async function submit() {
         class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium mb-5"
         style="background:#fefce8;border:1px solid #fef08a;color:#854d0e"
       >
-        🔒 Zona del formador · Les instruccions IA no les veu mai l'operador
+        {{ tr('se.banner') }}
       </div>
 
       <!-- Formulari -->
@@ -84,11 +83,11 @@ async function submit() {
 
         <!-- Títol -->
         <div>
-          <label class="fl">Títol de l'escenari</label>
+          <label class="fl">{{ tr('se.title_label') }}</label>
           <input
             v-model="title"
             type="text"
-            placeholder="Ex: Incendi en habitatge amb víctima atrapada"
+            :placeholder="tr('se.title_ph')"
             class="fc"
           />
         </div>
@@ -96,17 +95,17 @@ async function submit() {
         <!-- Tipus + Localització base -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="fl">Tipus d'incident</label>
+            <label class="fl">{{ tr('se.inc_type') }}</label>
             <select v-model="incidentType" class="fc">
-              <option v-for="t in INCIDENT_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+              <option v-for="t in incidentTypes()" :key="t.value" :value="t.value">{{ t.label }}</option>
             </select>
           </div>
           <div>
-            <label class="fl">Localització base</label>
+            <label class="fl">{{ tr('se.base_loc') }}</label>
             <input
               v-model="baseLocation"
               type="text"
-              placeholder="Ex: Andorra la Vella"
+              :placeholder="tr('se.base_loc_ph')"
               class="fc"
             />
           </div>
@@ -114,11 +113,11 @@ async function submit() {
 
         <!-- Adreça exacta -->
         <div>
-          <label class="fl">Adreça exacta</label>
+          <label class="fl">{{ tr('se.exact_addr') }}</label>
           <input
             v-model="locationExact"
             type="text"
-            placeholder="Ex: Carrer Major 15, 2n pis"
+            :placeholder="tr('se.exact_addr_ph')"
             class="fc"
           />
         </div>
@@ -126,50 +125,46 @@ async function submit() {
         <!-- Estat víctima + Emoció inicial -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="fl">Estat de la víctima</label>
+            <label class="fl">{{ tr('se.victim') }}</label>
             <select v-model="victimStatus" class="fc">
-              <option v-for="s in VICTIM_STATUSES" :key="s" :value="s">{{ s }}</option>
+              <option v-for="s in VICTIM_STATUSES" :key="s" :value="s">{{ tr('vs.' + s) }}</option>
             </select>
             <!-- Indicador visual de gravetat -->
             <p class="text-xs mt-1" style="color:var(--text3)">
-              <span v-if="victimStatus === 'Consciente'"   style="color:#16a34a">● Estable</span>
-              <span v-else-if="victimStatus === 'Inconsciente'" style="color:#dc2626">● Crític</span>
-              <span v-else-if="victimStatus === 'GASP'"    style="color:#dc2626">● Parada respiratòria</span>
+              <span v-if="victimStatus === 'Consciente'"   style="color:#16a34a">{{ tr('se.victim_stable') }}</span>
+              <span v-else-if="victimStatus === 'Inconsciente'" style="color:#dc2626">{{ tr('se.victim_critical') }}</span>
+              <span v-else-if="victimStatus === 'GASP'"    style="color:#dc2626">{{ tr('se.victim_gasp') }}</span>
             </p>
           </div>
           <div>
-            <label class="fl">Emoció inicial de l'alertant</label>
+            <label class="fl">{{ tr('se.emotion') }}</label>
             <select v-model="initialEmotion" class="fc">
-              <option v-for="e in INITIAL_EMOTIONS" :key="e" :value="e">{{ e }}</option>
+              <option v-for="e in INITIAL_EMOTIONS" :key="e" :value="e">{{ tr('ie.' + e) }}</option>
             </select>
             <p class="text-xs mt-1" style="color:var(--text3)">
-              <span v-if="initialEmotion === 'Calma'"    style="color:#16a34a">● Cooperatiu</span>
-              <span v-else-if="initialEmotion === 'Pánico'"   style="color:#ca8a04">● Difícil de gestionar</span>
-              <span v-else-if="initialEmotion === 'Agresión'" style="color:#dc2626">● Molt difícil de gestionar</span>
+              <span v-if="initialEmotion === 'Calma'"    style="color:#16a34a">{{ tr('se.emotion_calm') }}</span>
+              <span v-else-if="initialEmotion === 'Pánico'"   style="color:#ca8a04">{{ tr('se.emotion_panic') }}</span>
+              <span v-else-if="initialEmotion === 'Agresión'" style="color:#dc2626">{{ tr('se.emotion_aggr') }}</span>
             </p>
           </div>
         </div>
 
         <!-- Instruccions secretes -->
         <div>
-          <label class="fl" style="color:#b45309">🔒 Instruccions secretes per a la IA</label>
+          <label class="fl" style="color:#b45309">{{ tr('se.instructions') }}</label>
           <textarea
             v-model="instructions"
             rows="5"
-            placeholder="Ex: La víctima és un home de 65 anys amb antecedents cardíacs. Respon de forma entretallada, amb plors ocasionals. Al minut 2 menciona que la víctima deixa de respondre..."
+            :placeholder="tr('se.instructions_ph')"
             class="fc"
             style="border-color:#fde68a;background:#fffbeb;color:#78350f;resize:vertical"
           ></textarea>
-          <p class="text-xs mt-1" style="color:#b45309">
-            Descriu el comportament de l'alertant, evolució de l'incident, dades mèdiques rellevants...
-          </p>
+          <p class="text-xs mt-1" style="color:#b45309">{{ tr('se.instructions_hint') }}</p>
         </div>
 
         <!-- Error / Èxit -->
         <p v-if="error"   class="text-xs text-red-500">{{ error }}</p>
-        <p v-if="success" class="text-xs font-medium" style="color:#16a34a">
-          ✓ Escenari creat correctament
-        </p>
+        <p v-if="success" class="text-xs font-medium" style="color:#16a34a">{{ tr('se.success') }}</p>
 
         <!-- Accions -->
         <div class="flex gap-2 pt-1">
@@ -179,14 +174,14 @@ async function submit() {
             class="flex-1 py-2.5 rounded-lg font-bold text-sm text-white transition"
             style="background:var(--accent)"
           >
-            {{ creating ? 'Creant...' : '+ Crear Escenari' }}
+            {{ creating ? tr('se.creating') : tr('se.create_btn') }}
           </button>
           <button
             @click="reset"
             class="px-4 py-2.5 rounded-lg text-sm font-medium transition"
             style="border:1px solid var(--border);color:var(--text2)"
           >
-            Netejar
+            {{ tr('se.clear_btn') }}
           </button>
         </div>
       </div>

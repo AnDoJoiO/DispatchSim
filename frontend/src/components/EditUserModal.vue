@@ -2,9 +2,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import { useUiStore }    from '@/stores/ui'
+import { useI18n } from '@/i18n'
 
 const users = useUsersStore()
 const ui    = useUiStore()
+const { t: tr } = useI18n()
 
 const isActive  = ref('true')
 const expiryVal = ref('')
@@ -54,7 +56,7 @@ async function submit() {
       <!-- Header -->
       <div class="px-6 pt-5 pb-4" style="border-bottom:1px solid var(--border);background:var(--surface2)">
         <h2 class="text-sm font-bold" style="color:var(--text)">
-          Editar usuari:
+          {{ tr('eu.title_pre') }}
           <span class="font-mono">{{ targetUser?.username }}</span>
         </h2>
       </div>
@@ -62,16 +64,16 @@ async function submit() {
       <!-- Form -->
       <div class="px-6 py-5 flex flex-col gap-4">
         <div>
-          <label class="fl">Estat</label>
+          <label class="fl">{{ tr('eu.status') }}</label>
           <select v-model="isActive" class="fc">
-            <option value="true">Actiu</option>
-            <option value="false">Inactiu</option>
+            <option value="true">{{ tr('eu.active') }}</option>
+            <option value="false">{{ tr('eu.inactive') }}</option>
           </select>
         </div>
         <div>
-          <label class="fl">Data de caducitat (opcional)</label>
+          <label class="fl">{{ tr('eu.expiry') }}</label>
           <input v-model="expiryVal" type="date" class="fc" />
-          <p class="text-xs mt-1" style="color:var(--text3)">Deixa buit per eliminar la caducitat</p>
+          <p class="text-xs mt-1" style="color:var(--text3)">{{ tr('eu.expiry_hint') }}</p>
         </div>
         <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
       </div>
@@ -82,13 +84,13 @@ async function submit() {
           @click="ui.closeEditUser()"
           class="text-sm px-4 py-2 rounded-lg font-medium transition"
           style="border:1px solid var(--border);color:var(--text2);background:var(--surface)"
-        >Cancel·lar</button>
+        >{{ tr('eu.cancel') }}</button>
         <button
           @click="submit"
           :disabled="saving"
           class="text-sm px-4 py-2 rounded-lg font-bold text-white transition"
           style="background:var(--accent)"
-        >{{ saving ? 'Desant...' : 'Desar' }}</button>
+        >{{ saving ? tr('eu.saving') : tr('eu.save') }}</button>
       </div>
     </div>
   </div>

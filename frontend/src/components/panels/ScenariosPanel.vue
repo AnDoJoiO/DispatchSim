@@ -2,13 +2,15 @@
 import { onMounted } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
 import ScenarioEditor from '@/components/ScenarioEditor.vue'
+import { useI18n } from '@/i18n'
 
 const emergency = useEmergencyStore()
+const { t: tr } = useI18n()
 
 onMounted(() => emergency.loadScenarios())
 
 async function deleteScenario(id) {
-  if (!confirm('Eliminar aquest escenari?')) return
+  if (!confirm(tr('sp.confirm_delete'))) return
   await emergency.deleteScenario(id)
 }
 </script>
@@ -25,7 +27,7 @@ async function deleteScenario(id) {
         class="px-4 py-3 text-xs font-semibold tracking-wide flex-shrink-0 flex items-center justify-between"
         style="border-bottom:1px solid var(--border);color:var(--text2)"
       >
-        <span>ESCENARIS ({{ emergency.scenariosCache.length }})</span>
+        <span>{{ tr('sp.header', { n: emergency.scenariosCache.length }) }}</span>
         <button
           @click="emergency.loadScenarios()"
           title="Actualitzar"
@@ -39,7 +41,7 @@ async function deleteScenario(id) {
           class="text-xs px-4 py-6 text-center"
           style="color:var(--text3)"
         >
-          Cap escenari creat
+          {{ tr('sp.empty') }}
         </li>
         <li
           v-for="s in emergency.scenariosCache"
@@ -50,18 +52,18 @@ async function deleteScenario(id) {
         >
           <div class="min-w-0 flex-1">
             <p class="text-xs font-semibold leading-snug" style="color:var(--text)">{{ s.title }}</p>
-            <p class="text-xs mt-0.5" style="color:var(--text3)">{{ s.incident_type }}</p>
+            <p class="text-xs mt-0.5" style="color:var(--text3)">{{ tr('type.' + s.incident_type) }}</p>
             <div v-if="s.victim_status || s.initial_emotion" class="flex flex-wrap gap-1 mt-1.5">
               <span
                 v-if="s.victim_status"
                 class="text-xs px-1.5 py-0.5 rounded-full"
                 style="background:#fef9c3;color:#854d0e"
-              >{{ s.victim_status }}</span>
+              >{{ tr('vs.' + s.victim_status) }}</span>
               <span
                 v-if="s.initial_emotion"
                 class="text-xs px-1.5 py-0.5 rounded-full"
                 style="background:#ede9fe;color:#5b21b6"
-              >{{ s.initial_emotion }}</span>
+              >{{ tr('ie.' + s.initial_emotion) }}</span>
             </div>
           </div>
           <button
