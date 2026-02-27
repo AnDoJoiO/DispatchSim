@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useAuthStore }      from '@/stores/auth'
 import { useAppStore }       from '@/stores/app'
 import { useEmergencyStore } from '@/stores/emergency'
@@ -21,6 +21,10 @@ const app       = useAppStore()
 const emergency = useEmergencyStore()
 const ui        = useUiStore()
 
+const isManagementTab = computed(() =>
+  app.activeTab === 'scenarios' || app.activeTab === 'users'
+)
+
 onMounted(async () => {
   if (auth.isLoggedIn) {
     await emergency.loadScenarios()
@@ -35,16 +39,20 @@ onMounted(async () => {
   <template v-else>
     <AppHeader />
 
-    <main class="flex flex-1 overflow-hidden p-3 gap-3">
-      <!-- Left panel — content switches by active tab -->
+    <!-- Gestió — ocupa tot l'ample, independent del simulador -->
+    <main v-if="isManagementTab" class="flex flex-1 overflow-hidden p-4">
+      <ScenariosPanel v-if="app.activeTab === 'scenarios'" />
+      <UsersPanel     v-else-if="app.activeTab === 'users'" />
+    </main>
+
+    <!-- Simulador — 3 columnes -->
+    <main v-else class="flex flex-1 overflow-hidden p-3 gap-3">
       <div
         class="left-panel-wrap w-80 flex-shrink-0 flex flex-col gap-3 overflow-hidden"
         style="background:var(--bg)"
       >
-        <EmergencyPanel v-if="app.activeTab === 'emergency'"  />
-        <ScenariosPanel v-else-if="app.activeTab === 'scenarios'" />
-        <UsersPanel     v-else-if="app.activeTab === 'users'"     />
-        <HistoryPanel   v-else-if="app.activeTab === 'history'"   />
+        <EmergencyPanel v-if="app.activeTab === 'emergency'" />
+        <HistoryPanel   v-else-if="app.activeTab === 'history'" />
       </div>
 
       <ChatWindow />

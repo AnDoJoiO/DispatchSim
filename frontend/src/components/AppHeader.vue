@@ -46,6 +46,8 @@ onUnmounted(() => {
 
     <!-- Nav tabs -->
     <nav class="flex items-stretch h-full flex-1 min-w-0 overflow-x-auto">
+
+      <!-- Grup: Simulador -->
       <button
         id="nav-emergency"
         class="nav-tab"
@@ -59,6 +61,27 @@ onUnmounted(() => {
         Emergència
       </button>
 
+      <button
+        v-if="auth.canManage"
+        class="nav-tab"
+        :class="{ active: app.activeTab === 'history' }"
+        @click="app.showTab('history')"
+      >
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Historial
+      </button>
+
+      <!-- Separador entre Simulador i Gestió -->
+      <div
+        v-if="auth.canManage"
+        class="flex items-center mx-2 flex-shrink-0"
+      >
+        <div class="w-px h-5" style="background:var(--border)"></div>
+      </div>
+
+      <!-- Grup: Gestió -->
       <button
         v-if="auth.canManage"
         class="nav-tab"
@@ -85,18 +108,6 @@ onUnmounted(() => {
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
         Usuaris
-      </button>
-
-      <button
-        v-if="auth.canManage"
-        class="nav-tab"
-        :class="{ active: app.activeTab === 'history' }"
-        @click="app.showTab('history')"
-      >
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        Historial
       </button>
     </nav>
 

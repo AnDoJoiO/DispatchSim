@@ -46,88 +46,92 @@ function fmtExpiry(iso) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 overflow-y-auto flex-1 pb-1 pr-0.5">
+  <div class="w-full flex gap-4 overflow-hidden">
 
-    <!-- Create user form -->
-    <div class="panel">
-      <div class="panel-hd">Nou usuari</div>
-      <div class="panel-body flex flex-col gap-3">
-        <div>
-          <label class="fl">Nom d'usuari</label>
-          <input v-model="username" type="text" placeholder="Mínim 3 caràcters" class="fc" />
+    <!-- Columna esquerra: formulari -->
+    <div class="w-80 flex-shrink-0 flex flex-col gap-3 overflow-y-auto pb-1">
+      <div class="panel">
+        <div class="panel-hd">Nou usuari</div>
+        <div class="panel-body flex flex-col gap-3">
+          <div>
+            <label class="fl">Nom d'usuari</label>
+            <input v-model="username" type="text" placeholder="Mínim 3 caràcters" class="fc" />
+          </div>
+          <div>
+            <label class="fl">Contrasenya</label>
+            <input v-model="password" type="password" placeholder="Mínim 6 caràcters" class="fc" />
+          </div>
+          <div>
+            <label class="fl">Rol</label>
+            <select v-model="role" class="fc">
+              <option value="operador">Operador</option>
+              <option v-if="auth.canManage" value="formador">Formador</option>
+              <option v-if="auth.isAdmin"   value="admin">Administrador</option>
+            </select>
+          </div>
+          <div v-if="showExpiry">
+            <label class="fl">Data de caducitat (opcional)</label>
+            <input v-model="expiryVal" type="date" class="fc" />
+          </div>
+          <p v-if="error" class="text-xs text-red-500 -mt-1">{{ error }}</p>
+          <button
+            @click="createUser"
+            class="w-full py-2 rounded-lg font-bold text-sm text-white transition"
+            style="background:var(--accent)"
+          >+ Crear Usuari</button>
         </div>
-        <div>
-          <label class="fl">Contrasenya</label>
-          <input v-model="password" type="password" placeholder="Mínim 6 caràcters" class="fc" />
-        </div>
-        <div>
-          <label class="fl">Rol</label>
-          <select v-model="role" class="fc">
-            <option value="operador">Operador</option>
-            <option v-if="auth.canManage" value="formador">Formador</option>
-            <option v-if="auth.isAdmin"   value="admin">Administrador</option>
-          </select>
-        </div>
-        <div v-if="showExpiry">
-          <label class="fl">Data de caducitat (opcional)</label>
-          <input v-model="expiryVal" type="date" class="fc" />
-        </div>
-        <p v-if="error" class="text-xs text-red-500 -mt-1">{{ error }}</p>
-        <button
-          @click="createUser"
-          class="w-full py-2 rounded-lg font-bold text-sm text-white transition"
-          style="background:var(--accent)"
-        >+ Crear Usuari</button>
       </div>
     </div>
 
-    <!-- Users list -->
-    <div class="panel">
-      <div class="panel-hd flex items-center justify-between">
-        <span>Usuaris del sistema</span>
-        <button
-          @click="users.load()"
-          class="text-xs normal-case font-normal tracking-normal transition"
-          style="color:var(--text3);letter-spacing:normal"
-        >↺</button>
-      </div>
-      <div class="max-h-80 overflow-y-auto">
-        <p v-if="!users.items.length" class="text-xs px-4 py-3" style="color:var(--text3)">Cap usuari</p>
-        <div
-          v-for="u in users.items"
-          :key="u.id"
-          class="users-row flex items-center justify-between px-4 py-2.5 hover:bg-blue-50 transition"
-          :style="`border-bottom:1px solid var(--border2)${isExpired(u) ? ';background:#fff5f5' : ''}`"
-        >
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <span class="text-xs font-mono w-5 text-right flex-shrink-0" style="color:var(--text3)">{{ u.id }}</span>
-            <span class="text-sm font-medium truncate" style="color:var(--text)">{{ u.username }}</span>
-            <span
-              v-if="isExpired(u)"
-              class="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
-              style="background:#fee2e2;color:#dc2626"
-            >Caducat</span>
-          </div>
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <span
-              v-if="u.role === 'operador' && u.expires_at"
-              class="text-xs"
-              :style="`color:${isExpired(u) ? '#dc2626' : 'var(--text3)'}`"
-            >{{ fmtExpiry(u.expires_at) }}</span>
-            <span
-              class="text-xs px-2 py-0.5 rounded-full font-semibold"
-              :style="ROLE_STYLES[u.role] || ''"
-            >{{ ROLE_LABELS[u.role] || u.role }}</span>
-            <span
-              class="w-2 h-2 rounded-full inline-block"
-              :class="u.is_active ? 'bg-emerald-400' : 'bg-red-400'"
-            ></span>
-            <button
-              v-if="auth.canManage && u.role === 'operador'"
-              @click="openEdit(u.id)"
-              class="text-xs px-2 py-0.5 rounded transition"
-              style="color:var(--accent);border:1px solid var(--accent-br)"
-            >✎</button>
+    <!-- Columna dreta: llista d'usuaris -->
+    <div class="flex-1 flex flex-col gap-3 overflow-y-auto pb-1">
+      <div class="panel flex-1 flex flex-col">
+        <div class="panel-hd flex items-center justify-between">
+          <span>Usuaris del sistema ({{ users.items.length }})</span>
+          <button
+            @click="users.load()"
+            class="text-xs normal-case font-normal tracking-normal transition"
+            style="color:var(--text3);letter-spacing:normal"
+          >↺ Actualitzar</button>
+        </div>
+        <div class="overflow-y-auto flex-1">
+          <p v-if="!users.items.length" class="text-xs px-4 py-3" style="color:var(--text3)">Cap usuari</p>
+          <div
+            v-for="u in users.items"
+            :key="u.id"
+            class="flex items-center justify-between px-4 py-3 hover:bg-blue-50 transition gap-3"
+            :style="`border-bottom:1px solid var(--border2)${isExpired(u) ? ';background:#fff5f5' : ''}`"
+          >
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <span class="text-xs font-mono w-5 text-right flex-shrink-0" style="color:var(--text3)">{{ u.id }}</span>
+              <span class="text-sm font-medium truncate" style="color:var(--text)">{{ u.username }}</span>
+              <span
+                v-if="isExpired(u)"
+                class="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
+                style="background:#fee2e2;color:#dc2626"
+              >Caducat</span>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span
+                v-if="u.role === 'operador' && u.expires_at"
+                class="text-xs"
+                :style="`color:${isExpired(u) ? '#dc2626' : 'var(--text3)'}`"
+              >{{ fmtExpiry(u.expires_at) }}</span>
+              <span
+                class="text-xs px-2 py-0.5 rounded-full font-semibold"
+                :style="ROLE_STYLES[u.role] || ''"
+              >{{ ROLE_LABELS[u.role] || u.role }}</span>
+              <span
+                class="w-2 h-2 rounded-full inline-block"
+                :class="u.is_active ? 'bg-emerald-400' : 'bg-red-400'"
+              ></span>
+              <button
+                v-if="auth.canManage && u.role === 'operador'"
+                @click="openEdit(u.id)"
+                class="text-xs px-2 py-0.5 rounded transition"
+                style="color:var(--accent);border:1px solid var(--accent-br)"
+              >✎</button>
+            </div>
           </div>
         </div>
       </div>
