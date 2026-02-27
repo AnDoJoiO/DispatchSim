@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete as sa_delete
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.core.deps import require_role
@@ -61,12 +62,15 @@ def list_history(
         for sc in session.exec(select(Scenario).where(Scenario.id.in_(scenario_ids))).all():
             scenarios[sc.id] = sc.title
 
-    # Batch: comptatge de missatges per incident
-    msg_counts: dict[int, int] = {}
-    for msg in session.exec(
-        select(ChatMessage).where(ChatMessage.incident_id.in_(incident_ids))
-    ).all():
-        msg_counts[msg.incident_id] = msg_counts.get(msg.incident_id, 0) + 1
+    # Comptatge de missatges per incident amb GROUP BY (una sola query SQL)
+    msg_counts: dict[int, int] = {
+        row[0]: row[1]
+        for row in session.exec(
+            select(ChatMessage.incident_id, func.count(ChatMessage.id))
+            .where(ChatMessage.incident_id.in_(incident_ids))
+            .group_by(ChatMessage.incident_id)
+        ).all()
+    }
 
     return [
         CallHistorySummary(
