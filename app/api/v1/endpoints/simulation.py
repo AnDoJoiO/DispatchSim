@@ -65,9 +65,9 @@ def chat(
     try:
         reply = generate_alertant_response(
             history, incident.type, instructions_ia,
-            location_exact  or incident.location,
-            victim_status,
-            initial_emotion,
+            location        = location_exact or incident.location,
+            victim_status   = victim_status,
+            initial_emotion = initial_emotion,
             description     = incident.description,
             lang            = request.lang,
         )
