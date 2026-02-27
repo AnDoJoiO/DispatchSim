@@ -1,15 +1,16 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
-import { RISKS } from '@/utils'
+import { useI18n } from '@/i18n'
 
 const emergency = useEmergencyStore()
+const { t: tr, risks } = useI18n()
 
 const address  = ref('')
 const phone    = ref('')
 const injured  = ref(0)
 const notes    = ref('')
-const risks    = ref([])  // array of selected risk values
+const selected = ref([])  // array of selected risk values
 const saving   = ref(false)
 const status   = ref(null)  // null | 'ok' | 'error'
 
@@ -17,7 +18,7 @@ const status   = ref(null)  // null | 'ok' | 'error'
 watch(() => emergency.currentIncidentId, () => {
   address.value = phone.value = notes.value = ''
   injured.value = 0
-  risks.value   = []
+  selected.value = []
   status.value  = null
 })
 
@@ -30,7 +31,7 @@ async function save() {
     exact_address:    address.value.trim(),
     contact_phone:    phone.value.trim(),
     num_injured:      Math.max(0, parseInt(injured.value) || 0),
-    additional_risks: risks.value.join(','),
+    additional_risks: selected.value.join(','),
     operator_notes:   notes.value.trim(),
   })
   status.value = ok ? 'ok' : 'error'
@@ -49,40 +50,40 @@ async function save() {
       class="fitxa-hd px-4 py-3 flex-shrink-0"
       style="background:var(--surface2);border-bottom:1px solid var(--border)"
     >
-      <h2 class="text-xs font-bold uppercase tracking-widest" style="color:var(--text3)">📋 Fitxa de Dades</h2>
-      <p class="text-xs mt-0.5" style="color:var(--text3)">Omple durant la trucada</p>
+      <h2 class="text-xs font-bold uppercase tracking-widest" style="color:var(--text3)">{{ tr('fitxa.title') }}</h2>
+      <p class="text-xs mt-0.5" style="color:var(--text3)">{{ tr('fitxa.subtitle') }}</p>
     </div>
 
     <!-- Form fields -->
     <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
       <div>
-        <label class="fl">📍 Adreça exacta</label>
-        <input v-model="address" type="text" placeholder="Carrer, número, pis..." class="fc" />
+        <label class="fl">{{ tr('fitxa.address') }}</label>
+        <input v-model="address" type="text" :placeholder="tr('fitxa.address_ph')" class="fc" />
       </div>
       <div>
-        <label class="fl">📞 Telèfon de contacte</label>
-        <input v-model="phone" type="tel" placeholder="+376 ..." class="fc" />
+        <label class="fl">{{ tr('fitxa.phone') }}</label>
+        <input v-model="phone" type="tel" :placeholder="tr('fitxa.phone_ph')" class="fc" />
       </div>
       <div>
-        <label class="fl">🚑 Nombre de ferits</label>
+        <label class="fl">{{ tr('fitxa.injured') }}</label>
         <input v-model="injured" type="number" min="0" class="fc" />
       </div>
       <div>
-        <label class="fl">⚠️ Riscos addicionals</label>
+        <label class="fl">{{ tr('fitxa.risks') }}</label>
         <div class="grid grid-cols-2 gap-1 mt-1">
           <label
-            v-for="risk in RISKS"
+            v-for="risk in risks()"
             :key="risk.value"
             class="flex items-center gap-2 cursor-pointer py-1"
           >
-            <input type="checkbox" v-model="risks" :value="risk.value" :class="risk.accent" />
+            <input type="checkbox" v-model="selected" :value="risk.value" :class="risk.accent" />
             <span class="text-xs" style="color:var(--text2)">{{ risk.label }}</span>
           </label>
         </div>
       </div>
       <div>
-        <label class="fl">📝 Notes de l'operador</label>
-        <textarea v-model="notes" rows="4" placeholder="Observacions, detalls rellevants..." class="fc"></textarea>
+        <label class="fl">{{ tr('fitxa.notes') }}</label>
+        <textarea v-model="notes" rows="4" :placeholder="tr('fitxa.notes_ph')" class="fc"></textarea>
       </div>
 
       <!-- Status message -->
@@ -93,7 +94,7 @@ async function save() {
           ? 'background:#dcfce7;color:#16a34a;border:1px solid #86efac'
           : 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5'"
       >
-        {{ status === 'ok' ? '✓ Intervenció guardada correctament' : '✗ Error en guardar la fitxa' }}
+        {{ status === 'ok' ? tr('fitxa.saved') : tr('fitxa.error') }}
       </div>
     </div>
 
@@ -108,7 +109,7 @@ async function save() {
         class="w-full py-2.5 rounded-lg font-bold text-sm text-white transition flex items-center justify-center gap-2"
         style="background:var(--accent)"
       >
-        {{ saving ? '⏳ Guardant...' : '💾 Finalitzar i Guardar Intervenció' }}
+        {{ saving ? tr('fitxa.saving') : tr('fitxa.save') }}
       </button>
     </div>
   </div>

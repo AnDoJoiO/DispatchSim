@@ -3,17 +3,20 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore }      from '@/stores/auth'
 import { useAppStore }       from '@/stores/app'
 import { useEmergencyStore } from '@/stores/emergency'
+import { useI18n, LANG_LOCALE } from '@/i18n'
 
 const auth      = useAuthStore()
 const app       = useAppStore()
 const emergency = useEmergencyStore()
+const { t: tr, lang } = useI18n()
 
 // Live clock
 const clock = ref('00:00:00')
 let _clockTimer = null
 
 function tickClock() {
-  clock.value = new Date().toLocaleTimeString('ca-AD', {
+  const locale = LANG_LOCALE[lang.value] || 'ca-AD'
+  clock.value = new Date().toLocaleTimeString(locale, {
     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
   })
 }
@@ -58,7 +61,7 @@ onUnmounted(() => {
           <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
           <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        Emergència
+        {{ tr('nav.emergency') }}
       </button>
 
       <button
@@ -70,7 +73,7 @@ onUnmounted(() => {
         <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         </svg>
-        Historial
+        {{ tr('nav.history') }}
       </button>
 
       <!-- Separador entre Simulador i Gestió -->
@@ -93,7 +96,7 @@ onUnmounted(() => {
           <polyline points="14 2 14 8 20 8"/>
           <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
         </svg>
-        Escenaris
+        {{ tr('nav.scenarios') }}
       </button>
 
       <button
@@ -107,7 +110,7 @@ onUnmounted(() => {
           <circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
-        Usuaris
+        {{ tr('nav.users') }}
       </button>
     </nav>
 
@@ -158,12 +161,12 @@ onUnmounted(() => {
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
-        Inici
+        {{ tr('btn.home') }}
       </button>
 
       <!-- Logout -->
       <button @click="auth.logout()" class="logout-btn text-xs px-3 py-1.5 rounded-lg font-medium transition">
-        Sortir
+        {{ tr('btn.logout') }}
       </button>
     </div>
   </header>

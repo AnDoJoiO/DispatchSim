@@ -3,9 +3,11 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useHistoryStore } from '@/stores/history'
 import { useUiStore }      from '@/stores/ui'
 import { pStyle, fmtDate, fmtDuration } from '@/utils'
+import { useI18n } from '@/i18n'
 
 const history = useHistoryStore()
 const ui      = useUiStore()
+const { t: tr, plural } = useI18n()
 
 const selected    = ref(new Set())
 const selectAllEl = ref(null)
@@ -35,7 +37,6 @@ const filtered = computed(() => {
 const hasItems = computed(() => filtered.value.length > 0)
 
 // Auto-clean stale selections when the filtered list changes
-// (e.g. user types in search after selecting items)
 watch(filtered, (newFiltered) => {
   const filteredIds = new Set(newFiltered.map(i => i.id))
   const cleaned = new Set([...selected.value].filter(id => filteredIds.has(id)))
@@ -68,10 +69,9 @@ function toggleAll(checked) {
 }
 
 async function deleteOne(id) {
-  if (!confirm(`Eliminar l'historial #${id}?`)) return
+  if (!confirm(tr('hp.confirm_del_one', { id }))) return
   try { await history.deleteOne(id) }
-  catch { alert("Error eliminant l'historial"); return }
-  // Create new Set so Vue detects the change
+  catch { alert(tr('hp.alert_error')); return }
   const s = new Set(selected.value)
   s.delete(id)
   selected.value = s
@@ -80,17 +80,17 @@ async function deleteOne(id) {
 async function deleteSelected() {
   const ids = [...selected.value]
   if (!ids.length) return
-  if (!confirm(`Eliminar ${ids.length} historial${ids.length > 1 ? 's' : ''}?`)) return
+  if (!confirm(tr('hp.confirm_del_sel', { n: ids.length, s: plural(ids.length) }))) return
   try { await history.deleteMany(ids); selected.value = new Set() }
-  catch { alert("Error eliminant els historials") }
+  catch { alert(tr('hp.alert_error')) }
 }
 
 async function deleteAll() {
   const total = filtered.value.length
   if (!total) return
-  if (!confirm(`Eliminar tot l'historial (${total} entrada${total > 1 ? 's' : ''})?\nAquesta acció no es pot desfer.`)) return
+  if (!confirm(tr('hp.confirm_del_all', { n: total, s: plural(total) }))) return
   try { await history.deleteAll(); selected.value = new Set() }
-  catch { alert("Error eliminant l'historial") }
+  catch { alert(tr('hp.alert_error')) }
 }
 
 const PRIO_BORDER_COLORS = {
@@ -112,14 +112,14 @@ const accentStyle   = 'background:var(--accent);color:#fff;border:1px solid var(
 
     <!-- Filters -->
     <div class="panel flex-shrink-0">
-      <div class="panel-hd">Filtres</div>
+      <div class="panel-hd">{{ tr('hp.filters') }}</div>
       <div class="panel-body flex flex-col gap-2">
         <div class="flex gap-1.5 flex-wrap">
           <button
             @click="setFilter(null)"
             class="text-xs px-2.5 py-1 rounded-lg font-bold transition text-white"
             :style="history.filterPriority === null ? accentStyle : inactiveStyle"
-          >Totes</button>
+          >{{ tr('hp.all') }}</button>
           <button
             v-for="p in [1,2,3,4,5]" :key="p"
             @click="setFilter(p)"
@@ -132,7 +132,7 @@ const accentStyle   = 'background:var(--accent);color:#fff;border:1px solid var(
         <input
           v-model="history.searchQuery"
           type="text"
-          placeholder="Cerca per tipus o escenari..."
+          :placeholder="tr('hp.search_ph')"
           class="fc"
           style="font-size:12px;padding:6px 10px"
         />
@@ -159,26 +159,26 @@ const accentStyle   = 'background:var(--accent);color:#fff;border:1px solid var(
           class="text-xs px-2 py-1 rounded-lg font-medium transition"
           style="border:1px solid #fca5a5;color:#dc2626;background:transparent"
         >
-          {{ selected.size > 0 ? `Eliminar sel. (${selected.size})` : 'Eliminar sel.' }}
+          {{ selected.size > 0 ? tr('hp.delete_sel', { n: selected.size }) : tr('hp.delete_sel_empty') }}
         </button>
         <button
           @click="deleteAll"
           class="text-xs px-2 py-1 rounded-lg font-medium transition"
           style="border:1px solid var(--border);color:var(--text3);background:transparent"
-        >Tot</button>
+        >{{ tr('hp.delete_all') }}</button>
         <button @click="loadHistory" class="text-xs transition" style="color:var(--text3)" title="Actualitzar">↺</button>
       </div>
     </div>
 
     <!-- Loading / error / empty -->
     <div v-if="loading" class="flex flex-col gap-2 flex-1">
-      <p class="text-xs animate-pulse" style="color:var(--text3)">Carregant...</p>
+      <p class="text-xs animate-pulse" style="color:var(--text3)">{{ tr('hp.loading') }}</p>
     </div>
     <div v-else-if="loadError" class="flex flex-col gap-2 flex-1">
-      <p class="text-xs text-red-500">Error carregant l'historial</p>
+      <p class="text-xs text-red-500">{{ tr('hp.error') }}</p>
     </div>
     <div v-else-if="!hasItems" class="flex flex-col gap-2 flex-1">
-      <p class="text-xs" style="color:var(--text3)">Cap intervenció trobada</p>
+      <p class="text-xs" style="color:var(--text3)">{{ tr('hp.empty') }}</p>
     </div>
 
     <!-- Cards -->
@@ -218,7 +218,7 @@ const accentStyle   = 'background:var(--accent);color:#fff;border:1px solid var(
 
         <!-- Card body -->
         <div class="px-3 py-2.5 cursor-pointer" @click="ui.openDebriefing(inc.id)">
-          <p class="text-xs font-bold truncate" style="color:var(--text)">{{ inc.type }}</p>
+          <p class="text-xs font-bold truncate" style="color:var(--text)">{{ tr(`type.${inc.type}`) }}</p>
           <p class="text-xs truncate mt-0.5" style="color:var(--text3)">📍 {{ inc.location }}</p>
           <div class="flex justify-between items-center mt-2">
             <span class="text-xs" style="color:var(--text3)">{{ fmtDate(inc.call_end_at) }}</span>
@@ -235,7 +235,7 @@ const accentStyle   = 'background:var(--accent);color:#fff;border:1px solid var(
             @click="ui.openDebriefing(inc.id)"
             class="w-full text-xs font-semibold py-1.5 rounded-lg transition"
             style="background:var(--accent-bg);border:1px solid var(--accent-br);color:var(--accent)"
-          >📊 Obrir debriefing</button>
+          >{{ tr('hp.open_debriefing') }}</button>
         </div>
       </div>
     </div>

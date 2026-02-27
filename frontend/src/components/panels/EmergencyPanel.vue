@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
-import { INCIDENT_TYPES } from '@/utils'
+import { useI18n } from '@/i18n'
 
 const emergency = useEmergencyStore()
+const { t: tr, incidentTypes } = useI18n()
 
 const scenarioId   = ref('')
 const incType      = ref('Incendio')
@@ -64,12 +65,12 @@ async function startIncident() {
 
     <!-- Scenario selector -->
     <div class="panel">
-      <div class="panel-hd">Escenari base</div>
+      <div class="panel-hd">{{ tr('ep.scenario') }}</div>
       <div class="panel-body">
         <select v-model="scenarioId" @change="onScenarioChange" class="fc">
-          <option value="">— Emergència lliure —</option>
+          <option value="">{{ tr('ep.free') }}</option>
           <option v-for="s in emergency.scenariosCache" :key="s.id" :value="s.id">
-            [{{ s.incident_type }}] {{ s.title }}
+            [{{ tr(`type.${s.incident_type}`) }}] {{ s.title }}
           </option>
         </select>
       </div>
@@ -77,28 +78,28 @@ async function startIncident() {
 
     <!-- Incident details -->
     <div class="panel">
-      <div class="panel-hd">Detalls de l'incident</div>
+      <div class="panel-hd">{{ tr('ep.details') }}</div>
       <div class="panel-body flex flex-col gap-3">
         <div>
-          <label class="fl">Tipus d'incident</label>
+          <label class="fl">{{ tr('ep.type') }}</label>
           <select v-model="incType" :disabled="fieldsLocked" class="fc">
-            <option v-for="t in INCIDENT_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+            <option v-for="t in incidentTypes()" :key="t.value" :value="t.value">{{ t.label }}</option>
           </select>
         </div>
         <div>
-          <label class="fl">Localització</label>
-          <input v-model="incLocation" :disabled="fieldsLocked" type="text" placeholder="Carrer, municipi..." class="fc" />
+          <label class="fl">{{ tr('ep.location') }}</label>
+          <input v-model="incLocation" :disabled="fieldsLocked" type="text" :placeholder="tr('ep.location_ph')" class="fc" />
         </div>
         <div>
-          <label class="fl">Descripció breu</label>
-          <textarea v-model="incDesc" :disabled="fieldsLocked" rows="2" placeholder="Detalls inicials..." class="fc"></textarea>
+          <label class="fl">{{ tr('ep.description') }}</label>
+          <textarea v-model="incDesc" :disabled="fieldsLocked" rows="2" :placeholder="tr('ep.desc_ph')" class="fc"></textarea>
         </div>
       </div>
     </div>
 
     <!-- Priority -->
     <div class="panel">
-      <div class="panel-hd">Prioritat</div>
+      <div class="panel-hd">{{ tr('ep.priority') }}</div>
       <div class="panel-body">
         <div class="flex gap-2">
           <button
@@ -120,12 +121,12 @@ async function startIncident() {
       class="w-full py-3 rounded-xl font-bold text-sm text-white transition flex items-center justify-center gap-2 flex-shrink-0"
       style="background:#dc2626"
     >
-      {{ starting ? '⏳ Creant...' : '🚨 Iniciar Nova Emergència' }}
+      {{ starting ? tr('ep.starting') : tr('ep.start') }}
     </button>
 
     <!-- Session incidents list -->
     <div class="panel">
-      <div class="panel-hd">Incidents de la sessió</div>
+      <div class="panel-hd">{{ tr('ep.session') }}</div>
       <ul class="flex flex-col max-h-36 overflow-y-auto py-1">
         <li
           v-for="inc in emergency.sessionIncidents"
@@ -137,7 +138,7 @@ async function startIncident() {
           @mouseleave="$event.currentTarget.style.color='var(--text2)'"
         >
           <span class="font-mono font-bold mr-1" style="color:var(--text3)">#{{ inc.id }}</span>
-          {{ inc.type }}
+          {{ tr(`type.${inc.type}`) }}
         </li>
       </ul>
     </div>

@@ -3,9 +3,11 @@ import { ref, watch, nextTick, computed } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
 import { formatMessage, fmtElapsed } from '@/utils'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from '@/i18n'
 
 const emergency = useEmergencyStore()
 const auth      = useAuthStore()
+const { t: tr } = useI18n()
 
 const messagesEl = ref(null)
 const msgInput   = ref('')
@@ -58,14 +60,14 @@ async function endCall() {
           {{
             emergency.currentIncident
               ? `Incident #${emergency.currentIncidentId} — ${emergency.currentIncident.type}`
-              : 'Selecciona o crea un incident'
+              : tr('chat.no_incident')
           }}
         </p>
         <p class="text-xs truncate" style="color:var(--text3)">
           {{
             emergency.currentIncident
               ? `📍 ${emergency.currentIncident.location}`
-              : "L'alertant respondrà les teves preguntes"
+              : tr('chat.no_incident_sub')
           }}
         </p>
       </div>
@@ -81,7 +83,7 @@ async function endCall() {
             ? 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5'
             : 'background:#dcfce7;color:#15803d;border:1px solid #86efac'"
         >
-          {{ emergency.callEnded ? 'Finalitzada' : 'En curs' }}
+          {{ emergency.callEnded ? tr('chat.call_ended') : tr('chat.call_active') }}
         </span>
 
         <span
@@ -98,13 +100,13 @@ async function endCall() {
           class="end-call-btn text-xs font-bold px-3 py-2 rounded-lg transition"
           style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626"
         >
-          {{ endingCall ? '⏳ Finalitzant...' : 'Finalitzar Trucada' }}
+          {{ endingCall ? tr('chat.ending') : tr('chat.end_call') }}
         </button>
         <span
           v-else
           class="text-xs font-bold px-3 py-2 rounded-lg"
           style="background:#fee2e2;color:#dc2626;opacity:.6"
-        >✓ Trucada finalitzada</span>
+        >{{ tr('chat.call_finished') }}</span>
       </div>
     </div>
 
@@ -121,7 +123,7 @@ async function endCall() {
         style="color:var(--text3)"
       >
         <p class="text-5xl mb-3">🎙️</p>
-        <p class="text-sm">Inicia una nova emergència per<br>començar la simulació</p>
+        <p class="text-sm" style="white-space:pre-line">{{ tr('chat.empty') }}</p>
       </div>
 
       <!-- Messages -->
@@ -145,7 +147,7 @@ async function endCall() {
               v-html="formatMessage(msg.content)"
             ></div>
             <p class="text-xs mt-1" :class="msg.role === 'operator' ? 'text-right' : ''" style="color:var(--text3)">
-              {{ msg.role === 'operator' ? `👮 ${auth.user?.username || 'Operador'}` : '📞 Alertant' }}
+              {{ msg.role === 'operator' ? `👮 ${auth.user?.username || 'Operador'}` : tr('chat.caller_label') }}
             </p>
           </div>
         </div>
@@ -171,7 +173,7 @@ async function endCall() {
         v-model="msgInput"
         rows="1"
         :disabled="!emergency.inputEnabled || sending"
-        placeholder="Escriu el missatge de l'operador..."
+        :placeholder="tr('chat.input_ph')"
         @keydown="handleKey"
         class="flex-1 rounded-xl px-4 py-2.5 text-sm max-h-28 outline-none transition"
         style="background:var(--in-bg2);border:1px solid var(--border);color:var(--text)"
@@ -181,7 +183,7 @@ async function endCall() {
         :disabled="!emergency.inputEnabled || sending"
         class="text-white rounded-xl px-5 py-2.5 font-bold text-sm transition flex-shrink-0"
         style="background:var(--accent)"
-      >Enviar ↩</button>
+      >{{ tr('chat.send') }}</button>
     </div>
 
   </div>

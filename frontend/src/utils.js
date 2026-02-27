@@ -22,10 +22,15 @@ export function fmtDuration(secs) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
+function _locale() {
+  const lang = localStorage.getItem('dispatch_lang') || 'ca'
+  return { ca: 'ca-AD', es: 'es-ES', fr: 'fr-FR', en: 'en-GB' }[lang] || 'ca-AD'
+}
+
 export function fmtDate(iso) {
   if (!iso) return '—'
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')
-  return d.toLocaleString('ca-AD', {
+  return d.toLocaleString(_locale(), {
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
@@ -34,7 +39,7 @@ export function fmtDate(iso) {
 export function fmtTime(iso) {
   if (!iso) return ''
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')
-  return d.toLocaleTimeString('ca-AD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  return d.toLocaleTimeString(_locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 export function fmtElapsed(secs) {

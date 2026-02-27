@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useAuthStore }      from '@/stores/auth'
 import { useEmergencyStore } from '@/stores/emergency'
+import { useI18n } from '@/i18n'
 
 const auth      = useAuthStore()
 const emergency = useEmergencyStore()
+const { t: tr } = useI18n()
 
 const username = ref('')
 const password = ref('')
@@ -19,7 +21,7 @@ async function doLogin() {
     await emergency.loadScenarios()
     emergency.setPriority(1)
   } catch (e) {
-    error.value = e.message || 'Error de connexió'
+    error.value = e.message || tr('login.conn_error')
   } finally {
     loading.value = false
   }
@@ -40,22 +42,22 @@ async function doLogin() {
             style="background:var(--accent-bg);border:1px solid var(--accent-br)"
           >🚨</div>
           <h1 class="text-base font-bold tracking-wide" style="color:var(--text)">DISPATCHSIM</h1>
-          <p class="text-xs mt-1" style="color:var(--text3)">Sistema de simulació · Andorra</p>
+          <p class="text-xs mt-1" style="color:var(--text3)">{{ tr('login.subtitle') }}</p>
         </div>
 
         <div class="px-8 py-6 flex flex-col gap-3">
           <div>
-            <label class="fl">Nom d'usuari</label>
+            <label class="fl">{{ tr('login.username') }}</label>
             <input
               v-model="username"
               type="text"
-              placeholder="usuari"
+              :placeholder="tr('login.username_ph')"
               class="fc"
               @keydown.enter="doLogin"
             />
           </div>
           <div>
-            <label class="fl">Contrasenya</label>
+            <label class="fl">{{ tr('login.password') }}</label>
             <input
               v-model="password"
               type="password"
@@ -71,7 +73,7 @@ async function doLogin() {
             class="w-full py-2.5 rounded-lg font-bold text-sm text-white transition mt-1"
             style="background:var(--accent)"
           >
-            {{ loading ? 'Accedint...' : 'Accedir' }}
+            {{ loading ? tr('login.loading') : tr('login.submit') }}
           </button>
         </div>
       </div>
@@ -80,7 +82,7 @@ async function doLogin() {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 12H5M12 5l-7 7 7 7"/>
         </svg>
-        Tornar a la pàgina principal
+        {{ tr('login.back') }}
       </a>
 
     </div>
