@@ -147,7 +147,7 @@ async function endCall() {
               v-html="formatMessage(msg.content)"
             ></div>
             <p class="text-xs mt-1" :class="msg.role === 'operator' ? 'text-right' : ''" style="color:var(--text3)">
-              {{ msg.role === 'operator' ? `👮 ${auth.user?.username || 'Operador'}` : tr('chat.caller_label') }}
+              {{ msg.role === 'operator' ? `👮 ${auth.user?.username || tr('chat.operator_name')}` : tr('chat.caller_label') }}
             </p>
           </div>
         </div>

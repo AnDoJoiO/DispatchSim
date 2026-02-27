@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { apiFetch } from '@/api'
+import { t } from '@/i18n'
 
 export const useUsersStore = defineStore('users', () => {
   const items = ref([])
@@ -13,10 +14,10 @@ export const useUsersStore = defineStore('users', () => {
 
   async function create(payload) {
     const res = await apiFetch('/api/v1/users', { method: 'POST', body: JSON.stringify(payload) })
-    if (!res) return { error: 'Error de connexió' }
-    if (res.status === 409) return { error: "El nom d'usuari ja existeix" }
-    if (res.status === 403) return { error: 'No tens permís' }
-    if (!res.ok) return { error: "Error creant l'usuari" }
+    if (!res) return { error: t('err.conn') }
+    if (res.status === 409) return { error: t('err.username_taken') }
+    if (res.status === 403) return { error: t('err.no_permission') }
+    if (!res.ok) return { error: t('err.create_user') }
     await load()
     return { ok: true }
   }
@@ -27,7 +28,7 @@ export const useUsersStore = defineStore('users', () => {
     })
     if (!res || !res.ok) {
       const data = res ? await res.json().catch(() => ({})) : {}
-      throw new Error(data?.detail || "Error actualitzant l'usuari")
+      throw new Error(data?.detail || t('err.update_user'))
     }
     await load()
   }

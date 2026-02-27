@@ -192,6 +192,35 @@ const messages = {
     'eu.cancel':          'Cancel·lar',
     'eu.saving':          'Desant...',
     'eu.save':            'Desar',
+    // Missatges de sistema (chat)
+    'sys.incident_open':     "Incident #{id} obert · {type} · {location}{scenario}",
+    'sys.scenario_label':    ' · Escenari: {title}',
+    'sys.call_ended':        'Trucada finalitzada · Omple la fitxa i guarda la intervenció',
+    'sys.fitxa_saved':       'Fitxa guardada · Incident #{id}',
+    'sys.incident_switched': 'Canviat a Incident #{id}',
+    'sys.error_incident':    "Error creant l'incident",
+    'sys.error_chat':        'Error de comunicació',
+    'sys.error_scenario':    "Error creant l'escenari",
+    // Errors de stores
+    'err.conn':          'Error de connexió',
+    'err.username_taken':"El nom d'usuari ja existeix",
+    'err.no_permission': 'No tens permís',
+    'err.create_user':   "Error creant l'usuari",
+    'err.update_user':   "Error actualitzant l'usuari",
+    'err.load_history':  "Error carregant l'historial",
+    'err.load_detail':   'Error carregant el detall',
+    'err.delete':        'Error eliminant',
+    // Títols de botons (tooltips)
+    'title.toggle_theme': 'Canviar tema',
+    'title.refresh':      'Actualitzar',
+    'title.delete':       'Eliminar',
+    // EmergencyPanel
+    'ep.unknown_location': 'Desconeguda',
+    'ep.no_description':   'Sense descripció',
+    'ep.victim_prefix':    'Víctima',
+    'ep.emotion_prefix':   'Emoció',
+    // Chat
+    'chat.operator_name':  'Operador',
   },
 
   es: {
@@ -363,6 +392,30 @@ const messages = {
     'eu.cancel':          'Cancelar',
     'eu.saving':          'Guardando...',
     'eu.save':            'Guardar',
+    'sys.incident_open':     'Incidente #{id} abierto · {type} · {location}{scenario}',
+    'sys.scenario_label':    ' · Escenario: {title}',
+    'sys.call_ended':        'Llamada finalizada · Rellena la ficha y guarda la intervención',
+    'sys.fitxa_saved':       'Ficha guardada · Incidente #{id}',
+    'sys.incident_switched': 'Cambiado a Incidente #{id}',
+    'sys.error_incident':    'Error creando el incidente',
+    'sys.error_chat':        'Error de comunicación',
+    'sys.error_scenario':    'Error creando el escenario',
+    'err.conn':          'Error de conexión',
+    'err.username_taken':'El nombre de usuario ya existe',
+    'err.no_permission': 'Sin permiso',
+    'err.create_user':   'Error creando el usuario',
+    'err.update_user':   'Error actualizando el usuario',
+    'err.load_history':  'Error cargando el historial',
+    'err.load_detail':   'Error cargando el detalle',
+    'err.delete':        'Error al eliminar',
+    'title.toggle_theme': 'Cambiar tema',
+    'title.refresh':      'Actualizar',
+    'title.delete':       'Eliminar',
+    'ep.unknown_location': 'Desconocida',
+    'ep.no_description':   'Sin descripción',
+    'ep.victim_prefix':    'Víctima',
+    'ep.emotion_prefix':   'Emoción',
+    'chat.operator_name':  'Operador',
   },
 
   fr: {
@@ -534,6 +587,30 @@ const messages = {
     'eu.cancel':          'Annuler',
     'eu.saving':          'Enregistrement...',
     'eu.save':            'Sauvegarder',
+    'sys.incident_open':     'Incident #{id} ouvert · {type} · {location}{scenario}',
+    'sys.scenario_label':    ' · Scénario : {title}',
+    'sys.call_ended':        "Appel terminé · Remplis la fiche et sauvegarde l'intervention",
+    'sys.fitxa_saved':       'Fiche sauvegardée · Incident #{id}',
+    'sys.incident_switched': "Basculé vers l'Incident #{id}",
+    'sys.error_incident':    "Erreur lors de la création de l'incident",
+    'sys.error_chat':        'Erreur de communication',
+    'sys.error_scenario':    'Erreur lors de la création du scénario',
+    'err.conn':          'Erreur de connexion',
+    'err.username_taken':"Le nom d'utilisateur existe déjà",
+    'err.no_permission': 'Permission refusée',
+    'err.create_user':   "Erreur lors de la création de l'utilisateur",
+    'err.update_user':   "Erreur lors de la mise à jour de l'utilisateur",
+    'err.load_history':  "Erreur de chargement de l'historique",
+    'err.load_detail':   'Erreur de chargement du détail',
+    'err.delete':        'Erreur lors de la suppression',
+    'title.toggle_theme': 'Changer le thème',
+    'title.refresh':      'Actualiser',
+    'title.delete':       'Supprimer',
+    'ep.unknown_location': 'Inconnue',
+    'ep.no_description':   'Sans description',
+    'ep.victim_prefix':    'Victime',
+    'ep.emotion_prefix':   'Émotion',
+    'chat.operator_name':  'Opérateur',
   },
 
   en: {
@@ -705,6 +782,30 @@ const messages = {
     'eu.cancel':          'Cancel',
     'eu.saving':          'Saving...',
     'eu.save':            'Save',
+    'sys.incident_open':     'Incident #{id} opened · {type} · {location}{scenario}',
+    'sys.scenario_label':    ' · Scenario: {title}',
+    'sys.call_ended':        'Call ended · Fill in the form and save the intervention',
+    'sys.fitxa_saved':       'Form saved · Incident #{id}',
+    'sys.incident_switched': 'Switched to Incident #{id}',
+    'sys.error_incident':    'Error creating the incident',
+    'sys.error_chat':        'Communication error',
+    'sys.error_scenario':    'Error creating the scenario',
+    'err.conn':          'Connection error',
+    'err.username_taken':'Username already exists',
+    'err.no_permission': 'No permission',
+    'err.create_user':   'Error creating user',
+    'err.update_user':   'Error updating user',
+    'err.load_history':  'Error loading history',
+    'err.load_detail':   'Error loading detail',
+    'err.delete':        'Error deleting',
+    'title.toggle_theme': 'Toggle theme',
+    'title.refresh':      'Refresh',
+    'title.delete':       'Delete',
+    'ep.unknown_location': 'Unknown',
+    'ep.no_description':   'No description',
+    'ep.victim_prefix':    'Victim',
+    'ep.emotion_prefix':   'Emotion',
+    'chat.operator_name':  'Operator',
   },
 }
 
@@ -723,14 +824,17 @@ const INCIDENT_TYPE_VALUES = [
   'Inundació', 'Emergència mèdica', 'Allau',
 ]
 
+// Función standalone — usable en stores (fuera de componentes Vue)
+export function t(key, vars = {}) {
+  const dict = messages[_lang.value] || messages.ca
+  let str = dict[key] ?? messages.ca[key] ?? key
+  for (const [k, v] of Object.entries(vars))
+    str = str.replaceAll(`{${k}}`, v)
+  return str
+}
+
 export function useI18n() {
-  function t(key, vars = {}) {
-    const dict = messages[_lang.value] || messages.ca
-    let str = dict[key] ?? messages.ca[key] ?? key
-    for (const [k, v] of Object.entries(vars))
-      str = str.replaceAll(`{${k}}`, v)
-    return str
-  }
+  // Reutiliza la función de módulo
 
   /** Retorna INCIDENT_TYPES traduïts per a components de cara a l'usuari */
   function incidentTypes() {

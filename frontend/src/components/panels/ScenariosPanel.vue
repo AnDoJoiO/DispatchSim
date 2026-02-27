@@ -30,7 +30,7 @@ async function deleteScenario(id) {
         <span>{{ tr('sp.header', { n: emergency.scenariosCache.length }) }}</span>
         <button
           @click="emergency.loadScenarios()"
-          title="Actualitzar"
+          :title="tr('title.refresh')"
           style="color:var(--text3)"
         >↺</button>
       </div>
@@ -70,7 +70,7 @@ async function deleteScenario(id) {
             @click.stop="deleteScenario(s.id)"
             class="flex-shrink-0 text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition"
             style="color:var(--text3)"
-            title="Eliminar"
+            :title="tr('title.delete')"
           >✕</button>
         </li>
       </ul>

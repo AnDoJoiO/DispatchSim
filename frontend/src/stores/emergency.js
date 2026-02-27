@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiFetch } from '@/api'
+import { t } from '@/i18n'
 
 export const useEmergencyStore = defineStore('emergency', () => {
   // Scenarios
@@ -65,7 +66,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
 
   async function startIncident(body) {
     const res = await apiFetch('/api/v1/incidents', { method: 'POST', body: JSON.stringify(body) })
-    if (!res || !res.ok) { _addMsg('system', "Error creant l'incident"); return null }
+    if (!res || !res.ok) { _addMsg('system', t('sys.error_incident')); return null }
     const inc = await res.json()
     currentIncidentId.value  = inc.id
     sessionIncidents.value.push(inc)
@@ -74,9 +75,9 @@ export const useEmergencyStore = defineStore('emergency', () => {
     callEnded.value          = false
     interventionSaved.value  = false
     const scLabel = body.scenario_id
-      ? ` · Escenari: ${scenariosCache.value.find(s => s.id === body.scenario_id)?.title || '#' + body.scenario_id}`
+      ? t('sys.scenario_label', { title: scenariosCache.value.find(s => s.id === body.scenario_id)?.title || '#' + body.scenario_id })
       : ''
-    _addMsg('system', `Incident #${inc.id} obert · ${inc.type} · ${inc.location}${scLabel}`)
+    _addMsg('system', t('sys.incident_open', { id: inc.id, type: t(`type.${inc.type}`), location: inc.location, scenario: scLabel }))
     _startTimer()
     return inc
   }
@@ -93,7 +94,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
           lang:             localStorage.getItem('dispatch_lang') || 'ca',
         }),
       })
-      if (!res || !res.ok) { _addMsg('system', 'Error de comunicació'); return }
+      if (!res || !res.ok) { _addMsg('system', t('sys.error_chat')); return }
       const data = await res.json()
       _addMsg('alertant', data.content)
     } finally {
@@ -107,7 +108,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
     )
     if (!res || !res.ok) return false
     _stopTimer()
-    _addMsg('system', 'Trucada finalitzada · Omple la fitxa i guarda la intervenció')
+    _addMsg('system', t('sys.call_ended'))
     return true
   }
 
@@ -121,7 +122,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
       _stopTimer()
     }
     interventionSaved.value = true
-    _addMsg('system', `Fitxa guardada · Incident #${currentIncidentId.value}`)
+    _addMsg('system', t('sys.fitxa_saved', { id: currentIncidentId.value }))
     return true
   }
 
@@ -131,12 +132,12 @@ export const useEmergencyStore = defineStore('emergency', () => {
     callActive.value        = false
     callEnded.value         = false
     interventionSaved.value = false
-    _addMsg('system', `Canviat a Incident #${inc.id}`)
+    _addMsg('system', t('sys.incident_switched', { id: inc.id }))
   }
 
   async function createScenario(payload) {
     const res = await apiFetch('/api/v1/scenarios', { method: 'POST', body: JSON.stringify(payload) })
-    if (!res || !res.ok) throw new Error("Error creant l'escenari")
+    if (!res || !res.ok) throw new Error(t('sys.error_scenario'))
     await loadScenarios()
   }
 

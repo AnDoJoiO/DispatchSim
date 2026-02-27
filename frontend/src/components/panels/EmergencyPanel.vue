@@ -32,8 +32,8 @@ function onScenarioChange() {
   incLocation.value = sc.base_location
   const parts = []
   if (sc.location_exact)  parts.push(sc.location_exact)
-  if (sc.victim_status)   parts.push(`Víctima: ${sc.victim_status}`)
-  if (sc.initial_emotion) parts.push(`Emoció: ${sc.initial_emotion}`)
+  if (sc.victim_status)   parts.push(`${tr('ep.victim_prefix')}: ${tr('vs.' + sc.victim_status)}`)
+  if (sc.initial_emotion) parts.push(`${tr('ep.emotion_prefix')}: ${tr('ie.' + sc.initial_emotion)}`)
   incDesc.value     = parts.join(' · ')
   fieldsLocked.value = true
 }
@@ -45,8 +45,8 @@ async function startIncident() {
       ? { scenario_id: +scenarioId.value, priority: emergency.selectedPriority }
       : {
           type:        incType.value,
-          location:    incLocation.value.trim() || 'Desconeguda',
-          description: incDesc.value.trim()     || 'Sense descripció',
+          location:    incLocation.value.trim() || tr('ep.unknown_location'),
+          description: incDesc.value.trim()     || tr('ep.no_description'),
           priority:    emergency.selectedPriority,
         }
     await emergency.startIncident(body)

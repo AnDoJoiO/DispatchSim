@@ -166,7 +166,7 @@ const accentStyle   = 'background:var(--accent);color:#fff;border:1px solid var(
           class="text-xs px-2 py-1 rounded-lg font-medium transition"
           style="border:1px solid var(--border);color:var(--text3);background:transparent"
         >{{ tr('hp.delete_all') }}</button>
-        <button @click="loadHistory" class="text-xs transition" style="color:var(--text3)" title="Actualitzar">↺</button>
+        <button @click="loadHistory" class="text-xs transition" style="color:var(--text3)" :title="tr('title.refresh')">↺</button>
       </div>
     </div>
 

@@ -138,7 +138,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Theme toggle -->
-      <button class="theme-btn" @click="app.toggleTheme()" title="Canviar tema">
+      <button class="theme-btn" @click="app.toggleTheme()" :title="tr('title.toggle_theme')">
         <svg v-if="app.theme === 'light'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
@@ -155,7 +155,7 @@ onUnmounted(() => {
       <button
         @click="() => window.location.href = '/'"
         class="logout-btn text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5"
-        title="Pàgina principal"
+        :title="tr('btn.home')"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
