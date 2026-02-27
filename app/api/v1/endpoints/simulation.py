@@ -66,6 +66,7 @@ def chat(
         reply = generate_alertant_response(
             history, incident.type, instructions_ia,
             location_exact, victim_status, initial_emotion,
+            lang=request.lang,
         )
     except Exception as exc:
         logger.exception("Error en generate_alertant_response (incident_id=%s): %s", request.incident_id, exc)

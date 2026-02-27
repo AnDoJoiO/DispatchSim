@@ -87,7 +87,11 @@ export const useEmergencyStore = defineStore('emergency', () => {
     try {
       const res = await apiFetch('/api/v1/simulate/chat', {
         method: 'POST',
-        body: JSON.stringify({ incident_id: currentIncidentId.value, operator_message: text }),
+        body: JSON.stringify({
+          incident_id:      currentIncidentId.value,
+          operator_message: text,
+          lang:             localStorage.getItem('dispatch_lang') || 'ca',
+        }),
       })
       if (!res || !res.ok) { _addMsg('system', 'Error de comunicació'); return }
       const data = await res.json()

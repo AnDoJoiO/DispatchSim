@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class ChatRequest(BaseModel):
     incident_id: int
     operator_message: str
+    lang: str = 'ca'
 
 
 class ChatResponse(BaseModel):
