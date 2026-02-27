@@ -45,19 +45,22 @@ def generate_alertant_response(
     location_exact: str | None = None,
     victim_status: str | None = None,
     initial_emotion: str | None = None,
+    description: str | None = None,
     lang: str = 'ca',
 ) -> str:
     system = f"{_BASE_PROMPT}{_lang_rule(lang)} The current emergency type is: {incident_type}."
 
     context_parts = []
     if location_exact:
-        context_parts.append(f"Localització exacta de l'incident: {location_exact}")
+        context_parts.append(f"Incident location: {location_exact}")
+    if description:
+        context_parts.append(f"Incident description (what is happening): {description}")
     if victim_status:
-        context_parts.append(f"Estat de la víctima: {victim_status}")
+        context_parts.append(f"Victim status: {victim_status}")
     if initial_emotion:
-        context_parts.append(f"La teva emoció inicial com a alertant: {initial_emotion}")
+        context_parts.append(f"Your initial emotion as the caller: {initial_emotion}")
     if context_parts:
-        system += "\n\nCONTEXT DE L'ESCENARI:\n" + "\n".join(context_parts)
+        system += "\n\nSCENARIO CONTEXT (you know all this — act accordingly):\n" + "\n".join(context_parts)
 
     if instructions_ia:
         system += (
