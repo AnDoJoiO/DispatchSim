@@ -27,9 +27,13 @@ const selectedScenario = computed(() =>
 function onScenarioChange() {
   const sc = selectedScenario.value
   if (!sc) { fieldsLocked.value = false; return }
-  incType.value      = sc.incident_type
-  incLocation.value  = sc.base_location
-  incDesc.value      = sc.initial_description
+  incType.value     = sc.incident_type
+  incLocation.value = sc.base_location
+  const parts = []
+  if (sc.location_exact)  parts.push(sc.location_exact)
+  if (sc.victim_status)   parts.push(`Víctima: ${sc.victim_status}`)
+  if (sc.initial_emotion) parts.push(`Emoció: ${sc.initial_emotion}`)
+  incDesc.value     = parts.join(' · ')
   fieldsLocked.value = true
 }
 

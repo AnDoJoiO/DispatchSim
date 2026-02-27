@@ -46,10 +46,16 @@ def chat(
     history.append({"role": "user", "content": request.operator_message})
 
     instructions_ia = None
+    location_exact  = None
+    victim_status   = None
+    initial_emotion = None
     if incident.scenario_id:
         scenario = session.get(Scenario, incident.scenario_id)
         if scenario:
             instructions_ia = scenario.instructions_ia
+            location_exact  = scenario.location_exact
+            victim_status   = scenario.victim_status
+            initial_emotion = scenario.initial_emotion
 
     # Persistir el missatge de l'operador abans de cridar la IA
     user_msg = ChatMessage(incident_id=incident.id, role="user", content=request.operator_message)
@@ -57,7 +63,10 @@ def chat(
     session.flush()
 
     try:
-        reply = generate_alertant_response(history, incident.type, instructions_ia)
+        reply = generate_alertant_response(
+            history, incident.type, instructions_ia,
+            location_exact, victim_status, initial_emotion,
+        )
     except Exception as exc:
         logger.exception("Error en generate_alertant_response (incident_id=%s): %s", request.incident_id, exc)
         session.commit()  # guardar el missatge de l'operador tot i l'error

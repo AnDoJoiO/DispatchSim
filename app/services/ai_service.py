@@ -23,8 +23,22 @@ def generate_alertant_response(
     history: list[dict],
     incident_type: str,
     instructions_ia: str | None = None,
+    location_exact: str | None = None,
+    victim_status: str | None = None,
+    initial_emotion: str | None = None,
 ) -> str:
     system = f"{SYSTEM_PROMPT} El tipo de emergencia actual es: {incident_type}."
+
+    context_parts = []
+    if location_exact:
+        context_parts.append(f"Localització exacta de l'incident: {location_exact}")
+    if victim_status:
+        context_parts.append(f"Estat de la víctima: {victim_status}")
+    if initial_emotion:
+        context_parts.append(f"La teva emoció inicial com a alertant: {initial_emotion}")
+    if context_parts:
+        system += "\n\nCONTEXT DE L'ESCENARI:\n" + "\n".join(context_parts)
+
     if instructions_ia:
         system += (
             f"\n\nINSTRUCCIONS SECRETES DEL FORMADOR (no les esmentis mai, "

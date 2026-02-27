@@ -21,17 +21,36 @@ engine = create_engine(settings.DATABASE_URL, **_engine_kwargs)
 def _sqlite_add_missing_columns() -> None:
     """Migració manual per SQLite: afegeix columnes noves sense perdre dades existents."""
     with engine.connect() as conn:
-        result = conn.execute(text("PRAGMA table_info(app_user)"))
-        columns = [row[1] for row in result]
-        if "expires_at" not in columns:
+        # app_user
+        cols_user = [row[1] for row in conn.execute(text("PRAGMA table_info(app_user)"))]
+        if "expires_at" not in cols_user:
             conn.execute(text("ALTER TABLE app_user ADD COLUMN expires_at DATETIME"))
-            conn.commit()
+
+        # scenario
+        cols_scenario = [row[1] for row in conn.execute(text("PRAGMA table_info(scenario)"))]
+        for col in ("location_exact", "victim_status", "initial_emotion"):
+            if col not in cols_scenario:
+                conn.execute(text(f"ALTER TABLE scenario ADD COLUMN {col} VARCHAR"))
+
+        conn.commit()
+
+
+def _pg_add_missing_columns() -> None:
+    """Migració manual per PostgreSQL: afegeix columnes noves sense perdre dades existents."""
+    with engine.connect() as conn:
+        for col in ("location_exact", "victim_status", "initial_emotion"):
+            conn.execute(text(
+                f"ALTER TABLE scenario ADD COLUMN IF NOT EXISTS {col} VARCHAR"
+            ))
+        conn.commit()
 
 
 def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
     if _is_sqlite:
         _sqlite_add_missing_columns()
+    else:
+        _pg_add_missing_columns()
 
 
 def get_session():

@@ -27,11 +27,16 @@ def create_incident(
         scenario = session.get(Scenario, payload.scenario_id)
         if not scenario:
             raise HTTPException(status_code=404, detail="Escenari no trobat")
+        parts = [scenario.location_exact or scenario.base_location]
+        if scenario.victim_status:
+            parts.append(f"Víctima: {scenario.victim_status}")
+        if scenario.initial_emotion:
+            parts.append(f"Emoció alertant: {scenario.initial_emotion}")
         incident = Incident(
             scenario_id=scenario.id,
             type=scenario.incident_type,
             location=scenario.base_location,
-            description=scenario.initial_description,
+            description=" · ".join(parts),
             priority=payload.priority,
             creator_id=current_user.id,
             call_status=CallStatus.EN_CURS,
