@@ -1,28 +1,17 @@
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
-
-class VictimStatus(str, Enum):
-    CONSCIENTE   = "Consciente"
-    INCONSCIENTE = "Inconsciente"
-    GASP         = "GASP"
-
-
-class InitialEmotion(str, Enum):
-    CALMA     = "Calma"
-    PANICO    = "Pánico"
-    AGRESION  = "Agresión"
+from app.models.scenario import InitialEmotion, VictimStatus
 
 
 class ScenarioCreate(BaseModel):
-    title:          str
-    incident_type:  str
-    base_location:  str
-    location_exact: str
-    victim_status:  VictimStatus
+    title:           str
+    incident_type:   str
+    base_location:   str
+    location_exact:  str
+    victim_status:   VictimStatus
     initial_emotion: InitialEmotion
     instructions_ia: str = Field(max_length=2000)  # instrucciones secretas para la IA
 
@@ -33,8 +22,8 @@ class ScenarioRead(BaseModel):
     incident_type:   str
     base_location:   str
     location_exact:  Optional[str]
-    victim_status:   Optional[str]
-    initial_emotion: Optional[str]
+    victim_status:   Optional[VictimStatus]
+    initial_emotion: Optional[InitialEmotion]
     creator_id:      Optional[int]
     created_at:      datetime
     # instructions_ia se omite deliberadamente — es información secreta del formador
