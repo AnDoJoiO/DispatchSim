@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
     incident_id: int
-    operator_message: str
+    operator_message: str = Field(max_length=1000)
     lang: str = 'ca'
 
 

@@ -7,7 +7,7 @@ from app.models.user import UserRole
 
 
 class UserCreate(BaseModel):
-    username:   str      = Field(min_length=3, max_length=50)
+    username:   str      = Field(min_length=3, max_length=50, pattern=r'^[a-zA-Z0-9_]+$')
     password:   str      = Field(min_length=6)
     role:       UserRole = UserRole.OPERADOR
     expires_at: Optional[datetime] = None

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class VictimStatus(str, Enum):
@@ -24,7 +24,7 @@ class ScenarioCreate(BaseModel):
     location_exact: str
     victim_status:  VictimStatus
     initial_emotion: InitialEmotion
-    instructions_ia: str  # instrucciones secretas para la IA
+    instructions_ia: str = Field(max_length=2000)  # instrucciones secretas para la IA
 
 
 class ScenarioRead(BaseModel):
