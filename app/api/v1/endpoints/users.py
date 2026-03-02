@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 
 from app.core.deps import require_role
@@ -14,10 +14,12 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=List[UserRead])
 def list_users(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     session: Session = Depends(get_session),
     _: User = Depends(require_role(UserRole.ADMIN, UserRole.FORMADOR)),
 ):
-    return session.exec(select(User)).all()
+    return session.exec(select(User).offset(skip).limit(limit)).all()
 
 
 @router.post("", response_model=UserRead, status_code=201)

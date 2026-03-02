@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class InterventionData(SQLModel, table=True):
     id:                 Optional[int] = Field(default=None, primary_key=True)
-    incident_id:        int           = Field(foreign_key="incident.id", unique=True)
+    incident_id:        int           = Field(foreign_key="incident.id", unique=True, index=True)
     exact_address:      str           = ""
     contact_phone:      str           = ""
     num_injured:        int           = 0

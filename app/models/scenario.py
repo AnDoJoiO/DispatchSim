@@ -27,5 +27,5 @@ class Scenario(SQLModel, table=True):
     victim_status:   Optional[VictimStatus] = Field(default=None, sa_column=Column(String, nullable=True))
     initial_emotion: Optional[InitialEmotion] = Field(default=None, sa_column=Column(String, nullable=True))
     instructions_ia: str                    # secreto — solo llega a la IA, nunca al frontend
-    creator_id:      Optional[int]          = Field(default=None, foreign_key="app_user.id")
+    creator_id:      Optional[int]          = Field(default=None, foreign_key="app_user.id", index=True)
     created_at:      datetime               = Field(default_factory=lambda: datetime.now(timezone.utc))

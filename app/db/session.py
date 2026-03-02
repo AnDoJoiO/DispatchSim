@@ -1,5 +1,10 @@
-from sqlalchemy import text
+import os
+
+from alembic import command as alembic_command
+from alembic.config import Config
+from sqlalchemy import inspect, text
 from sqlmodel import SQLModel, create_engine, Session
+
 from app.core.config import settings
 
 _is_sqlite = settings.DATABASE_URL.startswith("sqlite")
@@ -17,40 +22,32 @@ else:
 
 engine = create_engine(settings.DATABASE_URL, **_engine_kwargs)
 
-
-def _sqlite_add_missing_columns() -> None:
-    """Migració manual per SQLite: afegeix columnes noves sense perdre dades existents."""
-    with engine.connect() as conn:
-        # app_user
-        cols_user = [row[1] for row in conn.execute(text("PRAGMA table_info(app_user)"))]
-        if "expires_at" not in cols_user:
-            conn.execute(text("ALTER TABLE app_user ADD COLUMN expires_at DATETIME"))
-
-        # scenario
-        cols_scenario = [row[1] for row in conn.execute(text("PRAGMA table_info(scenario)"))]
-        for col in ("location_exact", "victim_status", "initial_emotion"):
-            if col not in cols_scenario:
-                conn.execute(text(f"ALTER TABLE scenario ADD COLUMN {col} VARCHAR"))
-
-        conn.commit()
+_ALEMBIC_INI = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "alembic.ini")
+)
 
 
-def _pg_add_missing_columns() -> None:
-    """Migració manual per PostgreSQL: afegeix columnes noves sense perdre dades existents."""
-    with engine.connect() as conn:
-        for col in ("location_exact", "victim_status", "initial_emotion"):
-            conn.execute(text(
-                f"ALTER TABLE scenario ADD COLUMN IF NOT EXISTS {col} VARCHAR"
-            ))
-        conn.commit()
+def _get_alembic_config() -> Config:
+    return Config(_ALEMBIC_INI)
 
 
 def create_db_and_tables() -> None:
-    SQLModel.metadata.create_all(engine)
-    if _is_sqlite:
-        _sqlite_add_missing_columns()
+    """Inicialitza l'esquema de la BD amb Alembic.
+
+    - Primera execució (sense alembic_version): crea totes les taules
+      via SQLModel.metadata.create_all i marca la BD com a 'head'.
+    - Execucions posteriors: aplica les migracions pendents amb upgrade head.
+    """
+    existing_tables = inspect(engine).get_table_names()
+    cfg = _get_alembic_config()
+
+    if "alembic_version" not in existing_tables:
+        # BD nova o anterior a Alembic: crear taules i estampar baseline
+        SQLModel.metadata.create_all(engine)
+        alembic_command.stamp(cfg, "head")
     else:
-        _pg_add_missing_columns()
+        # Alembic ja actiu: aplicar migracions pendents
+        alembic_command.upgrade(cfg, "head")
 
 
 def get_session():

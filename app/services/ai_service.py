@@ -96,7 +96,7 @@ def generate_alertant_response(
 
     response = _client().messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=512,
+        max_tokens=settings.AI_MAX_TOKENS,
         system=system,
         messages=history,
     )

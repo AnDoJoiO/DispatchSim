@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import func
@@ -40,6 +40,8 @@ def _duration(start, end) -> int | None:
 
 @router.get("", response_model=List[CallHistorySummary])
 def list_history(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     session: Session = Depends(get_session),
     _: User = Depends(require_role(UserRole.ADMIN, UserRole.FORMADOR)),
 ):
@@ -48,6 +50,8 @@ def list_history(
         select(Incident)
         .where(Incident.call_status == CallStatus.FINALITZADA)
         .order_by(Incident.call_end_at.desc())
+        .offset(skip)
+        .limit(limit)
     ).all()
 
     if not incidents:

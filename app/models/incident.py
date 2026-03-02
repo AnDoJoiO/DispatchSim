@@ -21,9 +21,9 @@ class Incident(SQLModel, table=True):
     description: str
     priority: int
     created_at:       datetime          = Field(default_factory=lambda: datetime.now(timezone.utc))
-    creator_id:       Optional[int]     = Field(default=None, foreign_key="app_user.id")
-    operator_id:      Optional[int]     = Field(default=None, foreign_key="app_user.id")
-    scenario_id:      Optional[int]     = Field(default=None, foreign_key="scenario.id")
+    creator_id:       Optional[int]     = Field(default=None, foreign_key="app_user.id", index=True)
+    operator_id:      Optional[int]     = Field(default=None, foreign_key="app_user.id", index=True)
+    scenario_id:      Optional[int]     = Field(default=None, foreign_key="scenario.id", index=True)
     call_status:      CallStatus        = Field(default=CallStatus.ESPERANT)
     call_start_at:    Optional[datetime] = Field(default=None)
     type_decided_at:  Optional[datetime] = Field(default=None)
@@ -36,7 +36,7 @@ class Incident(SQLModel, table=True):
 
 class ChatMessage(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    incident_id: int = Field(foreign_key="incident.id")
+    incident_id: int = Field(foreign_key="incident.id", index=True)
     role: str  # "user" | "assistant"
     content: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

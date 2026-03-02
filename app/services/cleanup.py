@@ -5,14 +5,13 @@ from datetime import datetime, timezone
 from sqlalchemy import delete as sa_delete, or_
 from sqlmodel import Session, select
 
+from app.core.config import settings
 from app.db.session import engine
 from app.models.incident import ChatMessage, Incident
 from app.models.intervention import InterventionData
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
-
-CLEANUP_INTERVAL_SECONDS = 3600  # cada hora
 
 
 def run_expired_user_cleanup() -> int:
@@ -77,4 +76,4 @@ async def expired_user_cleanup_loop() -> None:
             run_expired_user_cleanup()
         except Exception:
             logger.exception("Error durant la neteja d'usuaris expirats")
-        await asyncio.sleep(CLEANUP_INTERVAL_SECONDS)
+        await asyncio.sleep(settings.CLEANUP_INTERVAL_SECONDS)

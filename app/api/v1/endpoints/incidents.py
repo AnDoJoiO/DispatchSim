@@ -74,7 +74,7 @@ def get_incident(
 ):
     incident = session.get(Incident, incident_id)
     if not incident:
-        raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        raise HTTPException(status_code=404, detail="Incidència no trobada")
     return incident
 
 
@@ -86,7 +86,7 @@ def delete_incident(
 ):
     incident = session.get(Incident, incident_id)
     if not incident:
-        raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        raise HTTPException(status_code=404, detail="Incidència no trobada")
     session.delete(incident)
     session.commit()
 
@@ -124,7 +124,7 @@ def get_transcript(
     _: User = Depends(get_current_user),
 ):
     if not session.get(Incident, incident_id):
-        raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+        raise HTTPException(status_code=404, detail="Incidència no trobada")
     messages = session.exec(
         select(ChatMessage)
         .where(ChatMessage.incident_id == incident_id)

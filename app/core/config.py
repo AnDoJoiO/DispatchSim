@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     # Admin inicial — si estan definits es crea automàticament al primer arrencada
     ADMIN_USERNAME: str = ""
     ADMIN_PASSWORD: str = ""
+    # Serveis
+    CLEANUP_INTERVAL_SECONDS: int = 3600
+    AI_MAX_TOKENS: int = 512
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
