@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     DATABASE_URL: str = "sqlite:///./dispatch.db"
     ANTHROPIC_API_KEY: str = ""
+    DispatchSimKeyOpenAI: str = ""
+    DispatchSimKeyEleven: str = ""
     SECRET_KEY: str = _INSECURE_DEFAULT
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -19,7 +21,7 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = ""
     # Serveis
     CLEANUP_INTERVAL_SECONDS: int = 3600
-    AI_MAX_TOKENS: int = 512
+    AI_MAX_TOKENS: int = 250
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

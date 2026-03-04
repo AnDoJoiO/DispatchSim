@@ -36,8 +36,8 @@ export const useEmergencyStore = defineStore('emergency', () => {
   )
 
   // ── Internal helpers ──────────────────────────────────────
-  function _addMsg(role, content) {
-    messages.value.push({ id: ++_msgId, role, content })
+  function _addMsg(role, content, voice = null) {
+    messages.value.push({ id: ++_msgId, role, content, voice })
   }
 
   function _startTimer() {
@@ -96,7 +96,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
       })
       if (!res || !res.ok) { _addMsg('system', t('sys.error_chat')); return }
       const data = await res.json()
-      _addMsg('alertant', data.content)
+      _addMsg('alertant', data.content, data.voice ?? 'nova')
     } finally {
       isTyping.value = false
     }

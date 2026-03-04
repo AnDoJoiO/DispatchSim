@@ -1,13 +1,41 @@
 <script setup>
-import { ref, watch, nextTick, computed } from 'vue'
+import { ref, watch, nextTick, computed, onUnmounted } from 'vue'
 import { useEmergencyStore } from '@/stores/emergency'
 import { formatMessage, fmtElapsed } from '@/utils'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from '@/i18n'
+import { useMicrophone } from '@/composables/useMicrophone'
+import { useTTS }        from '@/composables/useTTS'
 
 const emergency = useEmergencyStore()
 const auth      = useAuthStore()
-const { t: tr } = useI18n()
+const { t: tr, lang } = useI18n()
+
+const { active: micActive, recording: micRecording, transcribing, supported: micSupported, start: startMic, stop: stopMic, suspend: suspendMic, resume: resumeMic } = useMicrophone()
+const { speaking, speak, stop: stopTTS } = useTTS()
+
+// Arrancar el micrófono automáticamente cuando hay llamada activa
+watch(() => emergency.callActive, (active) => {
+  if (active && micSupported.value) startMic(async text => { msgInput.value = text; await sendMessage() }, lang.value)
+  else stopMic()
+}, { immediate: true })
+
+watch(() => emergency.callEnded, (ended) => { if (ended) { stopMic(); stopTTS() } })
+
+onUnmounted(() => { stopMic(); stopTTS() })
+
+// Reproducir TTS al llegar nuevo mensaje del alertante
+// Suspender micro ANTES del fetch para evitar que Whisper capture el audio de altavoces
+watch(() => emergency.messages.length, () => {
+  const msgs = emergency.messages
+  const last = msgs[msgs.length - 1]
+  if (last?.role === 'alertant') {
+    suspendMic() // apagar VAD inmediatamente, antes del fetch TTS
+    speak(last.content, last.voice || 'nova', {
+      onEnd: () => setTimeout(() => resumeMic(), 300), // pequeño margen tras el audio
+    })
+  }
+})
 
 const messagesEl = ref(null)
 const msgInput   = ref('')
@@ -178,6 +206,12 @@ async function endCall() {
         class="flex-1 rounded-xl px-4 py-2.5 text-sm max-h-28 outline-none transition"
         style="background:var(--in-bg2);border:1px solid var(--border);color:var(--text)"
       ></textarea>
+      <!-- Indicador de estado del micrófono (no interactivo) -->
+      <div v-if="micSupported && emergency.callActive" class="flex-shrink-0 flex items-center justify-center w-10 h-10" :title="transcribing ? tr('chat.mic_transcribing') : micRecording ? tr('chat.mic_stop') : tr('chat.mic_start')">
+        <span v-if="transcribing" class="text-xl">⏳</span>
+        <span v-else-if="micRecording" class="text-xl animate-pulse">🔴</span>
+        <span v-else-if="micActive" class="block w-3 h-3 rounded-full animate-pulse" style="background:#22c55e"></span>
+      </div>
       <button
         @click="sendMessage"
         :disabled="!emergency.inputEnabled || sending"

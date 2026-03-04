@@ -23,6 +23,7 @@ _CSP = (
     "style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data: https://flagcdn.com; "
     "connect-src 'self'; "
+    "media-src 'self' blob:; "
     "frame-ancestors 'none';"
 )
 

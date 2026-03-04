@@ -29,6 +29,10 @@ onMounted(async () => {
   if (auth.isLoggedIn) {
     await emergency.loadScenarios()
     emergency.setPriority(1)
+    // Solicitar permiso de micrófono en segundo plano al iniciar sesión
+    navigator.mediaDevices?.getUserMedia({ audio: true })
+      .then(s => s.getTracks().forEach(t => t.stop()))
+      .catch(() => {})
   }
 })
 </script>

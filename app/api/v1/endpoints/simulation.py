@@ -87,4 +87,11 @@ def chat(
     session.add(ChatMessage(incident_id=incident.id, role="assistant", content=reply))
     session.commit()
 
-    return ChatResponse(content=reply)
+    _EMOTION_VOICE = {
+        "Calma":    "EXAVITQu4vr4xnSDxMaL",  # Sarah
+        "Pánico":   "cgSgspJ2msm6clMCkdW9",  # Jessica
+        "Agresión": "pNInz6obpgDQGcFmaJgB",  # Adam
+    }
+    voice = _EMOTION_VOICE.get(initial_emotion.value if initial_emotion else "", "EXAVITQu4vr4xnSDxMaL")
+
+    return ChatResponse(content=reply, voice=voice)

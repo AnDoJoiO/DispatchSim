@@ -12,6 +12,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     role: str = "assistant"
     content: str
+    voice: str = "nova"
 
 
 class TranscriptMessage(BaseModel):
