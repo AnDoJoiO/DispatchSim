@@ -86,7 +86,7 @@ async def text_to_speech(
                     "model_id": "eleven_multilingual_v2",
                     "voice_settings": voice_settings,
                 },
-                timeout=30.0,
+                timeout=60.0,
             )
         if response.status_code != 200:
             raise HTTPException(502, f"ElevenLabs TTS failed: {response.text}")
@@ -104,7 +104,7 @@ async def text_to_speech(
                 "Content-Type": "application/json",
             },
             json={"model": "tts-1-hd", "input": req.text, "voice": req.voice},
-            timeout=30.0,
+            timeout=60.0,
         )
 
     if response.status_code != 200:

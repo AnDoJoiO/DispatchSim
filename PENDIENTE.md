@@ -52,6 +52,10 @@
 
 - [ ] **Sin tests** — Cero cobertura. Prioridad mínima: `security.py`, auth endpoints, borrado en cascada.
 
+- [ ] **Sin rate limiting en endpoints de voz** — `/voice/transcribe` y `/voice/speak` sin límite. Riesgo de costes masivos en OpenAI/ElevenLabs si se abusa. Aplicar el mismo `SlidingWindowLimiter` que en `/simulate/chat`. `app/api/v1/endpoints/voice.py`
+
+- [ ] **Sin límite de tamaño en audio upload** — `/voice/transcribe` acepta archivos de cualquier tamaño. Añadir validación de `content_length` o tamaño máximo del blob. `app/api/v1/endpoints/voice.py`
+
 - [ ] **`additional_risks` como CSV en BD** — Texto plano `"Gas,Electricitat,Químics"`.
   Considerar tabla de relación o campo JSON.
   _Archivo: `app/models/intervention.py`_
@@ -68,11 +72,9 @@ Probar los 3 flujos de cabo a rabo en producción (Railway):
 - [ ] **Formador**: crear escenario → crear operador con caducidad → historial → borrar historial
 - [ ] **Admin**: crear formador → editar usuario → verificar caducidad en login
 
-### Paso 3 — Voz (siguiente fase grande)
-Una vez los flujos pasen QA sin fallos:
-- [ ] **Text-to-speech** para la respuesta del alertante
-- [ ] **Speech-to-text** para el operador (dictado en lugar de escribir)
-- API candidata: **Web Speech API** (nativa, sin coste) como primera opción; ElevenLabs si se quiere voz más realista
+### ~~Paso 3 — Voz~~ ✅ COMPLETADO
+- [x] **Speech-to-text** operador — MediaRecorder + VAD automático + OpenAI Whisper. Auto-envío al silencio (800ms). Filtro anti-alucinaciones.
+- [x] **Text-to-speech** alertante — ElevenLabs `eleven_multilingual_v2` (fallback OpenAI TTS). Voz según emoción del escenario (Sarah/Jessica/Adam). Frases en paralelo para inicio rápido. Micro pausado durante TTS.
 
 ---
 
@@ -98,4 +100,4 @@ Una vez los flujos pasen QA sin fallos:
 
 ---
 
-_Última actualización: 2026-02-27 — i18n completo + idioma estricto en IA. Pendiente: límites de longitud + QA + voz_
+_Última actualización: 2026-03-04 — Voz bidireccional completa (STT + TTS). Pendiente: QA manual en producción._

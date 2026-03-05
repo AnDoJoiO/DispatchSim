@@ -1,11 +1,6 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
-// Divide el texto en frases por puntuación
-function splitSentences(text) {
-  return text.split(/(?<=[.!?…])\s+/).map(s => s.trim()).filter(Boolean)
-}
-
 async function fetchAudioUrl(text, voice, token) {
   const res = await fetch('/api/v1/voice/speak', {
     method:  'POST',
@@ -32,25 +27,15 @@ export function useTTS() {
   async function speak(text, voice = 'nova', { onEnd } = {}) {
     if (!text?.trim()) { onEnd?.(); return }
 
-    aborted      = false
+    aborted        = false
     speaking.value = true
 
-    const auth      = useAuthStore()
-    const sentences = splitSentences(text)
-
-    // Pre-cargar todas las frases en paralelo, reproducir en orden
-    const urlPromises = sentences.map(s => fetchAudioUrl(s, voice, auth.token))
+    const auth = useAuthStore()
 
     try {
-      let first = true
-      for (const urlPromise of urlPromises) {
-        if (aborted) break
-        const url = await urlPromise
-        if (!url || aborted) break
-        // Pequeño margen en la primera frase para que el subsistema de audio se inicialice
-        if (first) { await new Promise(r => setTimeout(r, 150)); first = false }
-        await playUrl(url)
-      }
+      if (aborted) return
+      const url = await fetchAudioUrl(text.trim(), voice, auth.token)
+      if (url && !aborted) await playUrl(url)
     } finally {
       speaking.value = false
       onEnd?.()

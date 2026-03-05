@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = ""
     # Serveis
     CLEANUP_INTERVAL_SECONDS: int = 3600
-    AI_MAX_TOKENS: int = 250
+    AI_MAX_TOKENS: int = 500
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
