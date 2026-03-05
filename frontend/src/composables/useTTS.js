@@ -2,13 +2,22 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 async function fetchAudioUrl(text, voice, token) {
-  const res = await fetch('/api/v1/voice/speak', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body:    JSON.stringify({ text, voice }),
-  })
-  if (!res.ok) return null
-  return URL.createObjectURL(await res.blob())
+  try {
+    const res = await fetch('/api/v1/voice/speak', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body:    JSON.stringify({ text, voice }),
+    })
+    if (!res.ok) {
+      const err = await res.text().catch(() => res.status)
+      console.error('[TTS] API error', res.status, err)
+      return null
+    }
+    return URL.createObjectURL(await res.blob())
+  } catch (e) {
+    console.error('[TTS] fetch failed', e)
+    return null
+  }
 }
 
 function playUrl(url) {
