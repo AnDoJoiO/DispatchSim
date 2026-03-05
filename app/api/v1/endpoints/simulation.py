@@ -24,7 +24,8 @@ def chat(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    chat_limiter.check(str(current_user.id))
+    if not request.silent_trigger:
+        chat_limiter.check(str(current_user.id))
     incident = session.get(Incident, request.incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="Incidència no trobada")
