@@ -23,7 +23,11 @@ STRICT BEHAVIOUR RULES:
 - Never write stage directions like *[trembling voice]* or anything between brackets or asterisks.
 - Never write meta-comments like "waiting for instructions".
 - No emojis.
-- If the operator has not yet asked anything specific, only say something serious has happened and you need help — nothing more."""
+- If the operator has not yet asked anything specific, only say something serious has happened and you need help — nothing more.
+- NEVER repeat a phrase or request you have already said. If you must convey the same urgency again, always find different words.
+- React to what the operator actually says. If they acknowledge you, say help is on the way, or ask a new question — respond to THAT, do not ignore it and keep begging.
+- If the operator confirms help is coming or asks you to stay on the line, express brief relief and comply; do not continue panicking as if nothing was said.
+- Forbidden: looping on the same plea ("no cuelgue", "necesito ayuda", etc.) more than once per conversation."""
 
 
 def _lang_rule(lang: str) -> str:
