@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -7,6 +9,7 @@ import httpx
 from app.core.config import settings
 from app.core.deps import get_current_user
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/voice", tags=["voice"])
 
 # Frases que Whisper alucina con silencio o ruido de fondo
@@ -75,7 +78,7 @@ async def text_to_speech(
     if settings.DispatchSimKeyEleven:
         voice_settings = _EL_VOICE_SETTINGS.get(req.voice, _EL_DEFAULT_SETTINGS)
         async with httpx.AsyncClient() as client:
-            response = await client.post(
+            el_response = await client.post(
                 f"https://api.elevenlabs.io/v1/text-to-speech/{req.voice}",
                 headers={
                     "xi-api-key": settings.DispatchSimKeyEleven,
@@ -88,26 +91,36 @@ async def text_to_speech(
                 },
                 timeout=60.0,
             )
-        if response.status_code != 200:
-            raise HTTPException(502, f"ElevenLabs TTS failed: {response.text}")
-        return Response(content=response.content, media_type="audio/mpeg")
+        if el_response.status_code == 200:
+            return Response(content=el_response.content, media_type="audio/mpeg")
+        logger.error("ElevenLabs TTS error %s: %s", el_response.status_code, el_response.text[:300])
+        # Si ElevenLabs falla, intentar OpenAI como fallback
 
-    # Fallback a OpenAI TTS
+    # OpenAI TTS
     if not settings.DispatchSimKeyOpenAI:
         raise HTTPException(503, "TTS service not configured")
 
+    # Mapear voice IDs de ElevenLabs a voces válidas de OpenAI
+    _EL_TO_OAI = {
+        "EXAVITQu4vr4xnSDxMaL": "nova",
+        "cgSgspJ2msm6clMCkdW9": "shimmer",
+        "pNInz6obpgDQGcFmaJgB": "onyx",
+    }
+    oai_voice = _EL_TO_OAI.get(req.voice, req.voice if req.voice in {"alloy","echo","fable","onyx","nova","shimmer"} else "nova")
+
     async with httpx.AsyncClient() as client:
-        response = await client.post(
+        oai_response = await client.post(
             "https://api.openai.com/v1/audio/speech",
             headers={
                 "Authorization": f"Bearer {settings.DispatchSimKeyOpenAI}",
                 "Content-Type": "application/json",
             },
-            json={"model": "tts-1-hd", "input": req.text, "voice": req.voice},
+            json={"model": "tts-1-hd", "input": req.text, "voice": oai_voice},
             timeout=60.0,
         )
 
-    if response.status_code != 200:
-        raise HTTPException(502, f"TTS failed: {response.text}")
+    if oai_response.status_code != 200:
+        logger.error("OpenAI TTS error %s: %s", oai_response.status_code, oai_response.text[:300])
+        raise HTTPException(502, f"TTS failed: {oai_response.text}")
 
-    return Response(content=response.content, media_type="audio/mpeg")
+    return Response(content=oai_response.content, media_type="audio/mpeg")
