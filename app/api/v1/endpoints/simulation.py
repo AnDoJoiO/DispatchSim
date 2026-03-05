@@ -43,7 +43,6 @@ def chat(
     ).all()
 
     history = [{"role": m.role, "content": m.content} for m in db_messages]
-    history.append({"role": "user", "content": request.operator_message})
 
     instructions_ia = None
     location_exact  = None
@@ -57,10 +56,22 @@ def chat(
             victim_status   = scenario.victim_status
             initial_emotion = scenario.initial_emotion
 
-    # Persistir el missatge de l'operador abans de cridar la IA
-    user_msg = ChatMessage(incident_id=incident.id, role="user", content=request.operator_message)
-    session.add(user_msg)
-    session.flush()
+    if request.silent_trigger:
+        # No guardar res a la BD; afegir context de silenci a l'historial temporal
+        history.append({
+            "role": "user",
+            "content": (
+                "[L'operador no ha respost durant uns segons. "
+                "Reacciona de forma breu i natural: expressa nerviosisme o impaciència, "
+                "demana si segueix en línia o si ve ajuda. "
+                "1-2 frases màxim. No repeteixis el que ja has dit.]"
+            ),
+        })
+    else:
+        history.append({"role": "user", "content": request.operator_message})
+        # Persistir el missatge de l'operador
+        session.add(ChatMessage(incident_id=incident.id, role="user", content=request.operator_message))
+        session.flush()
 
     try:
         reply = generate_alertant_response(
@@ -73,7 +84,7 @@ def chat(
         )
     except Exception as exc:
         logger.exception("Error en generate_alertant_response (incident_id=%s): %s", request.incident_id, exc)
-        session.commit()  # guardar el missatge de l'operador tot i l'error
+        session.commit()
         raise HTTPException(status_code=502, detail="El servei de simulació no està disponible en aquest moment.")
 
     # Primer missatge → registrar type_decided_at (UPDATE directe)

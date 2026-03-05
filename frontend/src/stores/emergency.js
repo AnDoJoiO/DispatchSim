@@ -13,8 +13,9 @@ export const useEmergencyStore = defineStore('emergency', () => {
   const selectedPriority  = ref(1)
 
   // Chat
-  const messages  = ref([])  // { id, role: 'operator'|'alertant'|'system', content }
-  const isTyping  = ref(false)
+  const messages     = ref([])  // { id, role: 'operator'|'alertant'|'system', content }
+  const isTyping     = ref(false)
+  const silenceCount = ref(0)   // quantes vegades ha reaccionat al silenci en aquesta crida
 
   // Call state
   const callActive        = ref(false)
@@ -74,6 +75,7 @@ export const useEmergencyStore = defineStore('emergency', () => {
     callActive.value         = true
     callEnded.value          = false
     interventionSaved.value  = false
+    silenceCount.value       = 0
     const scLabel = body.scenario_id
       ? t('sys.scenario_label', { title: scenariosCache.value.find(s => s.id === body.scenario_id)?.title || '#' + body.scenario_id })
       : ''
@@ -95,6 +97,30 @@ export const useEmergencyStore = defineStore('emergency', () => {
         }),
       })
       if (!res || !res.ok) { _addMsg('system', t('sys.error_chat')); return }
+      const data = await res.json()
+      _addMsg('alertant', data.content, data.voice ?? 'nova')
+    } finally {
+      isTyping.value = false
+    }
+  }
+
+  const MAX_SILENCE_REACTIONS = 3
+
+  async function sendSilence() {
+    if (!callActive.value || callEnded.value || isTyping.value) return
+    if (silenceCount.value >= MAX_SILENCE_REACTIONS) return
+    silenceCount.value++
+    isTyping.value = true
+    try {
+      const res = await apiFetch('/api/v1/simulate/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          incident_id:    currentIncidentId.value,
+          silent_trigger: true,
+          lang:           localStorage.getItem('dispatch_lang') || 'ca',
+        }),
+      })
+      if (!res || !res.ok) return
       const data = await res.json()
       _addMsg('alertant', data.content, data.voice ?? 'nova')
     } finally {
@@ -148,9 +174,9 @@ export const useEmergencyStore = defineStore('emergency', () => {
 
   return {
     scenariosCache, currentIncidentId, sessionIncidents, selectedPriority,
-    messages, isTyping, callActive, callEnded, elapsed, interventionSaved,
+    messages, isTyping, callActive, callEnded, elapsed, interventionSaved, silenceCount,
     inputEnabled, currentIncident,
-    loadScenarios, setPriority, startIncident, sendMessage, endCall,
+    loadScenarios, setPriority, startIncident, sendMessage, sendSilence, endCall,
     saveIntervention, switchIncident, createScenario, deleteScenario,
   }
 })

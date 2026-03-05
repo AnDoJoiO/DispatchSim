@@ -5,8 +5,9 @@ from pydantic import BaseModel, Field
 
 class ChatRequest(BaseModel):
     incident_id: int
-    operator_message: str = Field(max_length=1000)
+    operator_message: str = Field(default="", max_length=1000)
     lang: str = 'ca'
+    silent_trigger: bool = False
 
 
 class ChatResponse(BaseModel):

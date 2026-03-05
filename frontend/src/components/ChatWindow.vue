@@ -14,15 +14,36 @@ const { t: tr, lang } = useI18n()
 const { active: micActive, recording: micRecording, transcribing, supported: micSupported, start: startMic, stop: stopMic, suspend: suspendMic, resume: resumeMic } = useMicrophone()
 const { speaking, speak, stop: stopTTS } = useTTS()
 
+// ── Temporitzador de silenci ───────────────────────────────
+const SILENCE_DELAY = 9000  // ms sense resposta de l'operador
+let silenceTimer = null
+
+function resetSilenceTimer() {
+  if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
+  if (!emergency.callActive || emergency.callEnded) return
+  silenceTimer = setTimeout(() => {
+    if (emergency.callActive && !emergency.callEnded && !emergency.isTyping && !speaking.value) {
+      emergency.sendSilence()
+    }
+  }, SILENCE_DELAY)
+}
+
+function clearSilenceTimer() {
+  if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
+}
+// ──────────────────────────────────────────────────────────
+
 // Arrancar el micrófono automáticamente cuando hay llamada activa
 watch(() => emergency.callActive, (active) => {
   if (active && micSupported.value) startMic(async text => { msgInput.value = text; await sendMessage() }, lang.value)
   else stopMic()
 }, { immediate: true })
 
-watch(() => emergency.callEnded, (ended) => { if (ended) { stopMic(); stopTTS() } })
+watch(() => emergency.callEnded, (ended) => {
+  if (ended) { stopMic(); stopTTS(); clearSilenceTimer() }
+})
 
-onUnmounted(() => { stopMic(); stopTTS() })
+onUnmounted(() => { stopMic(); stopTTS(); clearSilenceTimer() })
 
 // Reproducir TTS al llegar nuevo mensaje del alertante
 // Suspender micro ANTES del fetch para evitar que Whisper capture el audio de altavoces
@@ -30,9 +51,13 @@ watch(() => emergency.messages.length, () => {
   const msgs = emergency.messages
   const last = msgs[msgs.length - 1]
   if (last?.role === 'alertant') {
+    clearSilenceTimer()
     suspendMic() // apagar VAD inmediatamente, antes del fetch TTS
     speak(last.content, last.voice || 'nova', {
-      onEnd: () => setTimeout(() => resumeMic(), 300), // pequeño margen tras el audio
+      onEnd: () => {
+        setTimeout(() => resumeMic(), 300)
+        resetSilenceTimer()  // iniciar compte enrere un cop acabat el TTS
+      },
     })
   }
 })
@@ -53,6 +78,7 @@ const elapsedDisplay = computed(() => fmtElapsed(emergency.elapsed))
 async function sendMessage() {
   const text = msgInput.value.trim()
   if (!text || !emergency.inputEnabled || sending.value) return
+  clearSilenceTimer()
   msgInput.value = ''
   sending.value  = true
   try { await emergency.sendMessage(text) }
