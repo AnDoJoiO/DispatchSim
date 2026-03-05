@@ -57,20 +57,21 @@ def chat(
             victim_status   = scenario.victim_status
             initial_emotion = scenario.initial_emotion
 
+    _SILENCE_PROMPT = (
+        "[L'operador no ha respost durant uns segons. "
+        "Reacciona de forma breu i natural: expressa nerviosisme o impaciència, "
+        "demana si segueix en línia o si ve ajuda. "
+        "1-2 frases màxim. No repeteixis el que ja has dit.]"
+    )
+
     if request.silent_trigger:
-        # No guardar res a la BD; afegir context de silenci a l'historial temporal
-        history.append({
-            "role": "user",
-            "content": (
-                "[L'operador no ha respost durant uns segons. "
-                "Reacciona de forma breu i natural: expressa nerviosisme o impaciència, "
-                "demana si segueix en línia o si ve ajuda. "
-                "1-2 frases màxim. No repeteixis el que ja has dit.]"
-            ),
-        })
+        # Guardar missatge "user" a la BD per mantenir l'alternança user/assistant
+        # que exigeix l'API d'Anthropic. El contingut "[silenci]" és intern.
+        history.append({"role": "user", "content": _SILENCE_PROMPT})
+        session.add(ChatMessage(incident_id=incident.id, role="user", content="[silenci]"))
+        session.flush()
     else:
         history.append({"role": "user", "content": request.operator_message})
-        # Persistir el missatge de l'operador
         session.add(ChatMessage(incident_id=incident.id, role="user", content=request.operator_message))
         session.flush()
 
