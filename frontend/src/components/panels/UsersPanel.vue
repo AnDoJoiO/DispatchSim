@@ -28,10 +28,13 @@ async function createUser() {
   const body = { username: username.value.trim(), password: password.value, role: role.value }
   if (role.value === 'operador' && expiryVal.value)
     body.expires_at = expiryVal.value + 'T00:00:00'
-  const result = await users.create(body)
-  if (result.error) { error.value = result.error; return }
-  username.value = password.value = expiryVal.value = ''
-  role.value = 'operador'
+  try {
+    await users.create(body)
+    username.value = password.value = expiryVal.value = ''
+    role.value = 'operador'
+  } catch (e) {
+    error.value = e.message
+  }
 }
 
 function openEdit(id) { ui.openEditUser(id) }

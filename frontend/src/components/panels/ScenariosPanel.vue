@@ -4,14 +4,14 @@ import { useScenarioStore } from '@/stores/scenarios'
 import ScenarioEditor from '@/components/ScenarioEditor.vue'
 import { useI18n } from '@/i18n'
 
-const emergency = useScenarioStore()
+const scenarios = useScenarioStore()
 const { t: tr } = useI18n()
 
-onMounted(() => emergency.loadScenarios())
+onMounted(() => scenarios.loadScenarios())
 
 async function deleteScenario(id) {
   if (!confirm(tr('sp.confirm_delete'))) return
-  await emergency.deleteScenario(id)
+  await scenarios.deleteScenario(id)
 }
 </script>
 
@@ -27,9 +27,9 @@ async function deleteScenario(id) {
         class="px-4 py-3 text-xs font-semibold tracking-wide flex-shrink-0 flex items-center justify-between"
         style="border-bottom:1px solid var(--border);color:var(--text2)"
       >
-        <span>{{ tr('sp.header', { n: emergency.scenariosCache.length }) }}</span>
+        <span>{{ tr('sp.header', { n: scenarios.scenariosCache.length }) }}</span>
         <button
-          @click="emergency.loadScenarios()"
+          @click="scenarios.loadScenarios()"
           :title="tr('title.refresh')"
           style="color:var(--text3)"
         >↺</button>
@@ -37,14 +37,14 @@ async function deleteScenario(id) {
 
       <ul class="flex flex-col overflow-y-auto flex-1 py-1">
         <li
-          v-if="!emergency.scenariosCache.length"
+          v-if="!scenarios.scenariosCache.length"
           class="text-xs px-4 py-6 text-center"
           style="color:var(--text3)"
         >
           {{ tr('sp.empty') }}
         </li>
         <li
-          v-for="s in emergency.scenariosCache"
+          v-for="s in scenarios.scenariosCache"
           :key="s.id"
           class="group flex items-start gap-2 px-3 py-3 transition"
           style="border-bottom:1px solid var(--border2)"
@@ -77,7 +77,7 @@ async function deleteScenario(id) {
     </div>
 
     <!-- Vista central: editor -->
-    <ScenarioEditor @created="emergency.loadScenarios()" />
+    <ScenarioEditor @created="scenarios.loadScenarios()" />
 
   </div>
 </template>
