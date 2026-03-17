@@ -56,6 +56,7 @@ def chat(
         reply, voice, call_ended = process_chat(request, incident, session)
     except Exception as exc:
         logger.exception("Error en process_chat (incident_id=%s): %s", request.incident_id, exc)
-        raise HTTPException(status_code=502, detail="El servei de simulació no està disponible en aquest moment.")
+        err_type = type(exc).__name__
+        raise HTTPException(status_code=502, detail=f"Simulació no disponible ({err_type})")
 
     return ChatResponse(content=reply, voice=voice, call_ended=call_ended)
