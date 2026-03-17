@@ -225,6 +225,9 @@ const messages = {
     'ep.emotion_prefix':   'Emoció',
     // Chat
     'chat.operator_name':  'Operador',
+    // Map
+    'map.title':           'Localització',
+    'map.locating':        'Localitzant...',
   },
 
   es: {
@@ -424,6 +427,8 @@ const messages = {
     'ep.victim_prefix':    'Víctima',
     'ep.emotion_prefix':   'Emoción',
     'chat.operator_name':  'Operador',
+    'map.title':           'Localización',
+    'map.locating':        'Localizando...',
   },
 
   fr: {
@@ -623,6 +628,8 @@ const messages = {
     'ep.victim_prefix':    'Victime',
     'ep.emotion_prefix':   'Émotion',
     'chat.operator_name':  'Opérateur',
+    'map.title':           'Localisation',
+    'map.locating':        'Localisation...',
   },
 
   en: {
@@ -822,6 +829,8 @@ const messages = {
     'ep.victim_prefix':    'Victim',
     'ep.emotion_prefix':   'Emotion',
     'chat.operator_name':  'Operator',
+    'map.title':           'Location',
+    'map.locating':        'Locating...',
   },
 }
 

@@ -78,13 +78,13 @@ def _scenario_facts(
     header = "\n\nSCENARIO FACTS (fixed constants — do not translate addresses or proper nouns):\n"
     header += (
         "PERSONAL IDENTITY — you MUST invent and remember these for the whole call:\n"
-        "- Your full name (a realistic Andorran/Catalan/Spanish/French name)\n"
-        "- Your phone number (format: +376 XXX XXX)\n"
+        "- Your full name (a realistic local name)\n"
+        "- Your phone number (a realistic local format)\n"
     )
     if not location:
         header += (
-            "- The exact street address where you are (realistic Andorran street, "
-            "building number, floor — e.g., 'Carrer de la Unió 14, 3r 2a, Andorra la Vella')\n"
+            "- The exact street address where you are (realistic street, "
+            "building number, floor — consistent with the location or territory configured)\n"
         )
     if not description:
         header += (

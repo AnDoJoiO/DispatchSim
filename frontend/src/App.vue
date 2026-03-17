@@ -16,6 +16,7 @@ import UsersPanel      from '@/components/panels/UsersPanel.vue'
 import HistoryPanel    from '@/components/panels/HistoryPanel.vue'
 import ChatWindow      from '@/components/ChatWindow.vue'
 import FitxaPanel      from '@/components/FitxaPanel.vue'
+import MapPanel        from '@/components/MapPanel.vue'
 import DebriefingModal from '@/components/DebriefingModal.vue'
 import EditUserModal   from '@/components/EditUserModal.vue'
 
@@ -65,11 +66,12 @@ async function handleEndCall() {
     <!-- Simulador — 3 columnes -->
     <main v-else class="flex flex-1 overflow-hidden p-3 gap-3">
       <div
-        class="left-panel-wrap w-80 flex-shrink-0 flex flex-col gap-3 overflow-hidden"
+        class="left-panel-wrap w-80 flex-shrink-0 flex flex-col gap-3 overflow-y-auto"
         style="background:var(--bg)"
       >
         <EmergencyPanel v-if="app.activeTab === 'emergency'" />
         <HistoryPanel   v-else-if="app.activeTab === 'history'" />
+        <MapPanel />
       </div>
 
       <ChatWindow
