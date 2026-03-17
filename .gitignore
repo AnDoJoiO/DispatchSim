@@ -40,6 +40,9 @@ Thumbs.db
 # Fitxers temporals
 NUL
 
+# Generated docs
+*.pdf
+
 # Node
 node_modules/
 
