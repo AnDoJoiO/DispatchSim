@@ -54,7 +54,8 @@ export const useChatStore = defineStore('chat', () => {
         // Backend rejected noise — remove the operator bubble silently
         messages.value.pop()
       } else {
-        _addMsg('system', t('sys.error_chat'))
+        const detail = e instanceof ApiError ? `[${e.status}] ${e.message}` : e.message || 'Network error'
+        _addMsg('system', `${t('sys.error_chat')} — ${detail}`)
       }
     } finally {
       isTyping.value = false
