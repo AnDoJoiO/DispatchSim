@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
-import { formatMessage }    from '@/utils'
+import { formatMessage, fmtElapsed } from '@/utils'
 import { useI18n }          from '@/i18n'
 import { useChatStore }     from '@/stores/chat'
 import { useCallStore }     from '@/stores/call'
 import { useAuthStore }     from '@/stores/auth'
 import CallTimer            from '@/components/CallTimer.vue'
+import { Send, Mic, MicOff, Loader2, MapPin, Radio } from 'lucide-vue-next'
 
 const props = defineProps({
   micActive:    { type: Boolean, default: false },
@@ -21,13 +22,13 @@ const call = useCallStore()
 const auth = useAuthStore()
 const { t: tr } = useI18n()
 
-const messagesEl = ref(null)
-const inputEl    = ref(null)
+const messagesEl = ref<HTMLElement | null>(null)
+const inputEl    = ref<HTMLTextAreaElement | null>(null)
 const msgInput   = ref('')
 
-const operatorName = computed(() => auth.user?.username || '')
+const operatorName = computed(() => auth.user?.username || 'OPR')
 
-// Scroll to bottom when new messages arrive or typing indicator changes
+// Scroll to bottom on new messages or typing
 watch([() => chat.messages.length, () => chat.isTyping], async () => {
   await nextTick()
   if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
@@ -47,39 +48,26 @@ function sendMessage() {
   emit('send', text)
 }
 
-function handleKey(e) {
+function handleKey(e: KeyboardEvent) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   else emit('typing')
 }
 </script>
 
 <template>
-  <div class="chat-wrap flex-1 flex flex-col min-w-0 panel overflow-hidden">
+  <div class="cw">
 
-    <!-- Chat header -->
-    <div
-      class="chat-hd flex items-center gap-3 px-5 py-3 flex-shrink-0"
-      style="border-bottom:1px solid var(--border)"
-    >
-      <div
-        class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-        style="background:#fef2f2;border:1px solid #fecaca"
-      >📞</div>
-
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold truncate" style="color:var(--text)">
-          {{
-            call.currentIncident
-              ? `Incident #${call.currentIncidentId} — ${call.currentIncident.type}`
-              : tr('chat.no_incident')
-          }}
+    <!-- Header -->
+    <div class="cw-hd">
+      <div class="cw-hd-info">
+        <p class="cw-hd-title" v-if="call.currentIncident">
+          <span class="cw-hd-id">#{{ call.currentIncidentId }}</span>
+          {{ call.currentIncident.type }}
         </p>
-        <p class="text-xs truncate" style="color:var(--text3)">
-          {{
-            call.currentIncident
-              ? `📍 ${call.currentIncident.location}`
-              : tr('chat.no_incident_sub')
-          }}
+        <p class="cw-hd-title cw-hd-title--empty" v-else>{{ tr('chat.no_incident') }}</p>
+        <p class="cw-hd-loc" v-if="call.currentIncident">
+          <MapPin :size="12" />
+          {{ call.currentIncident.location || '—' }}
         </p>
       </div>
 
@@ -92,92 +80,270 @@ function handleKey(e) {
       />
     </div>
 
-    <!-- Messages area -->
-    <div
-      ref="messagesEl"
-      class="chat-msg-area flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3"
-      style="background:var(--chat-bg)"
-    >
-      <!-- Placeholder -->
-      <div
-        v-if="!chat.messages.length && !chat.isTyping"
-        class="m-auto text-center"
-        style="color:var(--text3)"
-      >
-        <p class="text-5xl mb-3">🎙️</p>
-        <p class="text-sm" style="white-space:pre-line">{{ tr('chat.empty') }}</p>
+    <!-- Transcript area -->
+    <div ref="messagesEl" class="cw-transcript">
+
+      <!-- Empty state -->
+      <div v-if="!chat.messages.length && !chat.isTyping" class="cw-empty">
+        <Radio :size="32" />
+        <p>{{ tr('chat.empty') }}</p>
       </div>
 
       <!-- Messages -->
       <template v-for="msg in chat.messages" :key="msg.id">
-        <!-- System message -->
-        <div
-          v-if="msg.role === 'system'"
-          class="sys-msg text-center text-xs py-1.5 px-4 mx-auto rounded-full"
-          style="max-width:90%"
-        >{{ msg.content }}</div>
 
-        <!-- Operator / Alertant bubble -->
-        <div
-          v-else
-          :class="msg.role === 'operator' ? 'flex justify-end' : 'flex justify-start'"
-        >
-          <div :class="msg.role === 'operator' ? 'flex flex-col items-end' : 'flex flex-col items-start'">
-            <div
-              class="max-w-[70%] px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap"
-              :class="msg.role === 'operator' ? 'bop' : 'bal'"
-              v-html="formatMessage(msg.content)"
-            ></div>
-            <p class="text-xs mt-1" :class="msg.role === 'operator' ? 'text-right' : ''" style="color:var(--text3)">
-              {{ msg.role === 'operator' ? `👮 ${operatorName || tr('chat.operator_name')}` : tr('chat.caller_label') }}
-            </p>
-          </div>
+        <!-- System -->
+        <div v-if="msg.role === 'system'" class="cw-sys">
+          <span>{{ msg.content }}</span>
+        </div>
+
+        <!-- Operator / Caller log entry -->
+        <div v-else class="cw-entry" :class="msg.role === 'operator' ? 'cw-entry--opr' : 'cw-entry--alt'">
+          <span class="cw-tag">{{ msg.role === 'operator' ? 'OPR' : 'ALT' }}</span>
+          <span class="cw-body" v-html="formatMessage(msg.content)"></span>
         </div>
       </template>
 
       <!-- Typing indicator -->
-      <div v-if="chat.isTyping" class="flex justify-start">
-        <div class="bal px-4 py-3 flex gap-1 items-center">
-          <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:0ms"></span>
-          <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:150ms"></span>
-          <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:300ms"></span>
-        </div>
+      <div v-if="chat.isTyping" class="cw-entry cw-entry--alt">
+        <span class="cw-tag">ALT</span>
+        <span class="cw-typing">
+          <Loader2 :size="14" class="animate-spin" />
+        </span>
       </div>
     </div>
 
     <!-- Input area -->
-    <div
-      class="chat-input-area px-4 py-3 flex gap-3 items-end flex-shrink-0"
-      style="background:var(--surface);border-top:1px solid var(--border)"
-    >
-      <textarea
-        ref="inputEl"
-        id="msg-input"
-        v-model="msgInput"
-        rows="1"
-        :disabled="!chat.inputEnabled || chat.isTyping"
-        :placeholder="tr('chat.input_ph')"
-        @keydown="handleKey"
-        class="flex-1 rounded-xl px-4 py-2.5 text-sm max-h-28 outline-none transition"
-        style="background:var(--in-bg2);border:1px solid var(--border);color:var(--text)"
-      ></textarea>
-      <!-- Indicador d'estat del micròfon (no interactiu) -->
-      <div
-        v-if="micSupported && call.callActive"
-        class="flex-shrink-0 flex items-center justify-center w-10 h-10"
-        :title="transcribing ? tr('chat.mic_transcribing') : micRecording ? tr('chat.mic_stop') : tr('chat.mic_start')"
-      >
-        <span v-if="transcribing"          class="text-xl">⏳</span>
-        <span v-else-if="micRecording"     class="text-xl animate-pulse">🔴</span>
-        <span v-else-if="micActive"        class="block w-3 h-3 rounded-full animate-pulse" style="background:#22c55e"></span>
+    <div class="cw-input">
+      <div class="cw-input-wrap">
+        <textarea
+          ref="inputEl"
+          v-model="msgInput"
+          rows="1"
+          :disabled="!chat.inputEnabled || chat.isTyping"
+          :placeholder="tr('chat.input_ph')"
+          @keydown="handleKey"
+          class="cw-textarea"
+        ></textarea>
+
+        <!-- Mic indicator -->
+        <div v-if="micSupported && call.callActive" class="cw-mic" :title="transcribing ? tr('chat.mic_transcribing') : micRecording ? tr('chat.mic_stop') : tr('chat.mic_start')">
+          <Loader2 v-if="transcribing" :size="14" class="animate-spin" style="color:var(--warning)" />
+          <Mic v-else-if="micRecording" :size="14" class="cw-mic-rec" />
+          <Mic v-else-if="micActive" :size="14" style="color:var(--success)" />
+          <MicOff v-else :size="14" style="color:var(--text-muted)" />
+        </div>
       </div>
+
       <button
         @click="sendMessage"
         :disabled="!chat.inputEnabled || chat.isTyping"
-        class="text-white rounded-xl px-5 py-2.5 font-bold text-sm transition flex-shrink-0"
-        style="background:var(--accent)"
-      >{{ tr('chat.send') }}</button>
+        class="cw-send"
+        :aria-label="tr('chat.send')"
+      >
+        <Send :size="16" />
+      </button>
     </div>
 
   </div>
 </template>
+
+<style scoped>
+.cw {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.cw-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+  flex-shrink: 0;
+  gap: 12px;
+}
+.cw-hd-info { min-width: 0; }
+.cw-hd-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+.cw-hd-title--empty { color: var(--text-muted); }
+.cw-hd-id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-right: 6px;
+}
+.cw-hd-loc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Transcript ── */
+.cw-transcript {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+  background: var(--bg);
+}
+
+.cw-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
+}
+
+/* ── Log entries ── */
+.cw-entry {
+  display: flex;
+  gap: 0;
+  padding: 6px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  transition: background .1s;
+}
+.cw-entry:hover { background: var(--surface-raised); }
+.cw-entry--opr { }
+.cw-entry--alt { background: rgba(0,0,0,.015); }
+[data-theme="dark"] .cw-entry--alt { background: rgba(255,255,255,.02); }
+
+.cw-tag {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  width: 36px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.cw-entry--opr .cw-tag { color: var(--accent); }
+.cw-entry--alt .cw-tag { color: var(--warning); }
+
+.cw-body {
+  flex: 1;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cw-typing {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+/* ── System messages ── */
+.cw-sys {
+  display: flex;
+  justify-content: center;
+  padding: 4px 16px;
+}
+.cw-sys span {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 3px 12px;
+  border-radius: 4px;
+}
+
+/* ── Input ── */
+.cw-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.cw-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--input-bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.cw-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+.cw-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 8px 0;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  resize: none;
+  max-height: 112px;
+  line-height: 1.5;
+}
+.cw-textarea::placeholder { color: var(--placeholder); }
+.cw-textarea:disabled { cursor: default; }
+
+/* ── Mic indicator ── */
+.cw-mic {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.cw-mic-rec {
+  color: var(--danger);
+  animation: mic-pulse 1s ease infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+
+/* ── Send button ── */
+.cw-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  background: var(--accent);
+  color: white;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.cw-send:hover:not(:disabled) { filter: brightness(1.1); }
+</style>

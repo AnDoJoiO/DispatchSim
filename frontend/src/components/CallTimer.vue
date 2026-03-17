@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { fmtElapsed }   from '@/utils'
 import { useI18n }      from '@/i18n'
+import { PhoneOff, CheckCircle } from 'lucide-vue-next'
 
 const props = defineProps({
   callActive:        { type: Boolean, required: true },
@@ -11,7 +12,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['end-call'])
-
 const { t: tr } = useI18n()
 
 const ending  = ref(false)
@@ -27,37 +27,96 @@ function handleEndCall() {
 <template>
   <div
     v-if="(callActive || callEnded) && !interventionSaved"
-    class="flex items-center gap-3 flex-shrink-0"
+    class="ct"
   >
-    <span
-      class="call-status-ok text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider"
-      :style="callEnded
-        ? 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5'
-        : 'background:#dcfce7;color:#15803d;border:1px solid #86efac'"
-    >
+    <!-- Status badge -->
+    <span class="ct-badge" :class="callEnded ? 'ct-badge--ended' : 'ct-badge--active'">
       {{ callEnded ? tr('chat.call_ended') : tr('chat.call_active') }}
     </span>
 
-    <span
-      class="font-mono text-xl font-bold tabular-nums w-16 text-center"
-      :class="callEnded ? 'text-red-600' : 'text-green-700'"
-    >
+    <!-- Timer -->
+    <span class="ct-time" :class="callEnded ? 'ct-time--ended' : ''">
       {{ display }}
     </span>
 
+    <!-- End / Finished button -->
     <button
       v-if="!callEnded"
       @click="handleEndCall"
       :disabled="ending"
-      class="end-call-btn text-xs font-bold px-3 py-2 rounded-lg transition"
-      style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626"
+      class="ct-end-btn"
     >
+      <PhoneOff :size="13" />
       {{ ending ? tr('chat.ending') : tr('chat.end_call') }}
     </button>
-    <span
-      v-else
-      class="text-xs font-bold px-3 py-2 rounded-lg"
-      style="background:#fee2e2;color:#dc2626;opacity:.6"
-    >{{ tr('chat.call_finished') }}</span>
+    <span v-else class="ct-finished">
+      <CheckCircle :size="13" />
+      {{ tr('chat.call_finished') }}
+    </span>
   </div>
 </template>
+
+<style scoped>
+.ct {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ct-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.ct-badge--active {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+.ct-badge--ended {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.ct-time {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  min-width: 52px;
+  text-align: center;
+}
+.ct-time--ended { color: var(--danger); }
+
+.ct-end-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-family: inherit;
+  transition: all .15s;
+}
+.ct-end-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+.ct-finished {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+</style>
