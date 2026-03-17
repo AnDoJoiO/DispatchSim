@@ -156,6 +156,7 @@ onUnmounted(() => {
         @click="() => window.location.href = '/'"
         class="logout-btn text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5"
         :title="tr('btn.home')"
+        :aria-label="tr('btn.home')"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
