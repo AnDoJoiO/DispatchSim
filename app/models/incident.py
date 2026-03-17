@@ -30,9 +30,9 @@ class Incident(SQLModel, table=True):
     type_decided_at:  Optional[datetime] = Field(default=None)
     call_end_at:      Optional[datetime] = Field(default=None)
 
-    # Relationships (lazy, no DB change)
-    messages:     List["ChatMessage"]          = Relationship(back_populates="incident")
-    intervention: Optional["InterventionData"] = Relationship(back_populates="incident")
+    # Relationships — passive_deletes deixa que la BD faci CASCADE
+    messages:     List["ChatMessage"]          = Relationship(back_populates="incident", passive_deletes="all")
+    intervention: Optional["InterventionData"] = Relationship(back_populates="incident", passive_deletes="all")
 
 
 class ChatMessage(SQLModel, table=True):

@@ -33,9 +33,9 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 
 ### Fase 3 — Testing
 
-- [ ] Setup pytest + fixtures (conftest.py, test DB en SQLite)
-- [ ] Tests unitarios: `security.py`, `rate_limit.py`, `ai_service.py`
-- [ ] Tests de integración: auth endpoints, cascade delete, simulation flow
+- [x] Setup pytest + fixtures (conftest.py, test DB SQLite, auto-reset rate limiters)
+- [x] Tests unitarios: security.py (hash, verify, JWT create/decode/expired/tampered), rate_limit.py (sliding window, 429, expiry, independent keys)
+- [x] Tests de integración: auth (register, login, duplicates, inactive/expired, rate limit, me), incidents (CRUD, pagination, end call, 409 double-end), cascade delete (incident → chatmessage + interventiondata)
 - [ ] Tests frontend (Vitest): stores, composables, api wrapper
 
 ### Fase 4 — Infraestructura

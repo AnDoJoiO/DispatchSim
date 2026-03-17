@@ -2,7 +2,7 @@ import os
 
 from alembic import command as alembic_command
 from alembic.config import Config
-from sqlalchemy import inspect, text
+from sqlalchemy import event, inspect, text
 from sqlmodel import SQLModel, create_engine, Session
 
 from app.core.config import settings
@@ -21,6 +21,14 @@ else:
     })
 
 engine = create_engine(settings.DATABASE_URL, **_engine_kwargs)
+
+# SQLite: activar PRAGMA foreign_keys per a CASCADE/SET NULL
+if _is_sqlite:
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 _ALEMBIC_INI = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "alembic.ini")
