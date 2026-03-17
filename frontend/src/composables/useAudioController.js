@@ -70,6 +70,7 @@ export function useAudioController() {
       })
     } else if (last?.role === 'operator') {
       clearSilenceTimer()
+      suspendMic() // apagar micro mentre la IA pensa — evita capturar soroll ambient
     }
   })
 
