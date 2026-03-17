@@ -126,4 +126,6 @@ def generate_alertant_response(
         system=system,
         messages=history,
     )
+    if not response.content or not response.content[0].text.strip():
+        raise ValueError("Empty AI response")
     return response.content[0].text

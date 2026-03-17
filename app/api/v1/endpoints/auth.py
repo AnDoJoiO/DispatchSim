@@ -8,7 +8,7 @@ from app.core.deps import get_current_user
 from app.core.rate_limit import login_limiter
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_session
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import TokenResponse, UserCreate, UserLogin, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -26,7 +26,7 @@ def register(payload: UserCreate, session: Session = Depends(get_session)):
     user = User(
         username=payload.username,
         hashed_password=hash_password(payload.password),
-        role=payload.role,
+        role=UserRole.OPERADOR,
     )
     session.add(user)
     session.commit()
