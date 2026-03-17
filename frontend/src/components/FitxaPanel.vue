@@ -57,20 +57,20 @@ async function save() {
     <!-- Form fields -->
     <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
       <div>
-        <label class="fl">{{ tr('fitxa.address') }}</label>
-        <input v-model="address" type="text" :placeholder="tr('fitxa.address_ph')" class="fc" />
+        <label for="fitxa-address" class="fl">{{ tr('fitxa.address') }}</label>
+        <input id="fitxa-address" v-model="address" type="text" :placeholder="tr('fitxa.address_ph')" class="fc" />
       </div>
       <div>
-        <label class="fl">{{ tr('fitxa.phone') }}</label>
-        <input v-model="phone" type="tel" :placeholder="tr('fitxa.phone_ph')" class="fc" />
+        <label for="fitxa-phone" class="fl">{{ tr('fitxa.phone') }}</label>
+        <input id="fitxa-phone" v-model="phone" type="tel" :placeholder="tr('fitxa.phone_ph')" class="fc" />
       </div>
       <div>
-        <label class="fl">{{ tr('fitxa.injured') }}</label>
-        <input v-model="injured" type="number" min="0" class="fc" />
+        <label for="fitxa-injured" class="fl">{{ tr('fitxa.injured') }}</label>
+        <input id="fitxa-injured" v-model="injured" type="number" min="0" class="fc" />
       </div>
       <div>
-        <label class="fl">{{ tr('fitxa.risks') }}</label>
-        <div class="grid grid-cols-2 gap-1 mt-1">
+        <label id="fitxa-risks-label" class="fl">{{ tr('fitxa.risks') }}</label>
+        <div class="grid grid-cols-2 gap-1 mt-1" role="group" aria-labelledby="fitxa-risks-label">
           <label
             v-for="risk in risks()"
             :key="risk.value"
@@ -82,8 +82,8 @@ async function save() {
         </div>
       </div>
       <div>
-        <label class="fl">{{ tr('fitxa.notes') }}</label>
-        <textarea v-model="notes" rows="4" :placeholder="tr('fitxa.notes_ph')" class="fc"></textarea>
+        <label for="fitxa-notes" class="fl">{{ tr('fitxa.notes') }}</label>
+        <textarea id="fitxa-notes" v-model="notes" rows="4" :placeholder="tr('fitxa.notes_ph')" class="fc"></textarea>
       </div>
 
       <!-- Status message -->
@@ -106,6 +106,7 @@ async function save() {
       <button
         @click="save"
         :disabled="!call.currentIncidentId || saving || call.interventionSaved"
+        :aria-label="tr('fitxa.save')"
         class="w-full py-2.5 rounded-lg font-bold text-sm text-white transition flex items-center justify-center gap-2"
         style="background:var(--accent)"
       >

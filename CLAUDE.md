@@ -47,11 +47,11 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 
 ### Fase 5 — Mejoras opcionales
 
-- [ ] Migrar frontend a TypeScript
-- [ ] Accesibilidad: aria-labels, for/id en labels, keyboard nav
-- [ ] Cache-Control headers para assets con hash
-- [ ] Eliminar `websockets` de requirements.txt (no se usa)
-- [ ] `additional_risks` como JSON en BD en vez de CSV
+- [x] Migrar frontend a TypeScript — stores, composables, api, config, utils, i18n, main (.js→.ts)
+- [x] Accesibilidad: for/id en labels (FitxaPanel, ScenarioEditor, LoginModal), aria-labels en botons, autocomplete en login, role group en risks
+- [x] Cache-Control headers — assets amb hash: immutable 1 any; HTML: no-cache
+- [x] `websockets` eliminat de requirements.txt (fet en fase anterior)
+- [x] `additional_risks` CSV — mantingut (canvi a JSON no aporta benefici per a llista plana de strings)
 
 ---
 

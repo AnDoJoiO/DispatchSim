@@ -49,20 +49,24 @@ async function doLogin() {
 
         <div class="px-8 py-6 flex flex-col gap-3">
           <div>
-            <label class="fl">{{ tr('login.username') }}</label>
+            <label for="login-username" class="fl">{{ tr('login.username') }}</label>
             <input
+              id="login-username"
               v-model="username"
               type="text"
+              autocomplete="username"
               :placeholder="tr('login.username_ph')"
               class="fc"
               @keydown.enter="doLogin"
             />
           </div>
           <div>
-            <label class="fl">{{ tr('login.password') }}</label>
+            <label for="login-password" class="fl">{{ tr('login.password') }}</label>
             <input
+              id="login-password"
               v-model="password"
               type="password"
+              autocomplete="current-password"
               placeholder="••••••••"
               class="fc"
               @keydown.enter="doLogin"

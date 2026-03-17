@@ -83,8 +83,9 @@ async function submit() {
 
         <!-- Títol -->
         <div>
-          <label class="fl">{{ tr('se.title_label') }}</label>
+          <label for="se-title" class="fl">{{ tr('se.title_label') }}</label>
           <input
+            id="se-title"
             v-model="title"
             type="text"
             :placeholder="tr('se.title_ph')"
@@ -95,14 +96,15 @@ async function submit() {
         <!-- Tipus + Localització base -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="fl">{{ tr('se.inc_type') }}</label>
-            <select v-model="incidentType" class="fc">
+            <label for="se-type" class="fl">{{ tr('se.inc_type') }}</label>
+            <select id="se-type" v-model="incidentType" class="fc">
               <option v-for="t in incidentTypes()" :key="t.value" :value="t.value">{{ t.label }}</option>
             </select>
           </div>
           <div>
-            <label class="fl">{{ tr('se.base_loc') }}</label>
+            <label for="se-base-loc" class="fl">{{ tr('se.base_loc') }}</label>
             <input
+              id="se-base-loc"
               v-model="baseLocation"
               type="text"
               :placeholder="tr('se.base_loc_ph')"
@@ -113,8 +115,9 @@ async function submit() {
 
         <!-- Adreça exacta -->
         <div>
-          <label class="fl">{{ tr('se.exact_addr') }}</label>
+          <label for="se-exact-addr" class="fl">{{ tr('se.exact_addr') }}</label>
           <input
+            id="se-exact-addr"
             v-model="locationExact"
             type="text"
             :placeholder="tr('se.exact_addr_ph')"
@@ -125,8 +128,8 @@ async function submit() {
         <!-- Estat víctima + Emoció inicial -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="fl">{{ tr('se.victim') }}</label>
-            <select v-model="victimStatus" class="fc">
+            <label for="se-victim" class="fl">{{ tr('se.victim') }}</label>
+            <select id="se-victim" v-model="victimStatus" class="fc">
               <option v-for="s in VICTIM_STATUSES" :key="s" :value="s">{{ tr('vs.' + s) }}</option>
             </select>
             <!-- Indicador visual de gravetat -->
@@ -137,8 +140,8 @@ async function submit() {
             </p>
           </div>
           <div>
-            <label class="fl">{{ tr('se.emotion') }}</label>
-            <select v-model="initialEmotion" class="fc">
+            <label for="se-emotion" class="fl">{{ tr('se.emotion') }}</label>
+            <select id="se-emotion" v-model="initialEmotion" class="fc">
               <option v-for="e in INITIAL_EMOTIONS" :key="e" :value="e">{{ tr('ie.' + e) }}</option>
             </select>
             <p class="text-xs mt-1" style="color:var(--text3)">
@@ -151,8 +154,9 @@ async function submit() {
 
         <!-- Instruccions secretes -->
         <div>
-          <label class="fl" style="color:#b45309">{{ tr('se.instructions') }}</label>
+          <label for="se-instructions" class="fl" style="color:#b45309">{{ tr('se.instructions') }}</label>
           <textarea
+            id="se-instructions"
             v-model="instructions"
             rows="5"
             :placeholder="tr('se.instructions_ph')"

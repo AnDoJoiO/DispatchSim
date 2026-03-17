@@ -37,6 +37,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = _CSP
+        # Cache-Control: assets amb hash (Vite) → cache llarga; HTML → no cache
+        path = request.url.path
+        if path.startswith("/static/assets/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif path.endswith(".html") or path in ("/", "/app"):
+            response.headers["Cache-Control"] = "no-cache"
         return response
 
 
