@@ -14,6 +14,7 @@ class ChatResponse(BaseModel):
     role: str = "assistant"
     content: str
     voice: str = "nova"
+    call_ended: bool = False
 
 
 class TranscriptMessage(BaseModel):

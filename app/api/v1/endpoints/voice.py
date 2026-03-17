@@ -15,17 +15,52 @@ from app.models.user import User
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/voice", tags=["voice"])
 
-# Frases que Whisper alucina con silencio o ruido de fondo
-_WHISPER_HALLUCINATIONS = {
+# Palabras sueltas que Whisper alucina — match exacto (evita falsos positivos con substring)
+_HALLUCINATION_EXACT = {
     "amara.org", "amara", "subtítulos", "subtitulado", "subtitles",
     "transcripción", "transcription", "sous-titres", "sous titres",
-    "thank you for watching", "thanks for watching", "gràcies per veure",
-    "gracias por ver", "suscríbete", "subscribe",
+    "suscríbete", "subscribe",
+    "you", "thank you", "thanks", "bye", "goodbye", "okay", "ok",
+    "gràcies", "gracias", "merci", "adiós", "adéu", "vale",
+    "...", "…", "eh", "ah", "oh", "um", "hm", "hmm", "mm",
+    "sí", "si", "no", "ja", "oui", "yes",
+    "música", "music", "aplausos", "risas", "silencio",
 }
+# Frases más largas — match por substring
+_HALLUCINATION_SUBSTR = {
+    "thank you for watching", "thanks for watching", "gràcies per veure",
+    "gracias por ver", "subtitulado por", "sous-titres par",
+    "antarctica films", "cc por", "copyright", "todos los derechos",
+    "all rights reserved", "tots els drets",
+}
+_MIN_TRANSCRIPTION_CHARS = 8  # mínimo de caracteres para considerar una transcripción válida
+
+import re
+_PUNCT_RE = re.compile(r'[^\w\s]', re.UNICODE)
 
 def _is_hallucination(text: str) -> bool:
     lower = text.lower().strip()
-    return any(h in lower for h in _WHISPER_HALLUCINATIONS)
+    # Match exacto (sin puntuación) para palabras sueltas
+    clean = _PUNCT_RE.sub('', lower).strip()
+    if clean in _HALLUCINATION_EXACT:
+        logger.debug("Whisper hallucination (exact): %r", text)
+        return True
+    # Substring match para frases largas conocidas
+    if any(h in lower for h in _HALLUCINATION_SUBSTR):
+        logger.debug("Whisper hallucination (substr): %r", text)
+        return True
+    # Texto demasiado corto → probablemente ruido
+    if len(clean) < _MIN_TRANSCRIPTION_CHARS:
+        logger.debug("Whisper hallucination (short, %d chars): %r", len(clean), text)
+        return True
+    # Repetición de palabras/frases — alucinación clásica de Whisper
+    words = clean.split()
+    if len(words) >= 3:
+        unique = set(words)
+        if len(unique) <= len(words) * 0.4:
+            logger.debug("Whisper hallucination (repetition): %r", text)
+            return True
+    return False
 
 
 @router.post("/transcribe")

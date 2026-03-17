@@ -5,7 +5,7 @@ from sqlalchemy import update as sa_update
 from sqlmodel import Session, select
 
 from app.core.constants import DEFAULT_VOICE, VOICE_MAP
-from app.models.incident import ChatMessage, Incident
+from app.models.incident import CallStatus, ChatMessage, Incident
 from app.models.scenario import Scenario
 from app.schemas.simulation import ChatRequest
 from app.services.ai_service import generate_alertant_response
@@ -20,16 +20,19 @@ _SILENCE_PROMPT = (
 )
 
 
+_END_MARKER = "[FI]"
+
+
 def process_chat(
     request: ChatRequest,
     incident: Incident,
     session: Session,
-) -> tuple[str, str]:
+) -> tuple[str, str, bool]:
     """Executes one simulation chat turn.
 
     Loads history and scenario data, persists the user message, calls the AI,
     updates type_decided_at on the first exchange, persists the assistant reply,
-    and returns (reply_text, elevenlabs_voice_id).
+    and returns (reply_text, elevenlabs_voice_id, call_ended).
     """
     # Load history ordered by timestamp
     db_messages = session.exec(
@@ -82,10 +85,25 @@ def process_chat(
             .values(type_decided_at=datetime.now(timezone.utc))
         )
 
+    # Detect end-of-call marker and strip it from the visible reply
+    call_ended = _END_MARKER in reply
+    clean_reply = reply.replace(_END_MARKER, "").strip()
+
+    # If AI signals end of call, finalize it
+    if call_ended:
+        session.execute(
+            sa_update(Incident)
+            .where(Incident.id == incident.id)
+            .values(
+                call_status=CallStatus.FINALITZADA,
+                call_end_at=datetime.now(timezone.utc),
+            )
+        )
+
     # Persist both messages atomically — if AI failed, nothing is written
     session.add(user_msg)
-    session.add(ChatMessage(incident_id=incident.id, role="assistant", content=reply))
+    session.add(ChatMessage(incident_id=incident.id, role="assistant", content=clean_reply))
     session.commit()
 
-    voice = VOICE_MAP.get(initial_emotion.value if initial_emotion else "", DEFAULT_VOICE)
-    return reply, voice
+    voice = VOICE_MAP.get(initial_emotion if initial_emotion else "", DEFAULT_VOICE)
+    return clean_reply, voice, call_ended

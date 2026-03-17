@@ -5,7 +5,7 @@ import { useI18n } from '@/i18n'
 
 const emit = defineEmits(['created'])
 
-const emergency = useScenarioStore()
+const scenarios = useScenarioStore()
 const { t: tr, incidentTypes } = useI18n()
 
 const title          = ref('')
@@ -39,7 +39,7 @@ async function submit() {
   }
   creating.value = true
   try {
-    await emergency.createScenario({
+    await scenarios.createScenario({
       title:           title.value.trim(),
       incident_type:   incidentType.value,
       base_location:   baseLocation.value.trim(),

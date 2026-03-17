@@ -1,10 +1,10 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
-const VOICE_THRESHOLD = 15   // RMS mínimo para detectar voz (0-255)
-const SILENCE_MS      = 800  // ms de silencio antes de parar la grabación
-const MIN_DURATION_MS = 800  // grabaciones más cortas se descartan (evita alucinaciones Whisper)
-const MIN_BLOB_BYTES  = 2000 // blobs muy pequeños son silencio
+const VOICE_THRESHOLD = 30   // RMS mínimo para detectar voz (0-255) — filtra ecos TTS y ruido
+const SILENCE_MS      = 1200 // ms de silencio antes de parar la grabación
+const MIN_DURATION_MS = 1000 // grabaciones más cortas se descartan (evita alucinaciones Whisper)
+const MIN_BLOB_BYTES  = 3000 // blobs muy pequeños son silencio
 
 export function useMicrophone() {
   const active       = ref(false)

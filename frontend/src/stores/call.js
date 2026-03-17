@@ -71,6 +71,12 @@ export const useCallStore = defineStore('call', () => {
     return true
   }
 
+  function _onAutoEnd() {
+    const chat = useChatStore()
+    _stopTimer()
+    chat._addMsg('system', t('sys.call_ended'))
+  }
+
   async function saveIntervention(payload) {
     const chat = useChatStore()
     const res = await apiFetch('/api/v1/interventions', {
@@ -100,6 +106,6 @@ export const useCallStore = defineStore('call', () => {
     currentIncidentId, sessionIncidents, selectedPriority,
     callActive, callEnded, elapsed, interventionSaved,
     currentIncident,
-    setPriority, startIncident, endCall, saveIntervention, switchIncident,
+    setPriority, startIncident, endCall, _onAutoEnd, saveIntervention, switchIncident,
   }
 })

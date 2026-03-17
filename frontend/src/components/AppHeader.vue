@@ -7,7 +7,7 @@ import { useI18n, LANG_LOCALE } from '@/i18n'
 
 const auth      = useAuthStore()
 const app       = useAppStore()
-const emergency = useCallStore()
+const call = useCallStore()
 const { t: tr, lang } = useI18n()
 
 // Live clock
@@ -119,11 +119,11 @@ onUnmounted(() => {
 
       <!-- Active incident badge -->
       <div
-        v-if="emergency.currentIncidentId"
+        v-if="call.currentIncidentId"
         class="text-xs font-bold px-3 py-1 rounded-full"
         style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5"
       >
-        #{{ emergency.currentIncidentId }} · {{ emergency.currentIncident?.type || '—' }}
+        #{{ call.currentIncidentId }} · {{ call.currentIncident?.type || '—' }}
       </div>
 
       <!-- User info -->

@@ -45,8 +45,8 @@ def create_incident(
     else:
         incident = Incident(
             type=payload.type,
-            location=payload.location,
-            description=payload.description,
+            location=payload.location or "",
+            description=payload.description or "",
             priority=payload.priority,
             creator_id=current_user.id,
             call_status=CallStatus.EN_CURS,

@@ -21,17 +21,25 @@ const props = defineProps({
   operatorName:      { type: String,  default: '' },
 })
 
-const emit = defineEmits(['send', 'end-call'])
+const emit = defineEmits(['send', 'end-call', 'typing'])
 
 const { t: tr } = useI18n()
 
 const messagesEl = ref(null)
+const inputEl    = ref(null)
 const msgInput   = ref('')
 
 // Scroll to bottom when new messages arrive or typing indicator changes
 watch([() => props.messages.length, () => props.isTyping], async () => {
   await nextTick()
   if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+})
+
+// Auto-focus input when AI finishes responding
+watch(() => props.isTyping, (typing, wasTyping) => {
+  if (wasTyping && !typing && props.inputEnabled) {
+    nextTick(() => inputEl.value?.focus())
+  }
 })
 
 function sendMessage() {
@@ -43,6 +51,7 @@ function sendMessage() {
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+  else emit('typing')
 }
 </script>
 
@@ -144,6 +153,7 @@ function handleKey(e) {
       style="background:var(--surface);border-top:1px solid var(--border)"
     >
       <textarea
+        ref="inputEl"
         id="msg-input"
         v-model="msgInput"
         rows="1"

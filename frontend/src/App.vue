@@ -25,7 +25,7 @@ const scenarios = useScenarioStore()
 const call      = useCallStore()
 const chat      = useChatStore()
 const ui        = useUiStore()
-const { micActive, micRecording, transcribing, micSupported } = useAudioController()
+const { micActive, micRecording, transcribing, micSupported, resetSilenceTimer } = useAudioController()
 
 const isManagementTab = computed(() =>
   app.activeTab === 'scenarios' || app.activeTab === 'users'
@@ -90,6 +90,7 @@ async function handleEndCall() {
         :operatorName="auth.user?.username || ''"
         @send="handleSend"
         @end-call="handleEndCall"
+        @typing="resetSilenceTimer"
       />
       <FitxaPanel />
     </main>

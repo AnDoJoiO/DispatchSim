@@ -47,8 +47,8 @@ async function startIncident() {
       ? { scenario_id: +scenarioId.value, priority: call.selectedPriority }
       : {
           type:        incType.value,
-          location:    incLocation.value.trim() || tr('ep.unknown_location'),
-          description: incDesc.value.trim()     || tr('ep.no_description'),
+          location:    incLocation.value.trim(),
+          description: incDesc.value.trim(),
           priority:    call.selectedPriority,
         }
     await call.startIncident(body)

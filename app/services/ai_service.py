@@ -27,7 +27,12 @@ STRICT BEHAVIOUR RULES:
 - NEVER repeat a phrase or request you have already said. If you must convey the same urgency again, always find different words.
 - React to what the operator actually says. If they acknowledge you, say help is on the way, or ask a new question — respond to THAT, do not ignore it and keep begging.
 - If the operator confirms help is coming or asks you to stay on the line, express brief relief and comply; do not continue panicking as if nothing was said.
-- Forbidden: looping on the same plea ("no cuelgue", "necesito ayuda", etc.) more than once per conversation."""
+- Forbidden: looping on the same plea ("no cuelgue", "necesito ayuda", etc.) more than once per conversation.
+
+CALL ENDING RULE:
+- When the conversation reaches a natural conclusion (the operator says you can hang up, says goodbye, confirms everything is done, or tells you help is on its way and you don't need to stay on the line), say a brief farewell and append the EXACT token [FI] at the very end of your message, after a space.
+- ONLY use [FI] when the operator explicitly closes the call. Never use it on your own initiative.
+- Example: "D'acord, moltes gràcies. Adéu. [FI]" """
 
 
 def _lang_rule(lang: str) -> str:
@@ -70,10 +75,27 @@ def _scenario_facts(
             f"- Your emotional state at the start of the call "
             f"(this defines HOW you speak, not a word to repeat): {initial_emotion}"
         )
-    return (
-        "\n\nSCENARIO FACTS (fixed constants — do not translate addresses or proper nouns):\n"
-        + "\n".join(lines)
+    header = "\n\nSCENARIO FACTS (fixed constants — do not translate addresses or proper nouns):\n"
+    header += (
+        "PERSONAL IDENTITY — you MUST invent and remember these for the whole call:\n"
+        "- Your full name (a realistic Andorran/Catalan/Spanish/French name)\n"
+        "- Your phone number (format: +376 XXX XXX)\n"
     )
+    if not location:
+        header += (
+            "- The exact street address where you are (realistic Andorran street, "
+            "building number, floor — e.g., 'Carrer de la Unió 14, 3r 2a, Andorra la Vella')\n"
+        )
+    if not description:
+        header += (
+            "- Invent a realistic situation consistent with the emergency type "
+            "(what happened, how many people are involved, how serious it is)\n"
+        )
+    header += (
+        "When the operator asks for any of these, answer immediately and consistently. "
+        "Do NOT say 'I don't know' or hesitate about your own name/phone/address.\n\n"
+    )
+    return header + "\n".join(lines)
 
 
 def generate_alertant_response(

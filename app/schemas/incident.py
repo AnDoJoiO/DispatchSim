@@ -12,8 +12,6 @@ class IncidentCreate(BaseModel):
 
     @model_validator(mode="after")
     def check_required_without_scenario(self) -> "IncidentCreate":
-        if self.scenario_id is None:
-            missing = [f for f in ("type", "location", "description") if not getattr(self, f)]
-            if missing:
-                raise ValueError(f"Camps obligatoris sense scenario_id: {missing}")
+        if self.scenario_id is None and not self.type:
+            raise ValueError("El camp 'type' és obligatori sense scenario_id")
         return self

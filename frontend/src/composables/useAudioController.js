@@ -5,7 +5,8 @@ import { useI18n }       from '@/i18n'
 import { useMicrophone } from './useMicrophone'
 import { useTTS }        from './useTTS'
 
-const SILENCE_DELAY = 9000 // ms sense resposta de l'operador
+const SILENCE_DELAY    = 15000 // ms sense resposta de l'operador
+const MIC_GRACE_PERIOD = 2000  // ms d'espera abans d'activar VAD (evita capturar clic/soroll inicial)
 
 export function useAudioController() {
   const call  = useCallStore()
@@ -37,11 +38,16 @@ export function useAudioController() {
   }
 
   // ── Cicle de vida de la trucada ──────────────────────────
+  let graceTimer = null
   watch(() => call.callActive, (active) => {
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null }
     if (active && micSupported.value) {
-      startMic(async (text) => {
-        await chat.sendMessage(text)
-      }, lang.value)
+      // Esperar grace period per evitar capturar clic i soroll inicial
+      graceTimer = setTimeout(() => {
+        startMic(async (text) => {
+          await chat.sendMessage(text)
+        }, lang.value)
+      }, MIC_GRACE_PERIOD)
     } else {
       stopMic()
     }
@@ -59,7 +65,7 @@ export function useAudioController() {
       suspendMic() // apagar VAD immediatament, abans del fetch TTS
       speak(last.content, last.voice || 'nova', {
         onEnd: () => {
-          setTimeout(() => resumeMic(), 300)
+          setTimeout(() => resumeMic(), 600)
           resetSilenceTimer() // iniciar compte enrere un cop acabat el TTS
         },
       })
@@ -68,7 +74,7 @@ export function useAudioController() {
     }
   })
 
-  onUnmounted(() => { stopMic(); stopTTS(); clearSilenceTimer() })
+  onUnmounted(() => { stopMic(); stopTTS(); clearSilenceTimer(); if (graceTimer) clearTimeout(graceTimer) })
 
-  return { micActive, micRecording, transcribing, micSupported, speaking }
+  return { micActive, micRecording, transcribing, micSupported, speaking, resetSilenceTimer }
 }

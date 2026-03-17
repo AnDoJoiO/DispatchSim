@@ -48,6 +48,10 @@ export const useChatStore = defineStore('chat', () => {
       if (!res || !res.ok) { _addMsg('system', t('sys.error_chat')); return }
       const data = await res.json()
       _addMsg('alertant', data.content, data.voice ?? 'nova')
+      if (data.call_ended) {
+        const call = useCallStore()
+        call._onAutoEnd()
+      }
     } finally {
       isTyping.value = false
     }
@@ -71,6 +75,10 @@ export const useChatStore = defineStore('chat', () => {
       if (!res || !res.ok) return
       const data = await res.json()
       _addMsg('alertant', data.content, data.voice ?? 'nova')
+      if (data.call_ended) {
+        const call = useCallStore()
+        call._onAutoEnd()
+      }
     } finally {
       isTyping.value = false
     }

@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import { useCallStore } from '@/stores/call'
 import { useI18n } from '@/i18n'
 
-const emergency = useCallStore()
+const call = useCallStore()
 const { t: tr, risks } = useI18n()
 
 const address  = ref('')
@@ -15,7 +15,7 @@ const saving   = ref(false)
 const status   = ref(null)  // null | 'ok' | 'error'
 
 // Reset form when switching incidents
-watch(() => emergency.currentIncidentId, () => {
+watch(() => call.currentIncidentId, () => {
   address.value = phone.value = notes.value = ''
   injured.value = 0
   selected.value = []
@@ -23,11 +23,11 @@ watch(() => emergency.currentIncidentId, () => {
 })
 
 async function save() {
-  if (!emergency.currentIncidentId) return
+  if (!call.currentIncidentId) return
   saving.value = true
   status.value = null
-  const ok = await emergency.saveIntervention({
-    incident_id:      emergency.currentIncidentId,
+  const ok = await call.saveIntervention({
+    incident_id:      call.currentIncidentId,
     exact_address:    address.value.trim(),
     contact_phone:    phone.value.trim(),
     num_injured:      Math.max(0, parseInt(injured.value) || 0),
@@ -105,7 +105,7 @@ async function save() {
     >
       <button
         @click="save"
-        :disabled="!emergency.currentIncidentId || saving || emergency.interventionSaved"
+        :disabled="!call.currentIncidentId || saving || call.interventionSaved"
         class="w-full py-2.5 rounded-lg font-bold text-sm text-white transition flex items-center justify-center gap-2"
         style="background:var(--accent)"
       >
