@@ -77,6 +77,9 @@ async def transcribe_audio(
     _MAX_AUDIO_BYTES = 5 * 1024 * 1024  # 5 MB
     if len(audio_bytes) > _MAX_AUDIO_BYTES:
         raise HTTPException(413, "L'arxiu d'àudio supera el límit de 5 MB")
+    # WebM/EBML magic bytes: 0x1A 0x45 0xDF 0xA3
+    if len(audio_bytes) < 4 or audio_bytes[:4] != b'\x1a\x45\xdf\xa3':
+        raise HTTPException(415, "Format d'àudio no vàlid (es requereix WebM)")
 
     async with httpx.AsyncClient() as client:
         response = await client.post(

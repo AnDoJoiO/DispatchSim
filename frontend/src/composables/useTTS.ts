@@ -2,10 +2,16 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 // AudioContext compartit — es desbloqueja amb la primera interacció d'usuari
-let _audioCtx = null
-function getAudioCtx() {
+let _audioCtx: AudioContext | null = null
+function getAudioCtx(): AudioContext {
   if (!_audioCtx) _audioCtx = new AudioContext()
   return _audioCtx
+}
+function closeAudioCtx(): void {
+  if (_audioCtx && _audioCtx.state !== 'closed') {
+    _audioCtx.close()
+    _audioCtx = null
+  }
 }
 
 // Desbloqueja l'AudioContext amb qualsevol clic/teclat (política autoplay del navegador)
@@ -80,5 +86,10 @@ export function useTTS() {
     currentSource = null
   }
 
-  return { speaking, speak, stop }
+  function cleanup(): void {
+    stop()
+    closeAudioCtx()
+  }
+
+  return { speaking, speak, stop, cleanup }
 }

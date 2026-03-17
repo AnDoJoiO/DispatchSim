@@ -17,7 +17,7 @@ export function useAudioController() {
     suspend: suspendMic, resume: resumeMic,
   } = useMicrophone()
 
-  const { speaking, speak, stop: stopTTS } = useTTS()
+  const { speaking, speak, stop: stopTTS, cleanup: cleanupTTS } = useTTS()
 
   let silenceTimer = null
 
@@ -77,7 +77,7 @@ export function useAudioController() {
     }
   })
 
-  onUnmounted(() => { stopMic(); stopTTS(); clearSilenceTimer(); if (graceTimer) clearTimeout(graceTimer) })
+  onUnmounted(() => { stopMic(); cleanupTTS(); clearSilenceTimer(); if (graceTimer) clearTimeout(graceTimer) })
 
   return { micActive, micRecording, transcribing, micSupported, speaking, resetSilenceTimer }
 }
