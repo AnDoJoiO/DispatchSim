@@ -16,4 +16,8 @@ export default defineConfig({
     outDir: '../app/static',
     emptyOutDir: false, // preserve landing.html, css/, js/
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
 })
