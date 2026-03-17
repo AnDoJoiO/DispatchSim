@@ -40,5 +40,8 @@ Thumbs.db
 # Fitxers temporals
 NUL
 
+# Node
+node_modules/
+
 # Claude Code
 .claude/
