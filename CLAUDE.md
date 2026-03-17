@@ -50,6 +50,39 @@ Auth JWT + bcrypt + roles, SecurityHeadersMiddleware, CORS, rate limit chat, val
 
 ---
 
+## Protocolo de Auditoría
+
+### Cuándo ejecutarla
+Antes de cualquier merge a main con cambios significativos (nueva feature, refactor, fix de seguridad, rediseño UI).
+
+### Orden de verificación
+```bash
+# 1. Tests backend
+cd /home/agu/Proyecto_Dispatch && python -m pytest tests/ -v
+
+# 2. Tests frontend
+cd frontend && npx vitest run
+
+# 3. Deps backend (requiere pip-audit: pip install pip-audit)
+pip audit
+
+# 4. Deps frontend
+npm audit
+```
+
+### Criterios de bloqueo
+- **Critical / High:** bloquean el commit — se resuelven antes de pushear
+- **Medium:** se resuelven en la misma sesión de trabajo
+- **Low:** se acumulan en el roadmap (backlog)
+
+### Checks de coherencia post-rediseño
+- Tokens CSS sincronizados `landing.html :root` ↔ `main.css :root` (mateixos valors)
+- i18n completo en els 4 idiomes (CA/ES/FR/EN) — verificar claus noves
+- No usar tokens legacy en codi nou: usar `--text-muted` (no `--text3`), `--text-secondary` (no `--text2`), `--surface-raised` (no `--surface2`)
+- Inline `style=` prohibit en components nous — usar scoped CSS amb tokens semàntics
+
+---
+
 ## Contexto técnico
 
 ### Arquitectura backend
