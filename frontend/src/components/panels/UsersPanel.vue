@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore }  from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { useUiStore }    from '@/stores/ui'
-import { ROLE_STYLES } from '@/utils'
 import { useI18n } from '@/i18n'
+import { UserPlus, RefreshCw, Pencil } from 'lucide-vue-next'
 
 const auth  = useAuthStore()
 const users = useUsersStore()
@@ -25,122 +25,222 @@ async function createUser() {
   error.value = ''
   if (username.value.trim().length < 3) { error.value = tr('up.error_username'); return }
   if (password.value.length < 6)         { error.value = tr('up.error_password'); return }
-  const body = { username: username.value.trim(), password: password.value, role: role.value }
+  const body: any = { username: username.value.trim(), password: password.value, role: role.value }
   if (role.value === 'operador' && expiryVal.value)
     body.expires_at = expiryVal.value + 'T00:00:00'
   try {
     await users.create(body)
     username.value = password.value = expiryVal.value = ''
     role.value = 'operador'
-  } catch (e) {
+  } catch (e: any) {
     error.value = e.message
   }
 }
 
-function openEdit(id) { ui.openEditUser(id) }
+function openEdit(id: number) { ui.openEditUser(id) }
 
-function isExpired(u) {
+function isExpired(u: any) {
   if (!u.expires_at) return false
   const d = new Date(u.expires_at.endsWith('Z') || u.expires_at.includes('+') ? u.expires_at : u.expires_at + 'Z')
   return d < new Date()
 }
-function fmtExpiry(iso) {
+function fmtExpiry(iso: string) {
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')
   return d.toLocaleDateString('ca-AD', { day: '2-digit', month: '2-digit', year: '2-digit' })
 }
 </script>
 
 <template>
-  <div class="w-full flex gap-4 overflow-hidden">
+  <div class="up">
 
-    <!-- Columna esquerra: formulari -->
-    <div class="w-80 flex-shrink-0 flex flex-col gap-3 overflow-y-auto pb-1">
-      <div class="panel">
-        <div class="panel-hd">{{ tr('up.new_user') }}</div>
-        <div class="panel-body flex flex-col gap-3">
-          <div>
-            <label class="fl">{{ tr('up.username') }}</label>
-            <input v-model="username" type="text" :placeholder="tr('up.username_ph')" class="fc" />
+    <!-- Create form -->
+    <div class="up-form-col">
+      <div class="up-section">
+        <div class="up-section-hd">
+          <UserPlus :size="14" />
+          {{ tr('up.new_user') }}
+        </div>
+        <div class="up-section-body">
+          <div class="up-field">
+            <label for="up-username" class="fp-label">{{ tr('up.username') }}</label>
+            <input id="up-username" v-model="username" type="text" :placeholder="tr('up.username_ph')" class="fc" />
           </div>
-          <div>
-            <label class="fl">{{ tr('up.password') }}</label>
-            <input v-model="password" type="password" :placeholder="tr('up.password_ph')" class="fc" />
+          <div class="up-field">
+            <label for="up-password" class="fp-label">{{ tr('up.password') }}</label>
+            <input id="up-password" v-model="password" type="password" :placeholder="tr('up.password_ph')" class="fc" />
           </div>
-          <div>
-            <label class="fl">{{ tr('up.role') }}</label>
-            <select v-model="role" class="fc">
+          <div class="up-field">
+            <label for="up-role" class="fp-label">{{ tr('up.role') }}</label>
+            <select id="up-role" v-model="role" class="fc">
               <option value="operador">{{ tr('up.role_operator') }}</option>
               <option v-if="auth.canManage" value="formador">{{ tr('up.role_trainer') }}</option>
               <option v-if="auth.isAdmin"   value="admin">{{ tr('up.role_admin') }}</option>
             </select>
           </div>
-          <div v-if="showExpiry">
-            <label class="fl">{{ tr('up.expiry') }}</label>
-            <input v-model="expiryVal" type="date" class="fc" />
+          <div v-if="showExpiry" class="up-field">
+            <label for="up-expiry" class="fp-label">{{ tr('up.expiry') }}</label>
+            <input id="up-expiry" v-model="expiryVal" type="date" class="fc" />
           </div>
-          <p v-if="error" class="text-xs text-red-500 -mt-1">{{ error }}</p>
-          <button
-            @click="createUser"
-            class="w-full py-2 rounded-lg font-bold text-sm text-white transition"
-            style="background:var(--accent)"
-          >{{ tr('up.create_btn') }}</button>
+          <p v-if="error" class="up-error">{{ error }}</p>
+          <button @click="createUser" class="up-create-btn">{{ tr('up.create_btn') }}</button>
         </div>
       </div>
     </div>
 
-    <!-- Columna dreta: llista d'usuaris -->
-    <div class="flex-1 flex flex-col gap-3 overflow-y-auto pb-1">
-      <div class="panel flex-1 flex flex-col">
-        <div class="panel-hd flex items-center justify-between">
+    <!-- Users table -->
+    <div class="up-table-col">
+      <div class="up-section up-section--flex">
+        <div class="up-section-hd">
           <span>{{ tr('up.users_header', { n: users.items.length }) }}</span>
-          <button
-            @click="users.load()"
-            class="text-xs normal-case font-normal tracking-normal transition"
-            style="color:var(--text3);letter-spacing:normal"
-          >{{ tr('up.refresh') }}</button>
+          <button class="up-refresh" @click="users.load()" :title="tr('up.refresh')">
+            <RefreshCw :size="13" />
+          </button>
         </div>
-        <div class="overflow-y-auto flex-1">
-          <p v-if="!users.items.length" class="text-xs px-4 py-3" style="color:var(--text3)">{{ tr('up.empty') }}</p>
-          <div
-            v-for="u in users.items"
-            :key="u.id"
-            class="flex items-center justify-between px-4 py-3 hover:bg-blue-50 transition gap-3"
-            :style="`border-bottom:1px solid var(--border2)${isExpired(u) ? ';background:#fff5f5' : ''}`"
-          >
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-              <span class="text-xs font-mono w-5 text-right flex-shrink-0" style="color:var(--text3)">{{ u.id }}</span>
-              <span class="text-sm font-medium truncate" style="color:var(--text)">{{ u.username }}</span>
-              <span
-                v-if="isExpired(u)"
-                class="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
-                style="background:#fee2e2;color:#dc2626"
-              >{{ tr('up.expired') }}</span>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <span
-                v-if="u.role === 'operador' && u.expires_at"
-                class="text-xs"
-                :style="`color:${isExpired(u) ? '#dc2626' : 'var(--text3)'}`"
-              >{{ fmtExpiry(u.expires_at) }}</span>
-              <span
-                class="text-xs px-2 py-0.5 rounded-full font-semibold"
-                :style="ROLE_STYLES[u.role] || ''"
-              >{{ tr('role.' + u.role) || u.role }}</span>
-              <span
-                class="w-2 h-2 rounded-full inline-block"
-                :class="u.is_active ? 'bg-emerald-400' : 'bg-red-400'"
-              ></span>
-              <button
-                v-if="auth.canManage && u.role === 'operador'"
-                @click="openEdit(u.id)"
-                class="text-xs px-2 py-0.5 rounded transition"
-                style="color:var(--accent);border:1px solid var(--accent-br)"
-              >✎</button>
-            </div>
-          </div>
+
+        <div class="up-table-wrap">
+          <p v-if="!users.items.length" class="up-empty">{{ tr('up.empty') }}</p>
+          <table v-else class="up-table">
+            <thead>
+              <tr>
+                <th class="up-th up-th--id">#</th>
+                <th class="up-th">{{ tr('up.username') || 'Usuari' }}</th>
+                <th class="up-th up-th--role">{{ tr('up.role') || 'Rol' }}</th>
+                <th class="up-th up-th--status">{{ tr('up.col_status') || 'Estat' }}</th>
+                <th class="up-th up-th--exp">{{ tr('up.expiry') || 'Caducitat' }}</th>
+                <th class="up-th up-th--act"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="u in users.items"
+                :key="u.id"
+                class="up-row"
+                :class="{ 'up-row--expired': isExpired(u) }"
+              >
+                <td class="up-td up-td--id">{{ u.id }}</td>
+                <td class="up-td up-td--name">{{ u.username }}</td>
+                <td class="up-td">
+                  <span class="up-role-badge" :class="`up-role--${u.role}`">{{ tr('role.' + u.role) || u.role }}</span>
+                </td>
+                <td class="up-td up-td--status">
+                  <span class="up-status-dot" :class="u.is_active ? 'up-status--on' : 'up-status--off'"></span>
+                  <span v-if="isExpired(u)" class="up-expired-tag">{{ tr('up.expired') }}</span>
+                </td>
+                <td class="up-td up-td--exp">
+                  {{ u.expires_at ? fmtExpiry(u.expires_at) : '—' }}
+                </td>
+                <td class="up-td up-td--act">
+                  <button
+                    v-if="auth.canManage && u.role === 'operador'"
+                    @click="openEdit(u.id)"
+                    class="up-edit-btn"
+                    :title="tr('up.edit') || 'Editar'"
+                  >
+                    <Pencil :size="13" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
   </div>
 </template>
+
+<style scoped>
+.up { width: 100%; display: flex; gap: 16px; overflow: hidden; }
+
+/* ── Form column ── */
+.up-form-col { width: 320px; flex-shrink: 0; overflow-y: auto; }
+
+/* ── Table column ── */
+.up-table-col { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ── Sections ── */
+.up-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.up-section--flex { display: flex; flex-direction: column; flex: 1; }
+.up-section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 10px 14px; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); background: var(--surface-raised);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.up-section-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+.up-field { display: flex; flex-direction: column; gap: 4px; }
+.up-error { font-size: 12px; color: var(--danger); margin: 0; }
+
+.up-create-btn {
+  width: 100%; padding: 8px; border-radius: 6px; font-size: 13px;
+  font-weight: 600; cursor: pointer; border: none; background: var(--accent);
+  color: white; font-family: inherit; transition: all .15s;
+}
+.up-create-btn:hover { filter: brightness(1.1); }
+
+.up-refresh {
+  width: 26px; height: 26px; border-radius: 5px; display: flex;
+  align-items: center; justify-content: center; cursor: pointer;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-muted); transition: all .15s;
+}
+.up-refresh:hover { background: var(--surface-raised); color: var(--text); }
+
+/* ── Table ── */
+.up-table-wrap { flex: 1; overflow-y: auto; }
+.up-empty { font-size: 12px; color: var(--text-muted); padding: 24px 14px; text-align: center; }
+.up-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.up-th {
+  text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); background: var(--surface-raised);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+  position: sticky; top: 0; z-index: 1;
+}
+.up-th--id { width: 36px; }
+.up-th--role { width: 90px; }
+.up-th--status { width: 80px; }
+.up-th--exp { width: 90px; }
+.up-th--act { width: 44px; }
+
+.up-row { transition: background .1s; }
+.up-row:hover { background: var(--surface-raised); }
+.up-row--expired { background: var(--danger-bg); }
+.up-row:not(:last-child) .up-td { border-bottom: 1px solid var(--border); }
+
+.up-td { padding: 8px 12px; vertical-align: middle; }
+.up-td--id { font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--text-muted); font-size: 11px; }
+.up-td--name { font-weight: 500; color: var(--text); }
+.up-td--status { display: flex; align-items: center; gap: 6px; }
+.up-td--exp { color: var(--text-muted); font-size: 11px; }
+.up-td--act { text-align: center; }
+
+.up-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.up-status--on { background: var(--success); }
+.up-status--off { background: var(--danger); }
+
+.up-expired-tag {
+  font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px;
+  background: var(--danger-bg); color: var(--danger);
+}
+
+.up-role-badge {
+  font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+  display: inline-block;
+}
+.up-role--admin    { background: #f3e8ff; color: #7e22ce; }
+.up-role--formador { background: var(--warning-bg); color: var(--warning); }
+.up-role--operador { background: var(--accent-bg); color: var(--accent); }
+[data-theme="dark"] .up-role--admin { background: rgba(126,34,206,.1); }
+
+.up-edit-btn {
+  width: 28px; height: 28px; border-radius: 5px; display: flex;
+  align-items: center; justify-content: center; cursor: pointer;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-muted); transition: all .15s;
+}
+.up-edit-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent-border); }
+</style>
