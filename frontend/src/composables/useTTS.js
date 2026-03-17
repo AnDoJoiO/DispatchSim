@@ -1,7 +1,24 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
-async function fetchAudioUrl(text, voice, token) {
+// AudioContext compartit — es desbloqueja amb la primera interacció d'usuari
+let _audioCtx = null
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new AudioContext()
+  return _audioCtx
+}
+
+// Desbloqueja l'AudioContext amb qualsevol clic/teclat (política autoplay del navegador)
+function _unlockAudio() {
+  const ctx = getAudioCtx()
+  if (ctx.state === 'suspended') ctx.resume()
+  document.removeEventListener('click', _unlockAudio)
+  document.removeEventListener('keydown', _unlockAudio)
+}
+document.addEventListener('click', _unlockAudio)
+document.addEventListener('keydown', _unlockAudio)
+
+async function fetchAudioBuffer(text, voice, token) {
   try {
     const res = await fetch('/api/v1/voice/speak', {
       method:  'POST',
@@ -9,29 +26,32 @@ async function fetchAudioUrl(text, voice, token) {
       body:    JSON.stringify({ text, voice }),
     })
     if (!res.ok) {
-      const err = await res.text().catch(() => res.status)
-      console.error('[TTS] API error', res.status, err)
+      console.error('[TTS] API error', res.status)
       return null
     }
-    return URL.createObjectURL(await res.blob())
+    const arrayBuf = await res.arrayBuffer()
+    return getAudioCtx().decodeAudioData(arrayBuf)
   } catch (e) {
-    console.error('[TTS] fetch failed', e)
+    console.error('[TTS] fetch/decode failed', e)
     return null
   }
 }
 
-function playUrl(url) {
+function playBuffer(buffer) {
   return new Promise(resolve => {
-    const audio = new Audio(url)
-    audio.onended = () => { URL.revokeObjectURL(url); resolve() }
-    audio.onerror = ()  => { resolve() }
-    audio.play().catch(resolve)
+    const ctx    = getAudioCtx()
+    const source = ctx.createBufferSource()
+    source.buffer = buffer
+    source.connect(ctx.destination)
+    source.onended = resolve
+    source.start()
   })
 }
 
 export function useTTS() {
   const speaking = ref(false)
   let aborted = false
+  let currentSource = null
 
   async function speak(text, voice = 'nova', { onEnd } = {}) {
     if (!text?.trim()) { onEnd?.(); return }
@@ -42,11 +62,13 @@ export function useTTS() {
     const auth = useAuthStore()
 
     try {
-      if (aborted) return
-      const url = await fetchAudioUrl(text.trim(), voice, auth.token)
-      if (url && !aborted) await playUrl(url)
+      const buffer = await fetchAudioBuffer(text.trim(), voice, auth.token)
+      if (buffer && !aborted) {
+        await playBuffer(buffer)
+      }
     } finally {
       speaking.value = false
+      currentSource  = null
       onEnd?.()
     }
   }
@@ -54,6 +76,8 @@ export function useTTS() {
   function stop() {
     aborted        = true
     speaking.value = false
+    try { currentSource?.stop() } catch {}
+    currentSource = null
   }
 
   return { speaking, speak, stop }
