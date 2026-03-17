@@ -32,6 +32,17 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 
 ---
 
+## Tareas pendientes
+
+### [ ] Integración ElevenLabs TTS emocional
+- Modelo: `eleven_turbo_v2_5`
+- Reemplaza el TTS actual con soporte de voces emocionales
+- Prompt guardado en: [PENDIENTE - preguntar a Agustín dónde lo guardó]
+- Requisitos previos: `ELEVENLABS_API_KEY` (plan Starter $5/mes en elevenlabs.io)
+- Impacto: alta mejora perceptible en realismo del simulador
+
+---
+
 ## Historial completado
 
 <details>
