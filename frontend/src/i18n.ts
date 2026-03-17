@@ -228,6 +228,7 @@ const messages = {
     // Map
     'map.title':           'Localització',
     'map.locating':        'Localitzant...',
+    'map.approximate':     'Ubicació aproximada',
   },
 
   es: {
@@ -429,6 +430,7 @@ const messages = {
     'chat.operator_name':  'Operador',
     'map.title':           'Localización',
     'map.locating':        'Localizando...',
+    'map.approximate':     'Ubicación aproximada',
   },
 
   fr: {
@@ -630,6 +632,7 @@ const messages = {
     'chat.operator_name':  'Opérateur',
     'map.title':           'Localisation',
     'map.locating':        'Localisation...',
+    'map.approximate':     'Localisation approximative',
   },
 
   en: {
@@ -831,6 +834,7 @@ const messages = {
     'chat.operator_name':  'Operator',
     'map.title':           'Location',
     'map.locating':        'Locating...',
+    'map.approximate':     'Approximate location',
   },
 }
 
