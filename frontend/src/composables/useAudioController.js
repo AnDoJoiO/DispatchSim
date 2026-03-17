@@ -53,7 +53,10 @@ export function useAudioController() {
   }, { immediate: true })
 
   watch(() => call.callEnded, (ended) => {
-    if (ended) { stopMic(); stopTTS(); clearSilenceTimer() }
+    if (ended) { stopMic(); clearSilenceTimer() }
+    // No cridem stopTTS() aquí — si la IA està parlant (últim missatge amb [FI]),
+    // deixem que acabi. El onEnd del speak ja fa resumeMic/resetSilenceTimer
+    // que seran no-ops perquè callEnded és true.
   })
 
   // ── Reacció a nous missatges ─────────────────────────────

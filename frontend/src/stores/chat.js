@@ -44,8 +44,11 @@ export const useChatStore = defineStore('chat', () => {
           lang:             localStorage.getItem('dispatch_lang') || 'ca',
         }),
       })
+      const ended = data.call_ended
       _addMsg('alertant', data.content, data.voice ?? 'nova')
-      if (data.call_ended) call._onAutoEnd()
+      // Demorar auto-end perquè el watcher de messages pugui iniciar speak()
+      // abans que el watcher de callEnded faci stopTTS()
+      if (ended) setTimeout(() => call._onAutoEnd(), 100)
     } catch (e) {
       if (e instanceof ApiError && e.status === 422) {
         // Backend rejected noise — remove the operator bubble silently
@@ -73,8 +76,9 @@ export const useChatStore = defineStore('chat', () => {
           lang:           localStorage.getItem('dispatch_lang') || 'ca',
         }),
       })
+      const ended = data.call_ended
       _addMsg('alertant', data.content, data.voice ?? 'nova')
-      if (data.call_ended) call._onAutoEnd()
+      if (ended) setTimeout(() => call._onAutoEnd(), 100)
     } catch {
       // silent — silence reaction failed, not critical
     } finally {
