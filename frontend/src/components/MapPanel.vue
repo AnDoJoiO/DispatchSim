@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { useCallStore } from '@/stores/call'
 import { useI18n } from '@/i18n'
 import { MapPin, Crosshair, ChevronDown, ChevronUp } from 'lucide-vue-next'
@@ -12,7 +12,16 @@ const { t: tr } = useI18n()
 const collapsed = ref(false)
 const markerVisible = ref(false)
 const locating = ref(false)
+const mapRef = ref<any>(null)
 let locTimer: ReturnType<typeof setTimeout> | null = null
+
+// Invalidate map size when expanding (Leaflet needs this after visibility change)
+watch(collapsed, async (val) => {
+  if (!val) {
+    await nextTick()
+    mapRef.value?.leafletObject?.invalidateSize()
+  }
+})
 
 // Default center (Andorra la Vella) — will be overridden by scenario location
 const DEFAULT_CENTER: [number, number] = [42.5063, 1.5218]
@@ -92,6 +101,7 @@ onUnmounted(() => { if (locTimer) clearTimeout(locTimer) })
     <!-- Map -->
     <div v-show="!collapsed" class="mp-body">
       <LMap
+        ref="mapRef"
         :zoom="MAP_ZOOM"
         :center="center"
         :use-global-leaflet="false"

@@ -24,8 +24,8 @@ _CSP = (
     "script-src 'self' 'unsafe-inline'; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' https://fonts.gstatic.com; "
-    "img-src 'self' data: https://flagcdn.com; "
-    "connect-src 'self'; "
+    "img-src 'self' data: https://flagcdn.com https://*.tile.openstreetmap.org; "
+    "connect-src 'self' https://*.tile.openstreetmap.org; "
     "media-src 'self' blob:; "
     "frame-ancestors 'none';"
 )
