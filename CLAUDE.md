@@ -53,6 +53,15 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 - Almacenamiento de audios en Railway / S3 con retención configurable
 - Referencia competidora: AnthroPi (su principal diferencial de debriefing)
 
+### [ ] Mapa de localización de llamada
+- Durante la simulación, mostrar un mapa con el punto de origen de la llamada (coordenadas generadas por la IA coherentes con la zona del cliente)
+- Simular la experiencia real de localización automática que tienen los CAD (Computer Aided Dispatch) reales
+- El punto aparece progresivamente (simular latencia de localización real, no inmediata)
+- Posible indicador de confianza de localización (GPS fijo / triangulación aproximada / no localizado)
+- Stack sugerido: Leaflet.js + OpenStreetMap (gratuito, sin límites de API)
+- Referencia: sistema CAD real de Bombers d'Andorra (localización automática de llamadas entrantes)
+- Aportación diferencial: ningún competidor actual (Sklls, ThisGen, AnthroPi) tiene esta feature documentada
+
 ---
 
 ## Historial completado
