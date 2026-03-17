@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuthStore }      from '@/stores/auth'
-import { useAppStore }       from '@/stores/app'
-import { useCallStore } from '@/stores/call'
+import { useAuthStore }  from '@/stores/auth'
+import { useAppStore }   from '@/stores/app'
+import { useCallStore }  from '@/stores/call'
 import { useI18n, LANG_LOCALE } from '@/i18n'
+import {
+  AlertTriangle, Clock, FileText, Users,
+  Moon, Sun, Home, LogOut,
+} from 'lucide-vue-next'
 
-const auth      = useAuthStore()
-const app       = useAppStore()
+const auth = useAuthStore()
+const app  = useAppStore()
 const call = useCallStore()
 const { t: tr, lang } = useI18n()
 
-// Live clock
 const clock = ref('00:00:00')
-let _clockTimer = null
+let _clockTimer: ReturnType<typeof setInterval> | null = null
 
 function tickClock() {
   const locale = LANG_LOCALE[lang.value] || 'ca-AD'
@@ -21,46 +24,28 @@ function tickClock() {
   })
 }
 
-onMounted(() => {
-  tickClock()
-  _clockTimer = setInterval(tickClock, 1000)
-})
-
-onUnmounted(() => {
-  if (_clockTimer) clearInterval(_clockTimer)
-})
+onMounted(() => { tickClock(); _clockTimer = setInterval(tickClock, 1000) })
+onUnmounted(() => { if (_clockTimer) clearInterval(_clockTimer) })
 </script>
 
 <template>
-  <header
-    class="header-wrap flex items-center flex-shrink-0 px-5"
-    style="height:52px;background:var(--surface);border-bottom:1px solid var(--border)"
-  >
+  <header class="hdr">
     <!-- Logo -->
-    <div class="flex items-center gap-2.5 mr-6 flex-shrink-0">
-      <div
-        class="w-7 h-7 rounded-lg flex items-center justify-center text-base"
-        style="background:var(--accent-bg);border:1px solid var(--accent-br)"
-      >🚨</div>
-      <span class="font-bold text-sm tracking-wide" style="color:var(--accent)">DISPATCHSIM</span>
+    <div class="hdr-logo">
+      <span class="hdr-dot"></span>
+      <span class="hdr-brand">DISPATCH</span>
     </div>
 
-    <div class="h-sep w-px h-6 mr-4 flex-shrink-0"></div>
+    <div class="hdr-sep"></div>
 
-    <!-- Nav tabs -->
-    <nav class="flex items-stretch h-full flex-1 min-w-0 overflow-x-auto">
-
-      <!-- Grup: Simulador -->
+    <!-- Nav -->
+    <nav class="hdr-nav">
       <button
-        id="nav-emergency"
         class="nav-tab"
         :class="{ active: app.activeTab === 'emergency' }"
         @click="app.showTab('emergency')"
       >
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
+        <AlertTriangle :size="15" />
         {{ tr('nav.emergency') }}
       </button>
 
@@ -70,32 +55,19 @@ onUnmounted(() => {
         :class="{ active: app.activeTab === 'history' }"
         @click="app.showTab('history')"
       >
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
+        <Clock :size="15" />
         {{ tr('nav.history') }}
       </button>
 
-      <!-- Separador entre Simulador i Gestió -->
-      <div
-        v-if="auth.canManage"
-        class="flex items-center mx-2 flex-shrink-0"
-      >
-        <div class="w-px h-5" style="background:var(--border)"></div>
-      </div>
+      <div v-if="auth.canManage" class="hdr-sep-v"></div>
 
-      <!-- Grup: Gestió -->
       <button
         v-if="auth.canManage"
         class="nav-tab"
         :class="{ active: app.activeTab === 'scenarios' }"
         @click="app.showTab('scenarios')"
       >
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
-        </svg>
+        <FileText :size="15" />
         {{ tr('nav.scenarios') }}
       </button>
 
@@ -105,70 +77,209 @@ onUnmounted(() => {
         :class="{ active: app.activeTab === 'users' }"
         @click="app.showTab('users')"
       >
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+        <Users :size="15" />
         {{ tr('nav.users') }}
       </button>
     </nav>
 
-    <!-- Right: badge + user info + clock + actions -->
-    <div class="flex items-center gap-3 flex-shrink-0 ml-4">
-
-      <!-- Active incident badge -->
-      <div
-        v-if="call.currentIncidentId"
-        class="text-xs font-bold px-3 py-1 rounded-full"
-        style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5"
-      >
+    <!-- Right -->
+    <div class="hdr-right">
+      <!-- Active incident -->
+      <div v-if="call.currentIncidentId" class="hdr-incident">
+        <span class="hdr-incident-dot"></span>
         #{{ call.currentIncidentId }} · {{ call.currentIncident?.type || '—' }}
       </div>
 
-      <!-- User info -->
-      <div class="flex items-center gap-2 text-xs" style="color:var(--text3)">
-        <span class="sdot w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-        <span>{{ auth.user?.username }} · {{ auth.user?.role }}</span>
+      <!-- User -->
+      <div class="hdr-user">
+        <span class="hdr-user-dot"></span>
+        {{ auth.user?.username }}
+        <span class="hdr-role">{{ auth.user?.role }}</span>
       </div>
 
       <!-- Clock -->
-      <div class="font-mono text-sm font-bold tabular-nums" style="color:var(--text2)">
-        {{ clock }}
-      </div>
+      <div class="hdr-clock">{{ clock }}</div>
 
-      <!-- Theme toggle -->
-      <button class="theme-btn" @click="app.toggleTheme()" :title="tr('title.toggle_theme')" :aria-label="tr('title.toggle_theme')">
-        <svg v-if="app.theme === 'light'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        <svg v-else fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
+      <!-- Actions -->
+      <button class="hdr-icon-btn" @click="app.toggleTheme()" :title="tr('title.toggle_theme')" :aria-label="tr('title.toggle_theme')">
+        <Moon v-if="app.theme === 'light'" :size="15" />
+        <Sun v-else :size="15" />
       </button>
 
-      <!-- Home -->
-      <button
-        @click="() => window.location.href = '/'"
-        class="logout-btn text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5"
-        :title="tr('btn.home')"
-        :aria-label="tr('btn.home')"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        {{ tr('btn.home') }}
+      <button class="hdr-icon-btn" @click="() => (window as any).location.href = '/'" :title="tr('btn.home')" :aria-label="tr('btn.home')">
+        <Home :size="15" />
       </button>
 
-      <!-- Logout -->
-      <button @click="auth.logout()" :aria-label="tr('btn.logout')" class="logout-btn text-xs px-3 py-1.5 rounded-lg font-medium transition">
+      <button class="hdr-text-btn" @click="auth.logout()" :aria-label="tr('btn.logout')">
+        <LogOut :size="13" />
         {{ tr('btn.logout') }}
       </button>
     </div>
   </header>
 </template>
+
+<style scoped>
+.hdr {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Logo ── */
+.hdr-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+.hdr-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(220,38,38,.4); }
+  50% { opacity: .8; box-shadow: 0 0 0 4px rgba(220,38,38,0); }
+}
+.hdr-brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--text);
+}
+
+/* ── Separators ── */
+.hdr-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.hdr-sep-v {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* ── Nav ── */
+.hdr-nav {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  gap: 2px;
+}
+
+/* ── Right ── */
+.hdr-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Incident badge ── */
+.hdr-incident {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+.hdr-incident-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse-dot 2s ease infinite;
+}
+
+/* ── User ── */
+.hdr-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.hdr-user-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+}
+.hdr-role {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--surface-raised);
+}
+
+/* ── Clock ── */
+.hdr-clock {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Buttons ── */
+.hdr-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  transition: all .15s;
+}
+.hdr-icon-btn:hover {
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+}
+
+.hdr-text-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  transition: all .15s;
+  font-family: inherit;
+}
+.hdr-text-btn:hover {
+  color: var(--text);
+  background: var(--surface-raised);
+}
+</style>
