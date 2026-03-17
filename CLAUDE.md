@@ -40,10 +40,10 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 
 ### Fase 4 — Infraestructura
 
-- [ ] GitHub Actions CI — lint + tests en cada PR
-- [ ] Dockerfile para entorno reproducible
-- [ ] GZipMiddleware en FastAPI
-- [ ] Structured logging (JSON) para producción
+- [x] GitHub Actions CI — backend (pytest) + frontend (vitest + build) en push/PR a main
+- [x] Dockerfile multi-stage — Node 20 (build frontend) + Python 3.12-slim (runtime)
+- [x] GZipMiddleware en FastAPI (min 500 bytes)
+- [x] Structured logging — JSON en producció, text llegible en dev
 
 ### Fase 5 — Mejoras opcionales
 
