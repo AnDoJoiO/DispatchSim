@@ -18,6 +18,7 @@ export function useMicrophone() {
   let recordingStart = null
   let onResultCb    = null
   let currentLang   = 'ca'
+  let _discardNext  = false  // true → handleStop descarta l'àudio (suspend actiu)
 
   function getRMS(data) {
     let sum = 0
@@ -38,6 +39,9 @@ export function useMicrophone() {
 
   async function handleStop() {
     recording.value = false
+    // Si estem suspesos (TTS en curs), descartar l'àudio capturat
+    if (_discardNext) { _discardNext = false; return }
+
     const duration = Date.now() - (recordingStart ?? 0)
     const blob     = new Blob(chunks, { type: 'audio/webm' })
 
@@ -104,7 +108,10 @@ export function useMicrophone() {
   function suspend() {
     if (animFrame)    { cancelAnimationFrame(animFrame); animFrame = null }
     if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
-    if (mediaRecorder?.state !== 'inactive') mediaRecorder?.stop()
+    if (mediaRecorder?.state !== 'inactive') {
+      _discardNext = true  // handleStop descartarà aquest chunk
+      mediaRecorder.stop()
+    }
     recording.value = false
   }
 
