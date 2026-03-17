@@ -1,9 +1,9 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { useEmergencyStore } from '@/stores/emergency'
+import { useCallStore } from '@/stores/call'
 import { useI18n } from '@/i18n'
 
-const emergency = useEmergencyStore()
+const emergency = useCallStore()
 const { t: tr, risks } = useI18n()
 
 const address  = ref('')

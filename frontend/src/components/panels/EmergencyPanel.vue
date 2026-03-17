@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useEmergencyStore } from '@/stores/emergency'
+import { useScenarioStore } from '@/stores/scenarios'
+import { useCallStore }     from '@/stores/call'
 import { useI18n } from '@/i18n'
 
-const emergency = useEmergencyStore()
+const scenarios = useScenarioStore()
+const call      = useCallStore()
 const { t: tr, incidentTypes } = useI18n()
 
 const scenarioId   = ref('')
@@ -22,7 +24,7 @@ const PRIO_COLORS = {
 }
 
 const selectedScenario = computed(() =>
-  emergency.scenariosCache.find(s => s.id === +scenarioId.value) ?? null
+  scenarios.scenariosCache.find(s => s.id === +scenarioId.value) ?? null
 )
 
 function onScenarioChange() {
@@ -42,14 +44,14 @@ async function startIncident() {
   starting.value = true
   try {
     const body = scenarioId.value
-      ? { scenario_id: +scenarioId.value, priority: emergency.selectedPriority }
+      ? { scenario_id: +scenarioId.value, priority: call.selectedPriority }
       : {
           type:        incType.value,
           location:    incLocation.value.trim() || tr('ep.unknown_location'),
           description: incDesc.value.trim()     || tr('ep.no_description'),
-          priority:    emergency.selectedPriority,
+          priority:    call.selectedPriority,
         }
-    await emergency.startIncident(body)
+    await call.startIncident(body)
     fieldsLocked.value = false
     scenarioId.value   = ''
     incLocation.value  = ''
@@ -69,7 +71,7 @@ async function startIncident() {
       <div class="panel-body">
         <select v-model="scenarioId" @change="onScenarioChange" class="fc">
           <option value="">{{ tr('ep.free') }}</option>
-          <option v-for="s in emergency.scenariosCache" :key="s.id" :value="s.id">
+          <option v-for="s in scenarios.scenariosCache" :key="s.id" :value="s.id">
             [{{ tr(`type.${s.incident_type}`) }}] {{ s.title }}
           </option>
         </select>
@@ -106,9 +108,9 @@ async function startIncident() {
             v-for="p in [1, 2, 3, 4, 5]"
             :key="p"
             class="prio"
-            :class="{ sel: emergency.selectedPriority === p }"
+            :class="{ sel: call.selectedPriority === p }"
             :style="PRIO_COLORS[p]"
-            @click="emergency.setPriority(p)"
+            @click="call.setPriority(p)"
           >P{{ p }}</button>
         </div>
       </div>
@@ -129,11 +131,11 @@ async function startIncident() {
       <div class="panel-hd">{{ tr('ep.session') }}</div>
       <ul class="flex flex-col max-h-36 overflow-y-auto py-1">
         <li
-          v-for="inc in emergency.sessionIncidents"
+          v-for="inc in call.sessionIncidents"
           :key="inc.id"
           class="incident-row cursor-pointer text-xs transition py-1.5 px-4 rounded"
           style="color:var(--text2)"
-          @click="emergency.switchIncident(inc)"
+          @click="call.switchIncident(inc)"
           @mouseenter="$event.currentTarget.style.color='var(--accent)'"
           @mouseleave="$event.currentTarget.style.color='var(--text2)'"
         >

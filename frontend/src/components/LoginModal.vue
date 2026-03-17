@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore }      from '@/stores/auth'
-import { useEmergencyStore } from '@/stores/emergency'
+import { useScenarioStore } from '@/stores/scenarios'
+import { useCallStore }     from '@/stores/call'
 import { useI18n } from '@/i18n'
 
 const auth      = useAuthStore()
-const emergency = useEmergencyStore()
+const scenarios = useScenarioStore()
+const call      = useCallStore()
 const { t: tr } = useI18n()
 
 const username = ref('')
@@ -18,8 +20,8 @@ async function doLogin() {
   loading.value = true
   try {
     await auth.login(username.value.trim(), password.value)
-    await emergency.loadScenarios()
-    emergency.setPriority(1)
+    await scenarios.loadScenarios()
+    call.setPriority(1)
   } catch (e) {
     error.value = e.message || tr('login.conn_error')
   } finally {

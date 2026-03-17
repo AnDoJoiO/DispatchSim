@@ -1,10 +1,10 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useEmergencyStore } from '@/stores/emergency'
+import { useScenarioStore } from '@/stores/scenarios'
 import ScenarioEditor from '@/components/ScenarioEditor.vue'
 import { useI18n } from '@/i18n'
 
-const emergency = useEmergencyStore()
+const emergency = useScenarioStore()
 const { t: tr } = useI18n()
 
 onMounted(() => emergency.loadScenarios())

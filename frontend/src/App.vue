@@ -1,9 +1,12 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useAuthStore }      from '@/stores/auth'
-import { useAppStore }       from '@/stores/app'
-import { useEmergencyStore } from '@/stores/emergency'
-import { useUiStore }        from '@/stores/ui'
+import { computed, onMounted }   from 'vue'
+import { useAuthStore }          from '@/stores/auth'
+import { useAppStore }           from '@/stores/app'
+import { useScenarioStore }      from '@/stores/scenarios'
+import { useCallStore }          from '@/stores/call'
+import { useChatStore }          from '@/stores/chat'
+import { useUiStore }            from '@/stores/ui'
+import { useAudioController }    from '@/composables/useAudioController'
 
 import LoginModal      from '@/components/LoginModal.vue'
 import AppHeader       from '@/components/AppHeader.vue'
@@ -18,8 +21,11 @@ import EditUserModal   from '@/components/EditUserModal.vue'
 
 const auth      = useAuthStore()
 const app       = useAppStore()
-const emergency = useEmergencyStore()
+const scenarios = useScenarioStore()
+const call      = useCallStore()
+const chat      = useChatStore()
 const ui        = useUiStore()
+const { micActive, micRecording, transcribing, micSupported } = useAudioController()
 
 const isManagementTab = computed(() =>
   app.activeTab === 'scenarios' || app.activeTab === 'users'
@@ -27,14 +33,22 @@ const isManagementTab = computed(() =>
 
 onMounted(async () => {
   if (auth.isLoggedIn) {
-    await emergency.loadScenarios()
-    emergency.setPriority(1)
-    // Solicitar permiso de micrófono en segundo plano al iniciar sesión
+    await scenarios.loadScenarios()
+    call.setPriority(1)
+    // Solicitar permís de micròfon en segon pla en iniciar sessió
     navigator.mediaDevices?.getUserMedia({ audio: true })
       .then(s => s.getTracks().forEach(t => t.stop()))
       .catch(() => {})
   }
 })
+
+async function handleSend(text) {
+  await chat.sendMessage(text)
+}
+
+async function handleEndCall() {
+  await call.endCall()
+}
 </script>
 
 <template>
@@ -59,7 +73,24 @@ onMounted(async () => {
         <HistoryPanel   v-else-if="app.activeTab === 'history'" />
       </div>
 
-      <ChatWindow />
+      <ChatWindow
+        :messages="chat.messages"
+        :isTyping="chat.isTyping"
+        :inputEnabled="chat.inputEnabled"
+        :micActive="micActive"
+        :micRecording="micRecording"
+        :transcribing="transcribing"
+        :micSupported="micSupported"
+        :incident="call.currentIncident"
+        :incidentId="call.currentIncidentId"
+        :callActive="call.callActive"
+        :callEnded="call.callEnded"
+        :interventionSaved="call.interventionSaved"
+        :elapsed="call.elapsed"
+        :operatorName="auth.user?.username || ''"
+        @send="handleSend"
+        @end-call="handleEndCall"
+      />
       <FitxaPanel />
     </main>
 

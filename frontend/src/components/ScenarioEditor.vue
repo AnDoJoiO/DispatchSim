@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
-import { useEmergencyStore } from '@/stores/emergency'
+import { useScenarioStore } from '@/stores/scenarios'
 import { useI18n } from '@/i18n'
 
 const emit = defineEmits(['created'])
 
-const emergency = useEmergencyStore()
+const emergency = useScenarioStore()
 const { t: tr, incidentTypes } = useI18n()
 
 const title          = ref('')

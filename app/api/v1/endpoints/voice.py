@@ -7,7 +7,10 @@ from pydantic import BaseModel
 import httpx
 
 from app.core.config import settings
+from app.core.constants import EL_DEFAULT_SETTINGS, EL_TO_OAI_VOICE, EL_VOICE_SETTINGS
 from app.core.deps import get_current_user
+from app.core.rate_limit import transcribe_limiter, tts_limiter
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/voice", tags=["voice"])
@@ -29,8 +32,9 @@ def _is_hallucination(text: str) -> bool:
 async def transcribe_audio(
     audio: UploadFile = File(...),
     lang: str = Query(default="ca"),
-    _=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    transcribe_limiter.check(str(current_user.id))
     if not settings.DispatchSimKeyOpenAI:
         raise HTTPException(503, "Transcription service not configured")
 
@@ -55,13 +59,6 @@ async def transcribe_audio(
     return {"text": text}
 
 
-# Parámetros de voz por voice_id para ElevenLabs
-_EL_VOICE_SETTINGS: dict[str, dict] = {
-    "EXAVITQu4vr4xnSDxMaL": {"stability": 0.70, "similarity_boost": 0.80, "style": 0.15},  # Sarah – Calma
-    "cgSgspJ2msm6clMCkdW9": {"stability": 0.20, "similarity_boost": 0.80, "style": 0.85},  # Jessica – Pánico
-    "pNInz6obpgDQGcFmaJgB": {"stability": 0.35, "similarity_boost": 0.80, "style": 0.85},  # Adam – Agresión
-}
-_EL_DEFAULT_SETTINGS = {"stability": 0.50, "similarity_boost": 0.75, "style": 0.40}
 
 
 class TTSRequest(BaseModel):
@@ -72,11 +69,12 @@ class TTSRequest(BaseModel):
 @router.post("/speak")
 async def text_to_speech(
     req: TTSRequest,
-    _=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
+    tts_limiter.check(str(current_user.id))
     # ElevenLabs tiene prioridad si está configurado
     if settings.DispatchSimKeyEleven:
-        voice_settings = _EL_VOICE_SETTINGS.get(req.voice, _EL_DEFAULT_SETTINGS)
+        voice_settings = EL_VOICE_SETTINGS.get(req.voice, EL_DEFAULT_SETTINGS)
         async with httpx.AsyncClient() as client:
             el_response = await client.post(
                 f"https://api.elevenlabs.io/v1/text-to-speech/{req.voice}",

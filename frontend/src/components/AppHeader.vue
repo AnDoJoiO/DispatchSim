@@ -2,12 +2,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore }      from '@/stores/auth'
 import { useAppStore }       from '@/stores/app'
-import { useEmergencyStore } from '@/stores/emergency'
+import { useCallStore } from '@/stores/call'
 import { useI18n, LANG_LOCALE } from '@/i18n'
 
 const auth      = useAuthStore()
 const app       = useAppStore()
-const emergency = useEmergencyStore()
+const emergency = useCallStore()
 const { t: tr, lang } = useI18n()
 
 // Live clock

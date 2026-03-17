@@ -1,98 +1,48 @@
 <script setup>
-import { ref, watch, nextTick, computed, onUnmounted } from 'vue'
-import { useEmergencyStore } from '@/stores/emergency'
-import { formatMessage, fmtElapsed } from '@/utils'
-import { useAuthStore } from '@/stores/auth'
-import { useI18n } from '@/i18n'
-import { useMicrophone } from '@/composables/useMicrophone'
-import { useTTS }        from '@/composables/useTTS'
+import { ref, watch, nextTick } from 'vue'
+import { formatMessage }        from '@/utils'
+import { useI18n }              from '@/i18n'
+import CallTimer                from '@/components/CallTimer.vue'
 
-const emergency = useEmergencyStore()
-const auth      = useAuthStore()
-const { t: tr, lang } = useI18n()
-
-const { active: micActive, recording: micRecording, transcribing, supported: micSupported, start: startMic, stop: stopMic, suspend: suspendMic, resume: resumeMic } = useMicrophone()
-const { speaking, speak, stop: stopTTS } = useTTS()
-
-// ── Temporitzador de silenci ───────────────────────────────
-const SILENCE_DELAY = 9000  // ms sense resposta de l'operador
-let silenceTimer = null
-
-function resetSilenceTimer() {
-  if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
-  if (!emergency.callActive || emergency.callEnded) return
-  silenceTimer = setTimeout(() => {
-    if (emergency.callActive && !emergency.callEnded && !emergency.isTyping && !speaking.value) {
-      emergency.sendSilence()
-    }
-  }, SILENCE_DELAY)
-}
-
-function clearSilenceTimer() {
-  if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
-}
-// ──────────────────────────────────────────────────────────
-
-// Arrancar el micrófono automáticamente cuando hay llamada activa
-watch(() => emergency.callActive, (active) => {
-  if (active && micSupported.value) startMic(async text => { msgInput.value = text; await sendMessage() }, lang.value)
-  else stopMic()
-}, { immediate: true })
-
-watch(() => emergency.callEnded, (ended) => {
-  if (ended) { stopMic(); stopTTS(); clearSilenceTimer() }
+const props = defineProps({
+  messages:          { type: Array,   required: true },
+  isTyping:          { type: Boolean, default: false },
+  inputEnabled:      { type: Boolean, default: false },
+  micActive:         { type: Boolean, default: false },
+  micRecording:      { type: Boolean, default: false },
+  transcribing:      { type: Boolean, default: false },
+  micSupported:      { type: Boolean, default: false },
+  incident:          { type: Object,  default: null },
+  incidentId:        { type: Number,  default: null },
+  callActive:        { type: Boolean, default: false },
+  callEnded:         { type: Boolean, default: false },
+  interventionSaved: { type: Boolean, default: false },
+  elapsed:           { type: Number,  default: 0 },
+  operatorName:      { type: String,  default: '' },
 })
 
-onUnmounted(() => { stopMic(); stopTTS(); clearSilenceTimer() })
+const emit = defineEmits(['send', 'end-call'])
 
-// Reproducir TTS al llegar nuevo mensaje del alertante
-// Suspender micro ANTES del fetch para evitar que Whisper capture el audio de altavoces
-watch(() => emergency.messages.length, () => {
-  const msgs = emergency.messages
-  const last = msgs[msgs.length - 1]
-  if (last?.role === 'alertant') {
-    clearSilenceTimer()
-    suspendMic() // apagar VAD inmediatamente, antes del fetch TTS
-    speak(last.content, last.voice || 'nova', {
-      onEnd: () => {
-        setTimeout(() => resumeMic(), 300)
-        resetSilenceTimer()  // iniciar compte enrere un cop acabat el TTS
-      },
-    })
-  }
-})
+const { t: tr } = useI18n()
 
 const messagesEl = ref(null)
 const msgInput   = ref('')
-const sending    = ref(false)
-const endingCall = ref(false)
 
 // Scroll to bottom when new messages arrive or typing indicator changes
-watch([() => emergency.messages.length, () => emergency.isTyping], async () => {
+watch([() => props.messages.length, () => props.isTyping], async () => {
   await nextTick()
   if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
 })
 
-const elapsedDisplay = computed(() => fmtElapsed(emergency.elapsed))
-
-async function sendMessage() {
+function sendMessage() {
   const text = msgInput.value.trim()
-  if (!text || !emergency.inputEnabled || sending.value) return
-  clearSilenceTimer()
+  if (!text || !props.inputEnabled || props.isTyping) return
   msgInput.value = ''
-  sending.value  = true
-  try { await emergency.sendMessage(text) }
-  finally { sending.value = false }
+  emit('send', text)
 }
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
-}
-
-async function endCall() {
-  endingCall.value = true
-  try { await emergency.endCall() }
-  finally { endingCall.value = false }
 }
 </script>
 
@@ -112,56 +62,27 @@ async function endCall() {
       <div class="flex-1 min-w-0">
         <p class="text-sm font-bold truncate" style="color:var(--text)">
           {{
-            emergency.currentIncident
-              ? `Incident #${emergency.currentIncidentId} — ${emergency.currentIncident.type}`
+            incident
+              ? `Incident #${incidentId} — ${incident.type}`
               : tr('chat.no_incident')
           }}
         </p>
         <p class="text-xs truncate" style="color:var(--text3)">
           {{
-            emergency.currentIncident
-              ? `📍 ${emergency.currentIncident.location}`
+            incident
+              ? `📍 ${incident.location}`
               : tr('chat.no_incident_sub')
           }}
         </p>
       </div>
 
-      <!-- Call controls: visible while call active or ended, hidden after saving fitxa -->
-      <div
-        v-if="(emergency.callActive || emergency.callEnded) && !emergency.interventionSaved"
-        class="flex items-center gap-3 flex-shrink-0"
-      >
-        <span
-          class="call-status-ok text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider"
-          :style="emergency.callEnded
-            ? 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5'
-            : 'background:#dcfce7;color:#15803d;border:1px solid #86efac'"
-        >
-          {{ emergency.callEnded ? tr('chat.call_ended') : tr('chat.call_active') }}
-        </span>
-
-        <span
-          class="font-mono text-xl font-bold tabular-nums w-16 text-center"
-          :class="emergency.callEnded ? 'text-red-600' : 'text-green-700'"
-        >
-          {{ elapsedDisplay }}
-        </span>
-
-        <button
-          v-if="!emergency.callEnded"
-          @click="endCall"
-          :disabled="endingCall"
-          class="end-call-btn text-xs font-bold px-3 py-2 rounded-lg transition"
-          style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626"
-        >
-          {{ endingCall ? tr('chat.ending') : tr('chat.end_call') }}
-        </button>
-        <span
-          v-else
-          class="text-xs font-bold px-3 py-2 rounded-lg"
-          style="background:#fee2e2;color:#dc2626;opacity:.6"
-        >{{ tr('chat.call_finished') }}</span>
-      </div>
+      <CallTimer
+        :callActive="callActive"
+        :callEnded="callEnded"
+        :interventionSaved="interventionSaved"
+        :elapsed="elapsed"
+        @end-call="emit('end-call')"
+      />
     </div>
 
     <!-- Messages area -->
@@ -172,7 +93,7 @@ async function endCall() {
     >
       <!-- Placeholder -->
       <div
-        v-if="!emergency.messages.length && !emergency.isTyping"
+        v-if="!messages.length && !isTyping"
         class="m-auto text-center"
         style="color:var(--text3)"
       >
@@ -181,7 +102,7 @@ async function endCall() {
       </div>
 
       <!-- Messages -->
-      <template v-for="msg in emergency.messages" :key="msg.id">
+      <template v-for="msg in messages" :key="msg.id">
         <!-- System message -->
         <div
           v-if="msg.role === 'system'"
@@ -201,14 +122,14 @@ async function endCall() {
               v-html="formatMessage(msg.content)"
             ></div>
             <p class="text-xs mt-1" :class="msg.role === 'operator' ? 'text-right' : ''" style="color:var(--text3)">
-              {{ msg.role === 'operator' ? `👮 ${auth.user?.username || tr('chat.operator_name')}` : tr('chat.caller_label') }}
+              {{ msg.role === 'operator' ? `👮 ${operatorName || tr('chat.operator_name')}` : tr('chat.caller_label') }}
             </p>
           </div>
         </div>
       </template>
 
       <!-- Typing indicator -->
-      <div v-if="emergency.isTyping" class="flex justify-start">
+      <div v-if="isTyping" class="flex justify-start">
         <div class="bal px-4 py-3 flex gap-1 items-center">
           <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:0ms"></span>
           <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:150ms"></span>
@@ -226,21 +147,25 @@ async function endCall() {
         id="msg-input"
         v-model="msgInput"
         rows="1"
-        :disabled="!emergency.inputEnabled || sending"
+        :disabled="!inputEnabled || isTyping"
         :placeholder="tr('chat.input_ph')"
         @keydown="handleKey"
         class="flex-1 rounded-xl px-4 py-2.5 text-sm max-h-28 outline-none transition"
         style="background:var(--in-bg2);border:1px solid var(--border);color:var(--text)"
       ></textarea>
-      <!-- Indicador de estado del micrófono (no interactivo) -->
-      <div v-if="micSupported && emergency.callActive" class="flex-shrink-0 flex items-center justify-center w-10 h-10" :title="transcribing ? tr('chat.mic_transcribing') : micRecording ? tr('chat.mic_stop') : tr('chat.mic_start')">
-        <span v-if="transcribing" class="text-xl">⏳</span>
-        <span v-else-if="micRecording" class="text-xl animate-pulse">🔴</span>
-        <span v-else-if="micActive" class="block w-3 h-3 rounded-full animate-pulse" style="background:#22c55e"></span>
+      <!-- Indicador d'estat del micròfon (no interactiu) -->
+      <div
+        v-if="micSupported && callActive"
+        class="flex-shrink-0 flex items-center justify-center w-10 h-10"
+        :title="transcribing ? tr('chat.mic_transcribing') : micRecording ? tr('chat.mic_stop') : tr('chat.mic_start')"
+      >
+        <span v-if="transcribing"          class="text-xl">⏳</span>
+        <span v-else-if="micRecording"     class="text-xl animate-pulse">🔴</span>
+        <span v-else-if="micActive"        class="block w-3 h-3 rounded-full animate-pulse" style="background:#22c55e"></span>
       </div>
       <button
         @click="sendMessage"
-        :disabled="!emergency.inputEnabled || sending"
+        :disabled="!inputEnabled || isTyping"
         class="text-white rounded-xl px-5 py-2.5 font-bold text-sm transition flex-shrink-0"
         style="background:var(--accent)"
       >{{ tr('chat.send') }}</button>
