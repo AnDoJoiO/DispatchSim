@@ -1,7 +1,7 @@
 # ── Build frontend ────────────────────────────────────────
 FROM node:20-alpine AS frontend
 WORKDIR /build/frontend
-COPY frontend/package*.json ./
+COPY frontend/.npmrc frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
 RUN npm run build
