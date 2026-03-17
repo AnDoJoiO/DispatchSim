@@ -41,6 +41,18 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 - Requisitos previos: `ELEVENLABS_API_KEY` (plan Starter $5/mes en elevenlabs.io)
 - Impacto: alta mejora perceptible en realismo del simulador
 
+### [ ] Dashboard de analíticas por operador
+- Panel para formadores con KPIs por operador: nº simulaciones, puntuación media, evolución temporal
+- Comparativa entre operadores del mismo equipo
+- Exportación de informes (PDF o CSV)
+- Referencia competidora: Sklls, AnthroPi
+
+### [ ] Replay de audio por simulación
+- Permitir al formador escuchar el audio completo de una simulación pasada
+- Sincronizado con la transcripción [OPR]/[ALT] en pantalla
+- Almacenamiento de audios en Railway / S3 con retención configurable
+- Referencia competidora: AnthroPi (su principal diferencial de debriefing)
+
 ---
 
 ## Historial completado
