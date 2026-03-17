@@ -1,50 +1,48 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue'
-import { formatMessage }        from '@/utils'
-import { useI18n }              from '@/i18n'
-import CallTimer                from '@/components/CallTimer.vue'
+import { ref, watch, nextTick, computed } from 'vue'
+import { formatMessage }    from '@/utils'
+import { useI18n }          from '@/i18n'
+import { useChatStore }     from '@/stores/chat'
+import { useCallStore }     from '@/stores/call'
+import { useAuthStore }     from '@/stores/auth'
+import CallTimer            from '@/components/CallTimer.vue'
 
 const props = defineProps({
-  messages:          { type: Array,   required: true },
-  isTyping:          { type: Boolean, default: false },
-  inputEnabled:      { type: Boolean, default: false },
-  micActive:         { type: Boolean, default: false },
-  micRecording:      { type: Boolean, default: false },
-  transcribing:      { type: Boolean, default: false },
-  micSupported:      { type: Boolean, default: false },
-  incident:          { type: Object,  default: null },
-  incidentId:        { type: Number,  default: null },
-  callActive:        { type: Boolean, default: false },
-  callEnded:         { type: Boolean, default: false },
-  interventionSaved: { type: Boolean, default: false },
-  elapsed:           { type: Number,  default: 0 },
-  operatorName:      { type: String,  default: '' },
+  micActive:    { type: Boolean, default: false },
+  micRecording: { type: Boolean, default: false },
+  transcribing: { type: Boolean, default: false },
+  micSupported: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['send', 'end-call', 'typing'])
 
+const chat = useChatStore()
+const call = useCallStore()
+const auth = useAuthStore()
 const { t: tr } = useI18n()
 
 const messagesEl = ref(null)
 const inputEl    = ref(null)
 const msgInput   = ref('')
 
+const operatorName = computed(() => auth.user?.username || '')
+
 // Scroll to bottom when new messages arrive or typing indicator changes
-watch([() => props.messages.length, () => props.isTyping], async () => {
+watch([() => chat.messages.length, () => chat.isTyping], async () => {
   await nextTick()
   if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
 })
 
 // Auto-focus input when AI finishes responding
-watch(() => props.isTyping, (typing, wasTyping) => {
-  if (wasTyping && !typing && props.inputEnabled) {
+watch(() => chat.isTyping, (typing, wasTyping) => {
+  if (wasTyping && !typing && chat.inputEnabled) {
     nextTick(() => inputEl.value?.focus())
   }
 })
 
 function sendMessage() {
   const text = msgInput.value.trim()
-  if (!text || !props.inputEnabled || props.isTyping) return
+  if (!text || !chat.inputEnabled || chat.isTyping) return
   msgInput.value = ''
   emit('send', text)
 }
@@ -71,25 +69,25 @@ function handleKey(e) {
       <div class="flex-1 min-w-0">
         <p class="text-sm font-bold truncate" style="color:var(--text)">
           {{
-            incident
-              ? `Incident #${incidentId} — ${incident.type}`
+            call.currentIncident
+              ? `Incident #${call.currentIncidentId} — ${call.currentIncident.type}`
               : tr('chat.no_incident')
           }}
         </p>
         <p class="text-xs truncate" style="color:var(--text3)">
           {{
-            incident
-              ? `📍 ${incident.location}`
+            call.currentIncident
+              ? `📍 ${call.currentIncident.location}`
               : tr('chat.no_incident_sub')
           }}
         </p>
       </div>
 
       <CallTimer
-        :callActive="callActive"
-        :callEnded="callEnded"
-        :interventionSaved="interventionSaved"
-        :elapsed="elapsed"
+        :callActive="call.callActive"
+        :callEnded="call.callEnded"
+        :interventionSaved="call.interventionSaved"
+        :elapsed="call.elapsed"
         @end-call="emit('end-call')"
       />
     </div>
@@ -102,7 +100,7 @@ function handleKey(e) {
     >
       <!-- Placeholder -->
       <div
-        v-if="!messages.length && !isTyping"
+        v-if="!chat.messages.length && !chat.isTyping"
         class="m-auto text-center"
         style="color:var(--text3)"
       >
@@ -111,7 +109,7 @@ function handleKey(e) {
       </div>
 
       <!-- Messages -->
-      <template v-for="msg in messages" :key="msg.id">
+      <template v-for="msg in chat.messages" :key="msg.id">
         <!-- System message -->
         <div
           v-if="msg.role === 'system'"
@@ -138,7 +136,7 @@ function handleKey(e) {
       </template>
 
       <!-- Typing indicator -->
-      <div v-if="isTyping" class="flex justify-start">
+      <div v-if="chat.isTyping" class="flex justify-start">
         <div class="bal px-4 py-3 flex gap-1 items-center">
           <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:0ms"></span>
           <span class="typing-dot w-2 h-2 rounded-full animate-bounce" style="animation-delay:150ms"></span>
@@ -157,7 +155,7 @@ function handleKey(e) {
         id="msg-input"
         v-model="msgInput"
         rows="1"
-        :disabled="!inputEnabled || isTyping"
+        :disabled="!chat.inputEnabled || chat.isTyping"
         :placeholder="tr('chat.input_ph')"
         @keydown="handleKey"
         class="flex-1 rounded-xl px-4 py-2.5 text-sm max-h-28 outline-none transition"
@@ -165,7 +163,7 @@ function handleKey(e) {
       ></textarea>
       <!-- Indicador d'estat del micròfon (no interactiu) -->
       <div
-        v-if="micSupported && callActive"
+        v-if="micSupported && call.callActive"
         class="flex-shrink-0 flex items-center justify-center w-10 h-10"
         :title="transcribing ? tr('chat.mic_transcribing') : micRecording ? tr('chat.mic_stop') : tr('chat.mic_start')"
       >
@@ -175,7 +173,7 @@ function handleKey(e) {
       </div>
       <button
         @click="sendMessage"
-        :disabled="!inputEnabled || isTyping"
+        :disabled="!chat.inputEnabled || chat.isTyping"
         class="text-white rounded-xl px-5 py-2.5 font-bold text-sm transition flex-shrink-0"
         style="background:var(--accent)"
       >{{ tr('chat.send') }}</button>

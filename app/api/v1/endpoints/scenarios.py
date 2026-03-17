@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 
 from app.core.deps import get_current_user, require_role
@@ -27,10 +27,12 @@ def create_scenario(
 
 @router.get("", response_model=List[ScenarioRead])
 def list_scenarios(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     session: Session = Depends(get_session),
     _: User = Depends(get_current_user),
 ):
-    return session.exec(select(Scenario)).all()
+    return session.exec(select(Scenario).offset(skip).limit(limit)).all()
 
 
 @router.delete("/{scenario_id}", status_code=204)

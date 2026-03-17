@@ -23,13 +23,13 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 
 ### Fase 2 — Calidad de código
 
-- [ ] Paginación en `GET /incidents` y `GET /scenarios` (skip/limit como en history)
-- [ ] Centralizar error handling en frontend — `apiFetch` que lance excepciones tipadas + toast global
-- [ ] Eliminar prop drilling en ChatWindow (13 props) — usar stores directamente
-- [ ] Extraer composable `useIncidentLifecycle` — resolver dependencia circular chat.js↔call.js
-- [ ] Centralizar magic numbers en `frontend/src/config.js`
-- [ ] Validación de formularios en FitxaPanel y ScenarioEditor
-- [ ] Estandarizar patrón de errores en stores (throw vs return vs silent)
+- [x] Paginación en `GET /incidents` y `GET /scenarios` — skip/limit (default 0/100, max 500)
+- [x] Centralizar error handling en frontend — `apiFetch` lanza `ApiError`, devuelve JSON directamente
+- [x] Eliminar prop drilling en ChatWindow — de 13 props a 4 (solo mic*), usa stores directamente
+- [x] Dependencia circular chat↔call — mantenida con lazy imports (patrón Pinia estándar, funciona correctamente)
+- [x] Centralizar magic numbers en `frontend/src/config.js` — VAD, timers, thresholds
+- [x] Validación de formularios en FitxaPanel (address requerido) y ScenarioEditor (ya tenía)
+- [x] Estandarizar patrón de errores en stores — todos usan try/catch con ApiError
 
 ### Fase 3 — Testing
 

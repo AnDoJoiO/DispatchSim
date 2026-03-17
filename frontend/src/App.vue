@@ -35,7 +35,6 @@ onMounted(async () => {
   if (auth.isLoggedIn) {
     await scenarios.loadScenarios()
     call.setPriority(1)
-    // Solicitar permís de micròfon en segon pla en iniciar sessió
     navigator.mediaDevices?.getUserMedia({ audio: true })
       .then(s => s.getTracks().forEach(t => t.stop()))
       .catch(() => {})
@@ -74,20 +73,10 @@ async function handleEndCall() {
       </div>
 
       <ChatWindow
-        :messages="chat.messages"
-        :isTyping="chat.isTyping"
-        :inputEnabled="chat.inputEnabled"
         :micActive="micActive"
         :micRecording="micRecording"
         :transcribing="transcribing"
         :micSupported="micSupported"
-        :incident="call.currentIncident"
-        :incidentId="call.currentIncidentId"
-        :callActive="call.callActive"
-        :callEnded="call.callEnded"
-        :interventionSaved="call.interventionSaved"
-        :elapsed="call.elapsed"
-        :operatorName="auth.user?.username || ''"
         @send="handleSend"
         @end-call="handleEndCall"
         @typing="resetSilenceTimer"

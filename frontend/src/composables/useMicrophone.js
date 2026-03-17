@@ -1,10 +1,6 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-
-const VOICE_THRESHOLD = 30   // RMS mínimo para detectar voz (0-255) — filtra ecos TTS y ruido
-const SILENCE_MS      = 1200 // ms de silencio antes de parar la grabación
-const MIN_DURATION_MS = 1000 // grabaciones más cortas se descartan (evita alucinaciones Whisper)
-const MIN_BLOB_BYTES  = 3000 // blobs muy pequeños son silencio
+import { VOICE_THRESHOLD, SILENCE_MS, MIN_DURATION_MS, MIN_BLOB_BYTES } from '@/config'
 
 export function useMicrophone() {
   const active       = ref(false)
@@ -45,7 +41,6 @@ export function useMicrophone() {
     const duration = Date.now() - (recordingStart ?? 0)
     const blob     = new Blob(chunks, { type: 'audio/webm' })
 
-    // Descartar si es demasiado corto o pequeño (silencio / ruido / alucinación Whisper)
     if (duration < MIN_DURATION_MS || blob.size < MIN_BLOB_BYTES) return
 
     transcribing.value = true

@@ -4,9 +4,7 @@ import { useChatStore }  from '@/stores/chat'
 import { useI18n }       from '@/i18n'
 import { useMicrophone } from './useMicrophone'
 import { useTTS }        from './useTTS'
-
-const SILENCE_DELAY    = 15000 // ms sense resposta de l'operador
-const MIC_GRACE_PERIOD = 2000  // ms d'espera abans d'activar VAD (evita capturar clic/soroll inicial)
+import { SILENCE_DELAY, MIC_GRACE_PERIOD, TTS_RESUME_DELAY, MIN_REAL_WORDS, WORD_RE } from '@/config'
 
 export function useAudioController() {
   const call  = useCallStore()
@@ -42,9 +40,10 @@ export function useAudioController() {
   watch(() => call.callActive, (active) => {
     if (graceTimer) { clearTimeout(graceTimer); graceTimer = null }
     if (active && micSupported.value) {
-      // Esperar grace period per evitar capturar clic i soroll inicial
       graceTimer = setTimeout(() => {
         startMic(async (text) => {
+          const realWords = text.match(WORD_RE) || []
+          if (realWords.length < MIN_REAL_WORDS) return
           await chat.sendMessage(text)
         }, lang.value)
       }, MIC_GRACE_PERIOD)
@@ -62,15 +61,15 @@ export function useAudioController() {
     const last = chat.messages[chat.messages.length - 1]
     if (last?.role === 'alertant') {
       clearSilenceTimer()
-      suspendMic() // apagar VAD immediatament, abans del fetch TTS
+      suspendMic()
       speak(last.content, last.voice || 'nova', {
         onEnd: () => {
-          setTimeout(() => resumeMic(), 600)
-          resetSilenceTimer() // iniciar compte enrere un cop acabat el TTS
+          setTimeout(() => resumeMic(), TTS_RESUME_DELAY)
+          resetSilenceTimer()
         },
       })
     } else if (last?.role === 'operator') {
-      clearSilenceTimer() // l'operador ha respost, cancel·lar compte enrere
+      clearSilenceTimer()
     }
   })
 

@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { apiFetch } from '@/api'
+import { apiFetch, ApiError } from '@/api'
 import { t } from '@/i18n'
+import { MAX_SILENCE_REACTIONS } from '@/config'
 // Nota: import circular amb call.js — Pinia ho resol correctament perquè
 // useCallStore() es crida DINS de funcions, mai durant l'avaluació del mòdul.
 import { useCallStore } from '@/stores/call'
-
-const MAX_SILENCE_REACTIONS = 3
 
 export const useChatStore = defineStore('chat', () => {
   const messages     = ref([])
@@ -37,7 +36,7 @@ export const useChatStore = defineStore('chat', () => {
     _addMsg('operator', text)
     isTyping.value = true
     try {
-      const res = await apiFetch('/api/v1/simulate/chat', {
+      const data = await apiFetch('/api/v1/simulate/chat', {
         method: 'POST',
         body: JSON.stringify({
           incident_id:      call.currentIncidentId,
@@ -45,12 +44,14 @@ export const useChatStore = defineStore('chat', () => {
           lang:             localStorage.getItem('dispatch_lang') || 'ca',
         }),
       })
-      if (!res || !res.ok) { _addMsg('system', t('sys.error_chat')); return }
-      const data = await res.json()
       _addMsg('alertant', data.content, data.voice ?? 'nova')
-      if (data.call_ended) {
-        const call = useCallStore()
-        call._onAutoEnd()
+      if (data.call_ended) call._onAutoEnd()
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 422) {
+        // Backend rejected noise — remove the operator bubble silently
+        messages.value.pop()
+      } else {
+        _addMsg('system', t('sys.error_chat'))
       }
     } finally {
       isTyping.value = false
@@ -64,7 +65,7 @@ export const useChatStore = defineStore('chat', () => {
     silenceCount.value++
     isTyping.value = true
     try {
-      const res = await apiFetch('/api/v1/simulate/chat', {
+      const data = await apiFetch('/api/v1/simulate/chat', {
         method: 'POST',
         body: JSON.stringify({
           incident_id:    call.currentIncidentId,
@@ -72,13 +73,10 @@ export const useChatStore = defineStore('chat', () => {
           lang:           localStorage.getItem('dispatch_lang') || 'ca',
         }),
       })
-      if (!res || !res.ok) return
-      const data = await res.json()
       _addMsg('alertant', data.content, data.voice ?? 'nova')
-      if (data.call_ended) {
-        const call = useCallStore()
-        call._onAutoEnd()
-      }
+      if (data.call_ended) call._onAutoEnd()
+    } catch {
+      // silent — silence reaction failed, not critical
     } finally {
       isTyping.value = false
     }
@@ -87,7 +85,6 @@ export const useChatStore = defineStore('chat', () => {
   return {
     messages, isTyping, silenceCount, inputEnabled,
     sendMessage, sendSilence,
-    // Exposats per useCallStore per afegir missatges de sistema i fer reset
     _addMsg, resetChat,
   }
 })

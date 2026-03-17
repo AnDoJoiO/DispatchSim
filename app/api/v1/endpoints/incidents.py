@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import update as sa_update
 from sqlmodel import Session, select
 
@@ -60,10 +60,12 @@ def create_incident(
 
 @router.get("/incidents", response_model=List[Incident])
 def list_incidents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     session: Session = Depends(get_session),
     _: User = Depends(get_current_user),
 ):
-    return session.exec(select(Incident)).all()
+    return session.exec(select(Incident).offset(skip).limit(limit)).all()
 
 
 @router.get("/incidents/{incident_id}", response_model=Incident)

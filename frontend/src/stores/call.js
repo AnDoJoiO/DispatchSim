@@ -43,32 +43,36 @@ export const useCallStore = defineStore('call', () => {
   async function startIncident(body) {
     const chat      = useChatStore()
     const scenarios = useScenarioStore()
-    const res = await apiFetch('/api/v1/incidents', { method: 'POST', body: JSON.stringify(body) })
-    if (!res || !res.ok) { chat._addMsg('system', t('sys.error_incident')); return null }
-    const inc = await res.json()
-    currentIncidentId.value = inc.id
-    sessionIncidents.value.push(inc)
-    chat.resetChat()
-    callActive.value        = true
-    callEnded.value         = false
-    interventionSaved.value = false
-    const scLabel = body.scenario_id
-      ? t('sys.scenario_label', { title: scenarios.scenariosCache.find(s => s.id === body.scenario_id)?.title || '#' + body.scenario_id })
-      : ''
-    chat._addMsg('system', t('sys.incident_open', { id: inc.id, type: t(`type.${inc.type}`), location: inc.location, scenario: scLabel }))
-    _startTimer()
-    return inc
+    try {
+      const inc = await apiFetch('/api/v1/incidents', { method: 'POST', body: JSON.stringify(body) })
+      currentIncidentId.value = inc.id
+      sessionIncidents.value.push(inc)
+      chat.resetChat()
+      callActive.value        = true
+      callEnded.value         = false
+      interventionSaved.value = false
+      const scLabel = body.scenario_id
+        ? t('sys.scenario_label', { title: scenarios.scenariosCache.find(s => s.id === body.scenario_id)?.title || '#' + body.scenario_id })
+        : ''
+      chat._addMsg('system', t('sys.incident_open', { id: inc.id, type: t(`type.${inc.type}`), location: inc.location, scenario: scLabel }))
+      _startTimer()
+      return inc
+    } catch {
+      chat._addMsg('system', t('sys.error_incident'))
+      return null
+    }
   }
 
   async function endCall() {
     const chat = useChatStore()
-    const res = await apiFetch(
-      `/api/v1/incidents/${currentIncidentId.value}/call`, { method: 'PATCH' }
-    )
-    if (!res || !res.ok) return false
-    _stopTimer()
-    chat._addMsg('system', t('sys.call_ended'))
-    return true
+    try {
+      await apiFetch(`/api/v1/incidents/${currentIncidentId.value}/call`, { method: 'PATCH' })
+      _stopTimer()
+      chat._addMsg('system', t('sys.call_ended'))
+      return true
+    } catch {
+      return false
+    }
   }
 
   function _onAutoEnd() {
@@ -79,17 +83,20 @@ export const useCallStore = defineStore('call', () => {
 
   async function saveIntervention(payload) {
     const chat = useChatStore()
-    const res = await apiFetch('/api/v1/interventions', {
-      method: 'POST', body: JSON.stringify(payload),
-    })
-    if (!res || !(res.ok || res.status === 201)) return false
-    if (callActive.value) {
-      await apiFetch(`/api/v1/incidents/${currentIncidentId.value}/call`, { method: 'PATCH' })
-      _stopTimer()
+    try {
+      await apiFetch('/api/v1/interventions', {
+        method: 'POST', body: JSON.stringify(payload),
+      })
+      if (callActive.value) {
+        try { await apiFetch(`/api/v1/incidents/${currentIncidentId.value}/call`, { method: 'PATCH' }) } catch {}
+        _stopTimer()
+      }
+      interventionSaved.value = true
+      chat._addMsg('system', t('sys.fitxa_saved', { id: currentIncidentId.value }))
+      return true
+    } catch {
+      return false
     }
-    interventionSaved.value = true
-    chat._addMsg('system', t('sys.fitxa_saved', { id: currentIncidentId.value }))
-    return true
   }
 
   function switchIncident(inc) {

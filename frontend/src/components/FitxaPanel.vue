@@ -24,6 +24,7 @@ watch(() => call.currentIncidentId, () => {
 
 async function save() {
   if (!call.currentIncidentId) return
+  if (!address.value.trim()) { status.value = 'error'; return }
   saving.value = true
   status.value = null
   const ok = await call.saveIntervention({

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { apiFetch } from '@/api'
-import { t } from '@/i18n'
 
 export const useHistoryStore = defineStore('history', () => {
   const items           = ref([])
@@ -9,36 +8,29 @@ export const useHistoryStore = defineStore('history', () => {
   const searchQuery     = ref('')
 
   async function load() {
-    const res = await apiFetch('/api/v1/history')
-    if (!res || !res.ok) throw new Error(t('err.load_history'))
-    items.value = await res.json()
+    items.value = await apiFetch('/api/v1/history')
   }
 
   async function getDetail(id) {
-    const res = await apiFetch(`/api/v1/history/${id}`)
-    if (!res || !res.ok) throw new Error(t('err.load_detail'))
-    return res.json()
+    return apiFetch(`/api/v1/history/${id}`)
   }
 
   async function deleteOne(id) {
-    const res = await apiFetch(`/api/v1/history/${id}`, { method: 'DELETE' })
-    if (!res || !res.ok) throw new Error(t('err.delete'))
+    await apiFetch(`/api/v1/history/${id}`, { method: 'DELETE' })
     await load()
   }
 
   async function deleteMany(ids) {
-    const res = await apiFetch('/api/v1/history', {
+    await apiFetch('/api/v1/history', {
       method: 'DELETE', body: JSON.stringify({ ids }),
     })
-    if (!res || !res.ok) throw new Error(t('err.delete'))
     await load()
   }
 
   async function deleteAll() {
-    const res = await apiFetch('/api/v1/history', {
+    await apiFetch('/api/v1/history', {
       method: 'DELETE', body: JSON.stringify({}),
     })
-    if (!res || !res.ok) throw new Error(t('err.delete'))
     await load()
   }
 
