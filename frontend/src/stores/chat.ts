@@ -1,42 +1,40 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, type Ref } from 'vue'
 import { apiFetch, ApiError } from '@/api'
 import { t } from '@/i18n'
 import { MAX_SILENCE_REACTIONS } from '@/config'
-// Nota: import circular amb call.js — Pinia ho resol correctament perquè
+import type { ChatMessage, ChatResponse } from '@/types'
+// Nota: import circular amb call.ts — Pinia ho resol correctament perquè
 // useCallStore() es crida DINS de funcions, mai durant l'avaluació del mòdul.
 import { useCallStore } from '@/stores/call'
 
 export const useChatStore = defineStore('chat', () => {
-  const messages     = ref([])
+  const messages: Ref<ChatMessage[]> = ref([])
   const isTyping     = ref(false)
   const silenceCount = ref(0)
   let _msgId = 0
 
-  // ── Helpers internos ──────────────────────────────────────
-  function _addMsg(role, content, voice = null) {
+  function _addMsg(role: ChatMessage['role'], content: string, voice: string | null = null): void {
     messages.value.push({ id: ++_msgId, role, content, voice })
   }
 
-  function resetChat() {
+  function resetChat(): void {
     messages.value     = []
     silenceCount.value = 0
     _msgId             = 0
   }
 
-  // inputEnabled: pot xatejar? Depèn de l'estat de trucada (callStore)
   const inputEnabled = computed(() => {
     const call = useCallStore()
     return call.currentIncidentId !== null && !call.callEnded && !call.interventionSaved
   })
 
-  // ── Accions públiques ─────────────────────────────────────
-  async function sendMessage(text) {
+  async function sendMessage(text: string): Promise<void> {
     const call = useCallStore()
     _addMsg('operator', text)
     isTyping.value = true
     try {
-      const data = await apiFetch('/api/v1/simulate/chat', {
+      const data = await apiFetch<ChatResponse>('/api/v1/simulate/chat', {
         method: 'POST',
         body: JSON.stringify({
           incident_id:      call.currentIncidentId,
@@ -46,15 +44,12 @@ export const useChatStore = defineStore('chat', () => {
       })
       const ended = data.call_ended
       _addMsg('alertant', data.content, data.voice ?? 'nova')
-      // Demorar auto-end perquè el watcher de messages pugui iniciar speak()
-      // abans que el watcher de callEnded faci stopTTS()
       if (ended) setTimeout(() => call._onAutoEnd(), 100)
-    } catch (e) {
+    } catch (e: unknown) {
       if (e instanceof ApiError && e.status === 422) {
-        // Backend rejected noise — remove the operator bubble silently
         messages.value.pop()
       } else {
-        const detail = e instanceof ApiError ? `[${e.status}] ${e.message}` : e.message || 'Network error'
+        const detail = e instanceof ApiError ? `[${e.status}] ${e.message}` : (e as Error).message || 'Network error'
         _addMsg('system', `${t('sys.error_chat')} — ${detail}`)
       }
     } finally {
@@ -62,14 +57,14 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  async function sendSilence() {
+  async function sendSilence(): Promise<void> {
     const call = useCallStore()
     if (!call.callActive || call.callEnded || isTyping.value) return
     if (silenceCount.value >= MAX_SILENCE_REACTIONS) return
     silenceCount.value++
     isTyping.value = true
     try {
-      const data = await apiFetch('/api/v1/simulate/chat', {
+      const data = await apiFetch<ChatResponse>('/api/v1/simulate/chat', {
         method: 'POST',
         body: JSON.stringify({
           incident_id:    call.currentIncidentId,

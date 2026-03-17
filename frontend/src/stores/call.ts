@@ -1,28 +1,27 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, type Ref } from 'vue'
 import { apiFetch } from '@/api'
 import { t } from '@/i18n'
+import type { Incident, InterventionSave } from '@/types'
 // Imports circulars gestionats per Pinia: els usem DINS d'accions, no al nivell de mòdul.
 import { useChatStore }     from '@/stores/chat'
 import { useScenarioStore } from '@/stores/scenarios'
 
 export const useCallStore = defineStore('call', () => {
-  const currentIncidentId = ref(null)
-  const sessionIncidents  = ref([])
+  const currentIncidentId: Ref<number | null> = ref(null)
+  const sessionIncidents: Ref<Incident[]>     = ref([])
   const selectedPriority  = ref(1)
   const callActive        = ref(false)
   const callEnded         = ref(false)
   const elapsed           = ref(0)
   const interventionSaved = ref(false)
-  let _timer = null
+  let _timer: ReturnType<typeof setInterval> | null = null
 
-  // ── Computed ──────────────────────────────────────────────
-  const currentIncident = computed(() =>
+  const currentIncident = computed<Incident | null>(() =>
     sessionIncidents.value.find(i => i.id === currentIncidentId.value) ?? null
   )
 
-  // ── Helpers privats ───────────────────────────────────────
-  function _startTimer() {
+  function _startTimer(): void {
     const start = Date.now()
     elapsed.value = 0
     if (_timer) clearInterval(_timer)
@@ -31,20 +30,19 @@ export const useCallStore = defineStore('call', () => {
     }, 1000)
   }
 
-  function _stopTimer() {
+  function _stopTimer(): void {
     if (_timer) { clearInterval(_timer); _timer = null }
     callActive.value = false
     callEnded.value  = true
   }
 
-  // ── Accions públiques ─────────────────────────────────────
-  function setPriority(p) { selectedPriority.value = p }
+  function setPriority(p: number): void { selectedPriority.value = p }
 
-  async function startIncident(body) {
+  async function startIncident(body: { scenario_id?: number; type?: string; location?: string; description?: string; priority: number }): Promise<Incident | null> {
     const chat      = useChatStore()
     const scenarios = useScenarioStore()
     try {
-      const inc = await apiFetch('/api/v1/incidents', { method: 'POST', body: JSON.stringify(body) })
+      const inc = await apiFetch<Incident>('/api/v1/incidents', { method: 'POST', body: JSON.stringify(body) })
       currentIncidentId.value = inc.id
       sessionIncidents.value.push(inc)
       chat.resetChat()
@@ -52,7 +50,7 @@ export const useCallStore = defineStore('call', () => {
       callEnded.value         = false
       interventionSaved.value = false
       const scLabel = body.scenario_id
-        ? t('sys.scenario_label', { title: scenarios.scenariosCache.find(s => s.id === body.scenario_id)?.title || '#' + body.scenario_id })
+        ? t('sys.scenario_label', { title: scenarios.scenariosCache.find((s: any) => s.id === body.scenario_id)?.title || '#' + body.scenario_id })
         : ''
       chat._addMsg('system', t('sys.incident_open', { id: inc.id, type: t(`type.${inc.type}`), location: inc.location, scenario: scLabel }))
       _startTimer()
@@ -63,7 +61,7 @@ export const useCallStore = defineStore('call', () => {
     }
   }
 
-  async function endCall() {
+  async function endCall(): Promise<boolean> {
     const chat = useChatStore()
     try {
       await apiFetch(`/api/v1/incidents/${currentIncidentId.value}/call`, { method: 'PATCH' })
@@ -75,13 +73,13 @@ export const useCallStore = defineStore('call', () => {
     }
   }
 
-  function _onAutoEnd() {
+  function _onAutoEnd(): void {
     const chat = useChatStore()
     _stopTimer()
     chat._addMsg('system', t('sys.call_ended'))
   }
 
-  async function saveIntervention(payload) {
+  async function saveIntervention(payload: InterventionSave): Promise<boolean> {
     const chat = useChatStore()
     try {
       await apiFetch('/api/v1/interventions', {
@@ -99,7 +97,7 @@ export const useCallStore = defineStore('call', () => {
     }
   }
 
-  function switchIncident(inc) {
+  function switchIncident(inc: Incident): void {
     const chat = useChatStore()
     currentIncidentId.value = inc.id
     callActive.value        = false

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useScenarioStore } from '@/stores/scenarios'
 import ScenarioEditor from '@/components/ScenarioEditor.vue'

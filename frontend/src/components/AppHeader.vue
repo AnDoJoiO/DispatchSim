@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore }      from '@/stores/auth'
 import { useAppStore }       from '@/stores/app'

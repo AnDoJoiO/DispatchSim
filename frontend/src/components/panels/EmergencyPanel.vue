@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useScenarioStore } from '@/stores/scenarios'
 import { useCallStore }     from '@/stores/call'

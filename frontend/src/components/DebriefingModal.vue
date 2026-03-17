@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useHistoryStore } from '@/stores/history'
 import { useUiStore }      from '@/stores/ui'
