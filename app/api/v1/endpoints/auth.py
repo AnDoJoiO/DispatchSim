@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.core.deps import get_current_user
+from app.core.rate_limit import login_limiter
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_session
 from app.models.user import User
@@ -35,6 +36,7 @@ def register(payload: UserCreate, session: Session = Depends(get_session)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(payload: UserLogin, session: Session = Depends(get_session)):
+    login_limiter.check(payload.username)
     user = session.exec(select(User).where(User.username == payload.username)).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         logger.warning("LOGIN_FAILED username=%r", payload.username)

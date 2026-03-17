@@ -53,16 +53,15 @@ def process_chat(
             victim_status   = scenario.victim_status
             initial_emotion = scenario.initial_emotion
 
-    # Persist user message and append to in-memory history
+    # Build in-memory history for the AI (DB persistence deferred to commit)
     if request.silent_trigger:
         # Store a neutral marker in DB; send the real prompt to the AI so it
         # reacts to the silence while preserving the user/assistant alternation.
         history.append({"role": "user", "content": _SILENCE_PROMPT})
-        session.add(ChatMessage(incident_id=incident.id, role="user", content="[silenci]"))
+        user_msg = ChatMessage(incident_id=incident.id, role="user", content="[silenci]")
     else:
         history.append({"role": "user", "content": request.operator_message})
-        session.add(ChatMessage(incident_id=incident.id, role="user", content=request.operator_message))
-    session.flush()
+        user_msg = ChatMessage(incident_id=incident.id, role="user", content=request.operator_message)
 
     reply = generate_alertant_response(
         history,
@@ -83,6 +82,8 @@ def process_chat(
             .values(type_decided_at=datetime.now(timezone.utc))
         )
 
+    # Persist both messages atomically — if AI failed, nothing is written
+    session.add(user_msg)
     session.add(ChatMessage(incident_id=incident.id, role="assistant", content=reply))
     session.commit()
 

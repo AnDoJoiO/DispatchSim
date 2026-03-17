@@ -39,6 +39,9 @@ async def transcribe_audio(
         raise HTTPException(503, "Transcription service not configured")
 
     audio_bytes = await audio.read()
+    _MAX_AUDIO_BYTES = 5 * 1024 * 1024  # 5 MB
+    if len(audio_bytes) > _MAX_AUDIO_BYTES:
+        raise HTTPException(413, "L'arxiu d'àudio supera el límit de 5 MB")
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -98,13 +101,8 @@ async def text_to_speech(
     if not settings.DispatchSimKeyOpenAI:
         raise HTTPException(503, "TTS service not configured")
 
-    # Mapear voice IDs de ElevenLabs a voces válidas de OpenAI
-    _EL_TO_OAI = {
-        "EXAVITQu4vr4xnSDxMaL": "nova",
-        "cgSgspJ2msm6clMCkdW9": "shimmer",
-        "pNInz6obpgDQGcFmaJgB": "onyx",
-    }
-    oai_voice = _EL_TO_OAI.get(req.voice, req.voice if req.voice in {"alloy","echo","fable","onyx","nova","shimmer"} else "nova")
+    _OAI_VOICES = {"alloy", "echo", "fable", "onyx", "nova", "shimmer"}
+    oai_voice = EL_TO_OAI_VOICE.get(req.voice, req.voice if req.voice in _OAI_VOICES else "nova")
 
     async with httpx.AsyncClient() as client:
         oai_response = await client.post(

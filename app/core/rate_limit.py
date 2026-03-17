@@ -35,6 +35,9 @@ class SlidingWindowLimiter:
 # 10 missatges per minut per usuari — suficient per a una sessió de formació
 chat_limiter = SlidingWindowLimiter(max_calls=10, period_seconds=60)
 
+# Login: 5 intents/minut per username — protecció contra força bruta
+login_limiter = SlidingWindowLimiter(max_calls=5, period_seconds=60)
+
 # Veu: 15 peticions/minut per endpoint — marge per a conversa fluida amb VAD
 transcribe_limiter = SlidingWindowLimiter(max_calls=15, period_seconds=60)
 tts_limiter        = SlidingWindowLimiter(max_calls=15, period_seconds=60)

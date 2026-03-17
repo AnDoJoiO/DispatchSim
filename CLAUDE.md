@@ -14,12 +14,12 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 ### Fase 1 — Estabilidad y seguridad
 
 - [x] Rate limit en `/voice/transcribe` y `/voice/speak` — 15 req/min por usuario
-- [ ] Rate limit en `/auth/login` — prevenir fuerza bruta
-- [ ] Validar `silent_trigger` server-side — solo permitir si el último mensaje es del assistant
-- [ ] Usar `EL_TO_OAI_VOICE` de `constants.py` en `voice.py` — eliminar dict duplicado (voice.py:98-103)
-- [ ] Fix transacción en `simulation_service.py` — persistir user+assistant como unidad atómica (flush en línea 65)
-- [ ] Añadir `ondelete="CASCADE"` en FKs de todos los models + migración Alembic
-- [ ] Límite de tamaño en audio upload (`/voice/transcribe`)
+- [x] Rate limit en `/auth/login` — 5 intentos/min por username
+- [x] Validar `silent_trigger` server-side — 409 si el último mensaje no es del assistant
+- [x] Usar `EL_TO_OAI_VOICE` de `constants.py` en `voice.py` — eliminado dict duplicado
+- [x] Fix transacción en `simulation_service.py` — user+assistant se persisten atómicamente en un solo commit
+- [x] Añadir `ondelete="CASCADE"` en FKs — migración `7053c17081fa` (CASCADE en chatmessage/interventiondata, SET NULL en creator/operator/scenario)
+- [x] Límite de tamaño en audio upload — 5 MB máximo en `/voice/transcribe`
 
 ### Fase 2 — Calidad de código
 
