@@ -2,7 +2,7 @@ import os
 
 from alembic import command as alembic_command
 from alembic.config import Config
-from sqlalchemy import event, inspect, text
+from sqlalchemy import event, inspect
 from sqlmodel import SQLModel, create_engine, Session
 
 from app.core.config import settings

@@ -1,4 +1,5 @@
 import logging
+import re
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
@@ -34,9 +35,8 @@ _HALLUCINATION_SUBSTR = {
     "all rights reserved", "tots els drets",
 }
 _MIN_TRANSCRIPTION_CHARS = 8  # mínimo de caracteres para considerar una transcripción válida
-
-import re
 _PUNCT_RE = re.compile(r'[^\w\s]', re.UNICODE)
+
 
 def _is_hallucination(text: str) -> bool:
     lower = text.lower().strip()
