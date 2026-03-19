@@ -1,6 +1,8 @@
 import logging
+import re
 from datetime import datetime, timezone
 
+from fastapi import HTTPException
 from sqlalchemy import update as sa_update
 from sqlmodel import Session, select
 
@@ -21,6 +23,22 @@ _SILENCE_PROMPT = (
 
 
 _END_MARKER = "[FI]"
+
+# Pattern that matches only punctuation, symbols, digits and whitespace (no letters)
+_NON_WORD_RE = re.compile(r'^[\W\d_]+$', re.UNICODE)
+
+
+def _is_empty_input(text: str) -> bool:
+    """Return True if *text* is too empty or incoherent to be a real operator turn."""
+    stripped = text.strip()
+    if not stripped:
+        return True
+    # Only punctuation / symbols / digits — no letters at all
+    if _NON_WORD_RE.match(stripped):
+        return True
+    # Remove all non-letter characters, then count words
+    words = re.findall(r'[^\W\d_]+', stripped, re.UNICODE)
+    return len(words) < 2
 
 
 def process_chat(
@@ -65,6 +83,8 @@ def process_chat(
         history.append({"role": "user", "content": _SILENCE_PROMPT})
         user_msg = ChatMessage(incident_id=incident.id, role="user", content="[silenci]")
     else:
+        if _is_empty_input(request.operator_message):
+            raise HTTPException(status_code=422, detail="Operator message too short or empty")
         history.append({"role": "user", "content": request.operator_message})
         user_msg = ChatMessage(incident_id=incident.id, role="user", content=request.operator_message)
 
