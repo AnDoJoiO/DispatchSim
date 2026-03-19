@@ -1,6 +1,7 @@
 import { ref } from 'vue'
+import { MicVAD } from '@ricky0123/vad-web'
 import { useAuthStore } from '@/stores/auth'
-import { VOICE_THRESHOLD, SILENCE_MS, MIN_DURATION_MS, MIN_BLOB_BYTES } from '@/config'
+import { MIN_DURATION_MS, MIN_BLOB_BYTES } from '@/config'
 
 export function useMicrophone() {
   const active       = ref(false)
@@ -8,29 +9,20 @@ export function useMicrophone() {
   const transcribing = ref(false)
   const supported    = ref(!!navigator.mediaDevices?.getUserMedia)
 
-  let stream        = null
-  let audioCtx      = null
-  let analyser      = null
-  let animFrame     = null
-  let mediaRecorder = null
-  let chunks        = []
-  let silenceTimer  = null
-  let recordingStart = null
-  let onResultCb    = null
-  let currentLang   = 'ca'
-  let _discardNext  = false  // true → handleStop descarta l'àudio (suspend actiu)
-
-  function getRMS(data) {
-    let sum = 0
-    for (let i = 0; i < data.length; i++) sum += data[i] ** 2
-    return Math.sqrt(sum / data.length)
-  }
+  let vad: MicVAD | null = null
+  let mediaRecorder: MediaRecorder | null     = null
+  let chunks: Blob[]        = []
+  let recordingStart: number | null = null
+  let onResultCb: ((text: string) => void) | null = null
+  let currentLang           = 'ca'
+  let _discardNext          = false // true → handleStop discards audio (suspend active)
+  let _stream: MediaStream | null = null
 
   function startRecording() {
-    if (recording.value || transcribing.value || !stream) return
+    if (recording.value || transcribing.value || !_stream) return
     chunks         = []
     recordingStart = Date.now()
-    mediaRecorder  = new MediaRecorder(stream)
+    mediaRecorder  = new MediaRecorder(_stream)
     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data) }
     mediaRecorder.onstop = handleStop
     mediaRecorder.start()
@@ -39,7 +31,7 @@ export function useMicrophone() {
 
   async function handleStop() {
     recording.value = false
-    // Si estem suspesos (TTS en curs), descartar l'àudio capturat
+    // If suspended (TTS playing), discard captured audio
     if (_discardNext) { _discardNext = false; return }
 
     const duration = Date.now() - (recordingStart ?? 0)
@@ -67,71 +59,67 @@ export function useMicrophone() {
   }
 
   function stopRecording() {
-    if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
-    if (mediaRecorder?.state !== 'inactive') mediaRecorder.stop()
+    if (mediaRecorder?.state !== 'inactive') mediaRecorder?.stop()
   }
 
-  function tick() {
-    if (!analyser) return
-    const data = new Uint8Array(analyser.frequencyBinCount)
-    analyser.getByteFrequencyData(data)
-    const rms = getRMS(data)
-
-    if (rms > VOICE_THRESHOLD) {
-      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
-      if (!recording.value && !transcribing.value) startRecording()
-    } else if (recording.value && !silenceTimer) {
-      silenceTimer = setTimeout(stopRecording, SILENCE_MS)
-    }
-
-    animFrame = requestAnimationFrame(tick)
-  }
-
-  async function start(onResult, lang = 'ca') {
+  async function start(onResult: (text: string) => void, lang = 'ca') {
     if (!supported.value || active.value) return
     onResultCb  = onResult
     currentLang = lang
+
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // Determine base path for VAD static assets (ONNX model, worklet, WASM).
+      // In dev Vite serves public/ at root; in prod everything is under /static/.
+      const base = import.meta.env.BASE_URL || '/static/'
+
+      vad = await MicVAD.new({
+        baseAssetPath: base,
+        onnxWASMBasePath: base,
+        onSpeechStart: () => {
+          startRecording()
+        },
+        onSpeechEnd: () => {
+          stopRecording()
+        },
+      })
+
+      // Grab the stream that MicVAD created internally so we can record from it
+      _stream = (vad as any)._stream as MediaStream ?? null
+
+      // If MicVAD doesn't expose the stream, get our own from the same mic
+      if (!_stream) {
+        _stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      }
+
+      await vad.start()
+      active.value = true
     } catch {
       supported.value = false
-      return
     }
-    audioCtx = new AudioContext()
-    analyser = audioCtx.createAnalyser()
-    analyser.fftSize = 512
-    audioCtx.createMediaStreamSource(stream).connect(analyser)
-    active.value = true
-    tick()
   }
 
   function suspend() {
-    if (animFrame)    { cancelAnimationFrame(animFrame); animFrame = null }
-    if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null }
     if (mediaRecorder?.state !== 'inactive') {
-      _discardNext = true  // handleStop descartarà aquest chunk
-      mediaRecorder.stop()
+      _discardNext = true // handleStop will discard this chunk
+      mediaRecorder?.stop()
     }
     recording.value = false
+    vad?.pause()
   }
 
   function resume() {
-    if (!active.value || !analyser) return
-    tick()
+    if (!active.value || !vad) return
+    vad.start()
   }
 
   function stop() {
-    if (animFrame)    cancelAnimationFrame(animFrame)
-    if (silenceTimer) clearTimeout(silenceTimer)
     if (mediaRecorder?.state !== 'inactive') mediaRecorder?.stop()
-    stream?.getTracks().forEach(t => t.stop())
-    audioCtx?.close()
+    vad?.destroy()
+    vad = null
+    _stream?.getTracks().forEach(t => t.stop())
+    _stream         = null
     active.value    = false
     recording.value = false
-    analyser  = null
-    stream    = null
-    audioCtx  = null
-    animFrame = null
   }
 
   return { active, recording, transcribing, supported, start, stop, suspend, resume }
