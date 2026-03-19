@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError
+import jwt
 from sqlmodel import Session
 
 from app.core.security import decode_token
@@ -25,7 +25,7 @@ def get_current_user(
         if raw is None:
             raise ValueError
         user_id = int(raw)
-    except (JWTError, ValueError):
+    except (jwt.InvalidTokenError, ValueError):
         logger.warning("AUTH_INVALID_TOKEN")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
