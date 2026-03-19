@@ -1,9 +1,13 @@
+import logging
+
+import anthropic
 from anthropic import Anthropic
+
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
 
-def _client() -> Anthropic:
-    return Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+_client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 _LANG_NAMES = {
     'ca': 'Catalan',
@@ -120,12 +124,23 @@ def generate_alertant_response(
             + instructions_ia
         )
 
-    response = _client().messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=settings.AI_MAX_TOKENS,
-        system=system,
-        messages=history,
-    )
+    try:
+        response = _client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=settings.AI_MAX_TOKENS,
+            system=system,
+            messages=history,
+        )
+    except anthropic.APITimeoutError:
+        logger.error("Anthropic API timeout")
+        raise RuntimeError("AI service timed out — please try again")
+    except anthropic.APIConnectionError:
+        logger.error("Cannot connect to Anthropic API")
+        raise RuntimeError("Cannot reach AI service — check network")
+    except anthropic.APIStatusError as exc:
+        logger.error("Anthropic API error %d: %s", exc.status_code, exc.message)
+        raise RuntimeError(f"AI service error (HTTP {exc.status_code})")
+
     if not response.content or not response.content[0].text.strip():
         raise ValueError("Empty AI response")
     return response.content[0].text
