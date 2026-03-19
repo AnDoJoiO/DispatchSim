@@ -34,6 +34,8 @@ def process_chat(
     updates type_decided_at on the first exchange, persists the assistant reply,
     and returns (reply_text, elevenlabs_voice_id, call_ended).
     """
+    logger.debug("process_chat started for incident_id=%s", incident.id)
+
     # Load history ordered by timestamp
     db_messages = session.exec(
         select(ChatMessage)
@@ -66,16 +68,33 @@ def process_chat(
         history.append({"role": "user", "content": request.operator_message})
         user_msg = ChatMessage(incident_id=incident.id, role="user", content=request.operator_message)
 
-    reply = generate_alertant_response(
-        history,
-        incident.type,
-        instructions_ia,
-        location=location_exact or incident.location,
-        victim_status=victim_status,
-        initial_emotion=initial_emotion,
-        description=incident.description,
-        lang=request.lang,
+    # Limit context sent to the AI: keep only the last 20 messages
+    # (the current user message is already the last element)
+    _MAX_HISTORY = 20
+    if len(history) > _MAX_HISTORY:
+        history = history[-_MAX_HISTORY:]
+
+    logger.debug(
+        "Calling AI for incident_id=%s with %d messages",
+        incident.id, len(history),
     )
+
+    try:
+        reply = generate_alertant_response(
+            history,
+            incident.type,
+            instructions_ia,
+            location=location_exact or incident.location,
+            victim_status=victim_status,
+            initial_emotion=initial_emotion,
+            description=incident.description,
+            lang=request.lang,
+        )
+    except Exception:
+        logger.error(
+            "AI call failed for incident_id=%s", incident.id, exc_info=True,
+        )
+        raise
 
     # First exchange → register when the incident type was confirmed
     if not db_messages and incident.type_decided_at is None:
@@ -91,6 +110,7 @@ def process_chat(
 
     # If AI signals end of call, finalize it
     if call_ended:
+        logger.info("Call ended for incident_id=%s", incident.id)
         session.execute(
             sa_update(Incident)
             .where(Incident.id == incident.id)
