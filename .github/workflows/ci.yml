@@ -18,14 +18,22 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt pytest pytest-cov
+
+      - name: Lint
+        run: pip install ruff && ruff check app/
+
+      # If pip-audit finds vulnerabilities you need to temporarily bypass,
+      # add: --ignore-vuln PYSEC-XXXX-YYYY (one per known vuln)
+      - name: Dependency audit
+        run: pip install pip-audit && pip-audit
 
       - name: Run backend tests
-        run: python -m pytest tests/ -v
+        run: python -m pytest tests/ -v --cov=app --cov-report=term-missing
         env:
           DATABASE_URL: sqlite:///./test.db
           SECRET_KEY: ci-test-secret-key-with-at-least-32-chars!!
-          DEBUG: 'true'
+          DEBUG: 'false'
           ANTHROPIC_API_KEY: test-key
           DispatchSimKeyOpenAI: test-key
 
@@ -45,6 +53,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # If npm audit finds vulnerabilities you need to temporarily bypass,
+      # review them with: npm audit --audit-level=high and fix or override individually
+      - name: Dependency audit
+        run: npm audit --audit-level=high
 
       - name: Run frontend tests
         run: npm test
