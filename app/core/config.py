@@ -1,4 +1,4 @@
-from pydantic import field_validator, model_validator
+from pydantic import ConfigDict, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 _INSECURE_DEFAULT = "change-me-in-production"
@@ -44,8 +44,7 @@ class Settings(BaseSettings):
             )
         return self
 
-    class Config:
-        env_file = ".env"
+    model_config = ConfigDict(env_file=".env")
 
 
 settings = Settings()

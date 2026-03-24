@@ -67,7 +67,7 @@ async function submit() {
       <!-- Capçalera -->
       <div class="mb-5">
         <h2 class="text-base font-bold" style="color:var(--text)">{{ tr('se.title') }}</h2>
-        <p class="text-xs mt-1" style="color:var(--text3)">{{ tr('se.subtitle') }}</p>
+        <p class="text-xs mt-1" style="color:var(--text-muted)">{{ tr('se.subtitle') }}</p>
       </div>
 
       <!-- Banner zona formador -->
@@ -133,7 +133,7 @@ async function submit() {
               <option v-for="s in VICTIM_STATUSES" :key="s" :value="s">{{ tr('vs.' + s) }}</option>
             </select>
             <!-- Indicador visual de gravetat -->
-            <p class="text-xs mt-1" style="color:var(--text3)">
+            <p class="text-xs mt-1" style="color:var(--text-muted)">
               <span v-if="victimStatus === 'Consciente'"   style="color:#16a34a">{{ tr('se.victim_stable') }}</span>
               <span v-else-if="victimStatus === 'Inconsciente'" style="color:#dc2626">{{ tr('se.victim_critical') }}</span>
               <span v-else-if="victimStatus === 'GASP'"    style="color:#dc2626">{{ tr('se.victim_gasp') }}</span>
@@ -144,7 +144,7 @@ async function submit() {
             <select id="se-emotion" v-model="initialEmotion" class="fc">
               <option v-for="e in INITIAL_EMOTIONS" :key="e" :value="e">{{ tr('ie.' + e) }}</option>
             </select>
-            <p class="text-xs mt-1" style="color:var(--text3)">
+            <p class="text-xs mt-1" style="color:var(--text-muted)">
               <span v-if="initialEmotion === 'Calma'"    style="color:#16a34a">{{ tr('se.emotion_calm') }}</span>
               <span v-else-if="initialEmotion === 'Pánico'"   style="color:#ca8a04">{{ tr('se.emotion_panic') }}</span>
               <span v-else-if="initialEmotion === 'Agresión'" style="color:#dc2626">{{ tr('se.emotion_aggr') }}</span>
@@ -183,7 +183,7 @@ async function submit() {
           <button
             @click="reset"
             class="px-4 py-2.5 rounded-lg text-sm font-medium transition"
-            style="border:1px solid var(--border);color:var(--text2)"
+            style="border:1px solid var(--border);color:var(--text-secondary)"
           >
             {{ tr('se.clear_btn') }}
           </button>

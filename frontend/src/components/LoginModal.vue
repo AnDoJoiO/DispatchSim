@@ -44,7 +44,7 @@ async function doLogin() {
             style="background:var(--accent-bg);border:1px solid var(--accent-br)"
           >🚨</div>
           <h1 class="text-base font-bold tracking-wide" style="color:var(--text)">DISPATCHSIM</h1>
-          <p class="text-xs mt-1" style="color:var(--text3)">{{ tr('login.subtitle') }}</p>
+          <p class="text-xs mt-1" style="color:var(--text-muted)">{{ tr('login.subtitle') }}</p>
         </div>
 
         <div class="px-8 py-6 flex flex-col gap-3">

@@ -12,7 +12,38 @@ Simulador de emergencias 112 para formación de operadores. Un alertante IA (Cla
 
 ## Próximo paso
 
-**Fase 6.1 — Filtro alucinaciones STT:** validar transcripción en backend antes de enviar a Claude (texto muy corto, solo símbolos, sin palabras reales) + instrucción en system prompt del operador.
+**Auditoría profesional — Sesión 2:** aplicar los fixes de seguridad, UI y código pendientes de la auditoría (ver sección abajo).
+
+---
+
+## Auditoría de profesionalización (2026-03-21)
+
+Sesión 1 completada — 7 fixes aplicados (password min 12, schema ScenarioCreate, 6 claves i18n, tokens legacy, dark mode landing, tipos utils.ts, Pydantic ConfigDict). 33/33 tests backend OK.
+
+### Sesión 2 — Pendiente (seguridad + UI)
+
+- [ ] Control de acceso en incidents: ownership check (operador solo ve/borra los suyos) — `app/api/v1/endpoints/incidents.py:61-93`
+- [ ] Migrar inline `style=` → `<style scoped>` con CSS tokens — ScenarioEditor, DebriefingModal, EditUserModal, LoginModal
+- [ ] Reemplazar colores hex hardcodeados → CSS tokens (`--success`, `--warning`, `--danger`) — ScenarioEditor
+- [ ] Rate limit en silent trigger — `app/api/v1/endpoints/simulation.py:28-29`
+- [ ] Responsive mobile: breakpoints en App.vue (sidebars colapsan en <768px) — `App.vue:67-87`
+
+### Sesión 3 — Pendiente (robustez)
+
+- [ ] Manejar `anthropic.RateLimitError` explícitamente — `app/services/ai_service.py:193-211`
+- [ ] Fix race condition en silent trigger (row-level locking) — `simulation.py:37-43`
+- [ ] Fix memory leak graceTimer en useAudioController — `useAudioController.ts:39`
+- [ ] Mejorar CSP: quitar `'unsafe-inline'` de script-src — `app/main.py:30`
+- [ ] Prevenir múltiples reloads simultáneos en 401 — `frontend/src/api/index.ts:16`
+- [ ] Añadir HSTS header para producción — `app/main.py:44-47`
+
+### Pendiente menor (medium)
+
+- [ ] Timeout en queries SQLite — `app/db/session.py`
+- [ ] Eliminar `console.error` en producción — `useTTS.ts:35,41`
+- [ ] Validar param `lang` en ChatRequest — `simulation.py:9`
+- [ ] Try-except en timeout APIs externas — `voice.py:147-154`
+- [ ] Actualizar pip a >=26.0 (CVE-2025-8869, CVE-2026-1703)
 
 ---
 

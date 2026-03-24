@@ -10,7 +10,7 @@ from app.models.user import User, UserRole
 class TestRegister:
     def test_register_success(self, client):
         res = client.post("/api/v1/auth/register", json={
-            "username": "newuser", "password": "pass123",
+            "username": "newuser", "password": "passw0rd!safe",
         })
         assert res.status_code == 201
         data = res.json()
@@ -19,19 +19,19 @@ class TestRegister:
 
     def test_register_duplicate(self, client, operator_user):
         res = client.post("/api/v1/auth/register", json={
-            "username": "testoperator", "password": "pass123",
+            "username": "testoperator", "password": "passw0rd!safe",
         })
         assert res.status_code == 409
 
     def test_register_short_username(self, client):
         res = client.post("/api/v1/auth/register", json={
-            "username": "ab", "password": "pass123",
+            "username": "ab", "password": "passw0rd!safe",
         })
         assert res.status_code == 422
 
     def test_register_invalid_chars(self, client):
         res = client.post("/api/v1/auth/register", json={
-            "username": "user@name!", "password": "pass123",
+            "username": "user@name!", "password": "passw0rd!safe",
         })
         assert res.status_code == 422
 
@@ -60,26 +60,26 @@ class TestLogin:
 
     def test_login_inactive_user(self, client, session):
         user = User(
-            username="inactive", hashed_password=hash_password("pass123"),
+            username="inactive", hashed_password=hash_password("passw0rd!safe"),
             role=UserRole.OPERADOR, is_active=False,
         )
         session.add(user)
         session.commit()
         res = client.post("/api/v1/auth/login", json={
-            "username": "inactive", "password": "pass123",
+            "username": "inactive", "password": "passw0rd!safe",
         })
         assert res.status_code == 403
 
     def test_login_expired_user(self, client, session):
         user = User(
-            username="expired", hashed_password=hash_password("pass123"),
+            username="expired", hashed_password=hash_password("passw0rd!safe"),
             role=UserRole.OPERADOR,
             expires_at=datetime.now(timezone.utc) - timedelta(days=1),
         )
         session.add(user)
         session.commit()
         res = client.post("/api/v1/auth/login", json={
-            "username": "expired", "password": "pass123",
+            "username": "expired", "password": "passw0rd!safe",
         })
         assert res.status_code == 403
 

@@ -1,6 +1,6 @@
 'use strict'
 
-export function escapeHtml(str) {
+export function escapeHtml(str: string): string {
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -8,11 +8,11 @@ export function escapeHtml(str) {
     .replace(/"/g, '&quot;')
 }
 
-export function formatMessage(content) {
+export function formatMessage(content: string): string {
   return escapeHtml(content).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
 }
 
-export function fmtDuration(secs) {
+export function fmtDuration(secs: number | null | undefined): string {
   if (secs == null) return '—'
   const h = Math.floor(secs / 3600)
   const m = Math.floor((secs % 3600) / 60)
@@ -22,12 +22,12 @@ export function fmtDuration(secs) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
-function _locale() {
+function _locale(): string {
   const lang = localStorage.getItem('dispatch_lang') || 'ca'
   return { ca: 'ca-AD', es: 'es-ES', fr: 'fr-FR', en: 'en-GB' }[lang] || 'ca-AD'
 }
 
-export function fmtDate(iso) {
+export function fmtDate(iso: string | null | undefined): string {
   if (!iso) return '—'
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')
   return d.toLocaleString(_locale(), {
@@ -36,13 +36,13 @@ export function fmtDate(iso) {
   })
 }
 
-export function fmtTime(iso) {
+export function fmtTime(iso: string | null | undefined): string {
   if (!iso) return ''
   const d = new Date(iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z')
   return d.toLocaleTimeString(_locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
-export function fmtElapsed(secs) {
+export function fmtElapsed(secs: number): string {
   const h = Math.floor(secs / 3600)
   const m = Math.floor((secs % 3600) / 60)
   const s = secs % 60
@@ -51,7 +51,12 @@ export function fmtElapsed(secs) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
-export const PRIORITY_STYLES = {
+interface PriorityStyle {
+  pill: string
+  large: string
+}
+
+export const PRIORITY_STYLES: Record<number, PriorityStyle> = {
   1: { pill: 'background:#dcfce7;color:#16a34a;border:1px solid #86efac',  large: 'color:#16a34a' },
   2: { pill: 'background:#fef9c3;color:#ca8a04;border:1px solid #fde047',  large: 'color:#ca8a04' },
   3: { pill: 'background:#ffedd5;color:#ea580c;border:1px solid #fed7aa',  large: 'color:#ea580c' },
@@ -59,15 +64,15 @@ export const PRIORITY_STYLES = {
   5: { pill: 'background:#fef2f2;color:#991b1b;border:1px solid #fca5a5',  large: 'color:#991b1b' },
 }
 
-export function pStyle(p) {
+export function pStyle(p: number): PriorityStyle {
   return PRIORITY_STYLES[p] || {
-    pill:  'background:var(--surface2);color:var(--text3);border:1px solid var(--border)',
-    large: 'color:var(--text3)',
+    pill:  'background:var(--surface-raised);color:var(--text-muted);border:1px solid var(--border)',
+    large: 'color:var(--text-muted)',
   }
 }
 
-export const ROLE_LABELS = { admin: '🔑 Admin', formador: '🎓 Formador', operador: '👮 Operador' }
-export const ROLE_STYLES = {
+export const ROLE_LABELS: Record<string, string> = { admin: '🔑 Admin', formador: '🎓 Formador', operador: '👮 Operador' }
+export const ROLE_STYLES: Record<string, string> = {
   admin:    'background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff',
   formador: 'background:#fef9c3;color:#92400e;border:1px solid #fef08a',
   operador: 'background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe',

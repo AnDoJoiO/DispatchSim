@@ -10,9 +10,9 @@ class ScenarioCreate(BaseModel):
     title:           str
     incident_type:   str
     base_location:   str
-    location_exact:  str
-    victim_status:   VictimStatus
-    initial_emotion: InitialEmotion
+    location_exact:  Optional[str] = None
+    victim_status:   Optional[VictimStatus] = None
+    initial_emotion: Optional[InitialEmotion] = None
     instructions_ia: str = Field(max_length=2000)  # instrucciones secretas para la IA
 
 

@@ -54,7 +54,7 @@ async function submit() {
   >
     <div class="rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm" style="background:var(--surface)">
       <!-- Header -->
-      <div class="px-6 pt-5 pb-4" style="border-bottom:1px solid var(--border);background:var(--surface2)">
+      <div class="px-6 pt-5 pb-4" style="border-bottom:1px solid var(--border);background:var(--surface-raised)">
         <h2 class="text-sm font-bold" style="color:var(--text)">
           {{ tr('eu.title_pre') }}
           <span class="font-mono">{{ targetUser?.username }}</span>
@@ -73,7 +73,7 @@ async function submit() {
         <div>
           <label class="fl">{{ tr('eu.expiry') }}</label>
           <input v-model="expiryVal" type="date" class="fc" />
-          <p class="text-xs mt-1" style="color:var(--text3)">{{ tr('eu.expiry_hint') }}</p>
+          <p class="text-xs mt-1" style="color:var(--text-muted)">{{ tr('eu.expiry_hint') }}</p>
         </div>
         <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
       </div>
@@ -83,7 +83,7 @@ async function submit() {
         <button
           @click="ui.closeEditUser()"
           class="text-sm px-4 py-2 rounded-lg font-medium transition"
-          style="border:1px solid var(--border);color:var(--text2);background:var(--surface)"
+          style="border:1px solid var(--border);color:var(--text-secondary);background:var(--surface)"
         >{{ tr('eu.cancel') }}</button>
         <button
           @click="submit"
