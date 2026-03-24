@@ -35,7 +35,7 @@ def create_incident(
         incident = Incident(
             scenario_id=scenario.id,
             type=scenario.incident_type,
-            location=scenario.base_location,
+            location=scenario.location_exact or scenario.base_location,
             description=" · ".join(parts),
             priority=payload.priority,
             creator_id=current_user.id,
